@@ -1,0 +1,138 @@
+{
+  "version": "202611061320",
+  "source": "42de3902-1793970631376_TU-VUNG-NGU-PHAP-N5-1.xlsx",
+  "generatedAt": "2026-11-06T13:20:02+00:00",
+  "pageSize": 20,
+  "files": [
+    {
+      "path": "vocab/n5.json",
+      "kind": "vocab",
+      "title": "Từ vựng N5",
+      "level": "N5",
+      "count": 703,
+      "bytes": 93166,
+      "hash": "6bb1e9329c"
+    },
+    {
+      "path": "vocab/n4.json",
+      "kind": "vocab",
+      "title": "Từ vựng N4",
+      "level": "N4",
+      "count": 902,
+      "bytes": 104796,
+      "hash": "916d73ffdc"
+    },
+    {
+      "path": "vocab/n3.json",
+      "kind": "vocab",
+      "title": "Từ vựng N3",
+      "level": "N3",
+      "count": 863,
+      "bytes": 99099,
+      "hash": "8f7bb2fd79"
+    },
+    {
+      "path": "vocab/n2.json",
+      "kind": "vocab",
+      "title": "Từ vựng N2",
+      "level": "N2",
+      "count": 1695,
+      "bytes": 224221,
+      "hash": "31087e5a5d"
+    },
+    {
+      "path": "vocab/n1.json",
+      "kind": "vocab",
+      "title": "Từ vựng N1",
+      "level": "N1",
+      "count": 3058,
+      "bytes": 526939,
+      "hash": "74818801a5"
+    },
+    {
+      "path": "vocab/compounds.json",
+      "kind": "vocab",
+      "title": "Từ ghép",
+      "count": 1428,
+      "bytes": 164718,
+      "hash": "f9fad8f55e"
+    },
+    {
+      "path": "vocab/onomatopoeia.json",
+      "kind": "vocab",
+      "title": "Từ láy",
+      "count": 59,
+      "bytes": 6946,
+      "hash": "2a2eb9e365"
+    },
+    {
+      "path": "vocab/adverbs.json",
+      "kind": "vocab",
+      "title": "Phó từ",
+      "count": 189,
+      "bytes": 18620,
+      "hash": "69c2eb1669"
+    },
+    {
+      "path": "kanji/kanji.json",
+      "kind": "kanji",
+      "title": "Chữ Hán",
+      "count": 1489,
+      "bytes": 265159,
+      "hash": "80add2f458"
+    },
+    {
+      "path": "kanji/radicals.json",
+      "kind": "radicals",
+      "title": "Bộ thủ",
+      "count": 205,
+      "bytes": 13582,
+      "hash": "4a07bc718f"
+    },
+    {
+      "path": "grammar/n5.json",
+      "kind": "grammar",
+      "title": "Ngữ pháp N5",
+      "level": "N5",
+      "count": 0,
+      "bytes": 5,
+      "hash": "f69593cfcc"
+    },
+    {
+      "path": "grammar/n4.json",
+      "kind": "grammar",
+      "title": "Ngữ pháp N4",
+      "level": "N4",
+      "count": 68,
+      "bytes": 160952,
+      "hash": "ded4158089"
+    },
+    {
+      "path": "grammar/n3.json",
+      "kind": "grammar",
+      "title": "Ngữ pháp N3",
+      "level": "N3",
+      "count": 12,
+      "bytes": 241818,
+      "hash": "e5aa9282be"
+    },
+    {
+      "path": "grammar/n2.json",
+      "kind": "grammar",
+      "title": "Ngữ pháp N2",
+      "level": "N2",
+      "count": 173,
+      "bytes": 361569,
+      "hash": "2f885c9089"
+    },
+    {
+      "path": "grammar/n1.json",
+      "kind": "grammar",
+      "title": "Ngữ pháp N1",
+      "level": "N1",
+      "count": 99,
+      "bytes": 204985,
+      "hash": "f44d32cc81"
+    }
+  ]
+}

@@ -37,3 +37,7 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Excel nguồn (dữ liệu sinh ra nằm trong public/data)
+data-source/*.xlsx
+*.xlsx

@@ -9,22 +9,38 @@ import { expect, test, type Page } from '@playwright/test'
 
 const WIDTHS = [390, 768, 1024, 1112, 1180, 1280, 1440]
 const THEMES = ['light', 'dark'] as const
-const PAGES = ['/', '/kana', '/level/N5', '/level/N5/kanji', '/level/N1/kanji', '/level/N5/flashcards', '/review', '/khong-co-trang-nay']
+const PAGES = [
+  '/',
+  '/kana',
+  '/vocab/n5',
+  '/vocab/n5/1',
+  '/vocab/n5/1?tab=flashcards',
+  '/vocab/n1/153',
+  '/word/n1-be312b26',
+  '/kanji',
+  '/kanji?tab=radicals',
+  '/grammar/n4',
+  '/grammar/n2/gn2-03d5e797',
+  '/review',
+  '/khong-co-trang-nay',
+]
 
 /** Thẻ ôn đến hạn để trang Ôn tập có ô chữ Hán. */
 function seedScript(theme: string) {
   return `(() => {
     const now = Date.now();
     const card = (id) => ({ id, ease: 2.5, interval: 1, repetitions: 1, due: now - 1000, lastReviewed: now - 86400000 });
-    localStorage.setItem('jla:v1:cards', JSON.stringify({ 'n5-k-001': card('n5-k-001'), 'n5-v-001': card('n5-v-001') }));
+    localStorage.setItem('jla:v1:cards', JSON.stringify({ 'kj-1cb63f35': card('kj-1cb63f35'), 'n5-e1ea452d': card('n5-e1ea452d') }));
+    localStorage.setItem('jla:v1:lesson-size', '20');
     localStorage.setItem('jla:theme', '${theme}');
   })()`
 }
 
 async function settle(page: Page) {
+  // Dữ liệu tải từ public/data: chờ hết skeleton rồi chờ hiệu ứng chuyển trang / stagger kết thúc.
+  await page.waitForFunction(() => !document.querySelector('[aria-label="Đang tải dữ liệu"], [aria-label^="Đang tải"]'), null, { timeout: 15_000 })
   await page.evaluate(() => document.fonts.ready)
-  // Chờ hiệu ứng chuyển trang / stagger kết thúc.
-  await page.waitForTimeout(700)
+  await page.waitForTimeout(900)
 }
 
 /** Danh sách ô có chữ vượt viền hoặc không vuông. */
@@ -82,7 +98,7 @@ for (const theme of THEMES) {
       }
 
       test('Kanji: nhãn Hán Việt 1 dòng, panel/bottom sheet đúng mốc', async ({ page }) => {
-        await page.goto('/level/N5/kanji')
+        await page.goto('/kanji?level=N5')
         await settle(page)
 
         const labels = await page.evaluate(() =>
@@ -99,7 +115,7 @@ for (const theme of THEMES) {
               }
             }),
         )
-        expect(labels.length).toBe(20)
+        expect(labels.length).toBeGreaterThanOrEqual(20)
         expect(labels.filter((l) => !l.oneLine || l.clipped || !l.inside)).toEqual([])
 
         const panel = page.getByRole('complementary', { name: 'Chi tiết chữ Hán' })

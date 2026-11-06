@@ -31,3 +31,6 @@ export function speak(text: string, rate = 0.9): void {
   if (voice) u.voice = voice
   synth.speak(u)
 }
+
+/** Văn bản dùng để đọc phát âm một từ: ưu tiên cách đọc, thiếu thì đọc theo chữ. */
+export const speechText = (item: { reading?: string; word: string }) => item.reading || item.word

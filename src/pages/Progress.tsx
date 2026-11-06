@@ -1,61 +1,61 @@
-import { useMemo, useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatedNumber } from '../components/AnimatedNumber'
+import { Skeleton } from '../components/LoadState'
 import { PageHeader } from '../components/PageHeader'
-import { Stagger, StaggerItem } from '../components/Stagger'
 import { ProgressBar } from '../components/ProgressBar'
-import { deckIds, deckPath, deckTitle, getDeckWords, getKanji } from '../data'
+import { Stagger, StaggerItem } from '../components/Stagger'
+import { DECK_ID_PREFIX, EXTRA_DECKS, LEVEL_DECKS, TERM_INFO, VOCAB_DECK_INFO, deckTitle, getTerms, isCurrentId } from '../data'
+import { useManifest } from '../hooks/useData'
+import { useCards, useDueIds, usePrefixStats } from '../hooks/useProgress'
 import { progress } from '../lib/progress'
-import { MASTERED_INTERVAL } from '../lib/srs'
-import { useCards, useDueIds, useStats } from '../hooks/useProgress'
-import { LEVELS, TERM_CATEGORIES, type Deck } from '../types'
+import { MASTERED_INTERVAL, isMastered } from '../lib/srs'
+import { LEVELS, TERM_CATEGORIES, type DataManifest } from '../types'
 
-function DeckRow({ deck }: { deck: Deck }) {
-  const words = useMemo(() => getDeckWords(deck).map((w) => w.id), [deck])
-  const kanji = useMemo(() => (deck.kind === 'level' ? getKanji(deck.level).map((k) => k.id) : []), [deck])
-  const all = useMemo(() => deckIds(deck), [deck])
-  const w = useStats(words)
-  const k = useStats(kanji)
-  const s = useStats(all)
-
+function Row({ to, title, prefix, total, idPattern }: { to: string; title: string; prefix: string; total: number; idPattern?: string }) {
+  const s = usePrefixStats(prefix, total, idPattern)
   return (
-    <StaggerItem as="li" className="py-4">
+    <StaggerItem as="li" className="py-3.5">
       <div className="flex items-baseline justify-between gap-3">
-        <Link to={deckPath(deck)} className="font-semibold hover:text-ai">
-          {deckTitle(deck)}
+        <Link to={to} className="font-semibold hover:text-ai">
+          {title}
         </Link>
         <span className="text-sm tabular-nums text-muted">
           {s.learned}/{s.total}
         </span>
       </div>
       <div className="mt-2">
-        <ProgressBar {...s} label={deckTitle(deck)} />
+        <ProgressBar {...s} label={title} />
       </div>
-      <dl className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted">
-        <div className="flex gap-1.5">
-          <dt>Từ vựng</dt>
-          <dd className="tabular-nums text-ink">
-            {w.learned} học, {w.mastered} thuộc
-          </dd>
-        </div>
-        {deck.kind === 'level' && (
-          <div className="flex gap-1.5">
-            <dt>Chữ Hán</dt>
-            <dd className="tabular-nums text-ink">
-              {k.learned} học, {k.mastered} thuộc
-            </dd>
-          </div>
-        )}
-      </dl>
+      <p className="mt-1.5 text-sm text-muted">
+        {s.mastered} đã thuộc{s.due > 0 && `, ${s.due} cần ôn`}
+      </p>
     </StaggerItem>
+  )
+}
+
+function count(m: DataManifest | undefined, path: string) {
+  return m?.files.find((f) => f.path === path)?.count ?? 0
+}
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section>
+      <h2 className="text-lg font-bold">{title}</h2>
+      <Stagger as="ul" className="divide-y divide-line">
+        {children}
+      </Stagger>
+    </section>
   )
 }
 
 export function Progress() {
   const cards = useCards()
   const due = useDueIds().length
-  const all = Object.values(cards)
-  const mastered = all.filter((c) => c.interval >= MASTERED_INTERVAL).length
+  const manifest = useManifest()
+  const m = manifest.data
+  const all = Object.values(cards).filter((c) => isCurrentId(c.id))
+  const mastered = all.filter(isMastered).length
   const [confirming, setConfirming] = useState(false)
 
   const totals = [
@@ -79,7 +79,7 @@ export function Progress() {
         ))}
       </dl>
 
-      <div className="mt-3 flex items-center gap-4 text-xs text-muted">
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
         <span className="flex items-center gap-1.5">
           <span className="h-1.5 w-4 rounded-full bg-cell-line" aria-hidden /> Đã học
         </span>
@@ -88,27 +88,40 @@ export function Progress() {
         </span>
       </div>
 
-      <div className="mt-8 grid gap-x-12 gap-y-8 lg:grid-cols-2">
-        <section>
-          <h2 className="text-lg font-bold">Theo cấp độ</h2>
-          <Stagger as="ul" className="divide-y divide-line">
-            {LEVELS.map((level) => (
-              <DeckRow key={level} deck={{ kind: 'level', level }} />
+      {!m ? (
+        <div className="mt-8 grid gap-4 lg:grid-cols-2">
+          <Skeleton className="h-72" />
+          <Skeleton className="h-72" />
+        </div>
+      ) : (
+        <div className="mt-8 grid gap-x-12 gap-y-10 lg:grid-cols-2">
+          <Section title="Từ vựng theo cấp">
+            {LEVEL_DECKS.map((k) => (
+              <Row key={k} to={`/vocab/${k}`} title={deckTitle({ kind: 'vocab', key: k })} prefix={DECK_ID_PREFIX[k]} total={count(m, VOCAB_DECK_INFO[k].path)} />
             ))}
-          </Stagger>
-        </section>
+          </Section>
+          <div className="space-y-10">
+            <Section title="Bộ từ khác">
+              {EXTRA_DECKS.map((k) => (
+                <Row key={k} to={`/vocab/${k}`} title={VOCAB_DECK_INFO[k].name} prefix={DECK_ID_PREFIX[k]} total={count(m, VOCAB_DECK_INFO[k].path)} />
+              ))}
+              <Row to="/kanji" title="Chữ Hán" prefix="kj" total={count(m, 'kanji/kanji.json')} />
+            </Section>
+            <Section title="Ngữ pháp">
+              {LEVELS.filter((l) => count(m, `grammar/${l.toLowerCase()}.json`) > 0).map((l) => (
+                <Row key={l} to={`/grammar/${l.toLowerCase()}`} title={`Ngữ pháp ${l}`} prefix={`g${l.toLowerCase()}`} total={count(m, `grammar/${l.toLowerCase()}.json`)} />
+              ))}
+            </Section>
+            <Section title="Thuật ngữ chuyên ngành">
+              {TERM_CATEGORIES.map((c) => (
+                <Row key={c} to={`/terms/${c}`} title={TERM_INFO[c].name} prefix={TERM_INFO[c].prefix} total={getTerms(c).length} idPattern="\d{3}" />
+              ))}
+            </Section>
+          </div>
+        </div>
+      )}
 
-        <section>
-          <h2 className="text-lg font-bold">Thuật ngữ chuyên ngành</h2>
-          <Stagger as="ul" className="divide-y divide-line">
-            {TERM_CATEGORIES.map((category) => (
-              <DeckRow key={category} deck={{ kind: 'terms', category }} />
-            ))}
-          </Stagger>
-        </section>
-      </div>
-
-      <section className="mt-10 rounded-xl border border-line p-4">
+      <section className="mt-12 rounded-xl border border-line p-4">
         <h2 className="font-semibold">Xóa tiến độ</h2>
         <p className="mt-1 text-sm text-muted">Tiến độ đang lưu trên trình duyệt này. Xóa đi sẽ không khôi phục được.</p>
         {confirming ? (
@@ -121,7 +134,7 @@ export function Progress() {
               }}
               className="min-h-11 rounded-lg bg-beni px-4 font-semibold text-on-ai"
             >
-              Xóa toàn bộ {all.length} thẻ
+              Xóa toàn bộ {Object.keys(cards).length} thẻ
             </button>
             <button type="button" onClick={() => setConfirming(false)} className="min-h-11 rounded-lg border border-line px-4">
               Giữ lại
@@ -131,7 +144,7 @@ export function Progress() {
           <button
             type="button"
             onClick={() => setConfirming(true)}
-            disabled={all.length === 0}
+            disabled={Object.keys(cards).length === 0}
             className="mt-3 min-h-11 rounded-lg border border-beni px-4 font-medium text-beni disabled:opacity-40"
           >
             Xóa tiến độ

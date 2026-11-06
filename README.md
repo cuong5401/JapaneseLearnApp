@@ -25,45 +25,28 @@ npm run test:e2e # Playwright: chữ không tràn ô GridCell, không cuộn nga
 
 | Trang | Đường dẫn |
 |---|---|
-| Trang chủ: chữ Hán hôm nay, số thẻ cần ôn, các cấp độ, thuật ngữ | `/` |
-| Luyện kana (hiragana/katakana, âm cơ bản, âm đục, âm ghép), gõ romaji | `/kana` |
-| Tổng quan một cấp độ hoặc một nhóm thuật ngữ | `/level/N5`, `/terms/it` |
-| Flashcard từ vựng | `/level/N5/flashcards`, `/terms/it/flashcards` |
-| Chữ Hán: âm On/Kun, Hán Việt, từ ghép | `/level/N5/kanji` |
-| Quiz trắc nghiệm hoặc gõ cách đọc | `/level/N5/quiz`, `/terms/it/quiz` |
-| Ôn tập SRS (SM-2 rút gọn) | `/review` |
-| Tiến độ theo cấp độ và nhóm thuật ngữ | `/progress` |
+| Trang chủ: chữ Hán hôm nay, thẻ cần ôn, các bộ từ, chữ Hán, ngữ pháp, thuật ngữ | `/` |
+| Bộ từ (N5–N1, Từ ghép, Từ láy, Phó từ): lưới bài, "Học tiếp", Từ chưa thuộc, đổi 20/30/50 từ mỗi bài | `/vocab/n5` |
+| Bài học: Danh sách, Flashcard (vuốt để chấm), Quiz | `/vocab/n5/1`, `/vocab/n5/weak` |
+| Chi tiết từ: Hán Việt, cách viết khác, từ gốc, ghi chú, từ liên quan (N1), chữ Hán trong từ | `/word/:id` |
+| Chữ Hán (lọc theo cấp xuất hiện), Bộ thủ, Quiz âm Hán Việt | `/kanji`, `/kanji?tab=radicals` |
+| Ngữ pháp N4–N1 (N4 nhóm theo bài 26–50), chi tiết mẫu, "Đã hiểu" đưa vào lịch ôn | `/grammar/n2`, `/grammar/n2/:id` |
+| Tìm kiếm (phím `/`): chữ Nhật, kana, romaji, Hán Việt, nghĩa tiếng Việt không dấu | hộp tìm kiếm |
+| Ôn tập SRS cho từ vựng, chữ Hán, ngữ pháp | `/review` |
+| Thuật ngữ IT, điện tử, văn phòng | `/terms/it` |
+| Luyện kana, Tiến độ | `/kana`, `/progress` |
 
-## Cấu trúc
+## Dữ liệu
 
+- Dữ liệu học nằm trong `public/data/` (xem [DATA-README.md](DATA-README.md)), sinh từ Excel bằng `scripts/convert_xlsx.py`. **Không sửa tay** các file này; file Excel nguồn (`data-source/*.xlsx`) không đưa lên git.
+- Dữ liệu được `fetch` khi cần (`src/lib/dataStore.ts`), cache theo đường dẫn + `hash` trong manifest, không đóng gói vào bundle.
+- Hook: `useManifest`, `useVocab`, `useKanjiIndex`, `useRadicals`, `useGrammar`, `useEntries(ids)` (`src/hooks/useData.ts`).
+- Tiến độ SRS lưu theo `id` trong localStorage; thẻ có ID không còn tồn tại được bỏ qua.
+- Thuật ngữ chuyên ngành nhỏ vẫn đóng gói sẵn trong `src/data/terms/`.
+
+## Kiểm tra
+
+```bash
+npm test          # Vitest: dataStore, chia bài, tìm kiếm
+npm run test:e2e  # Playwright: bố cục 390–1440px, chữ không tràn ô GridCell
 ```
-src/
-  types/index.ts         Kiểu dữ liệu: VocabItem, KanjiItem, SrsCard, Deck…
-  data/
-    vocab/n5.json…n1.json
-    kanji/n5.json…n1.json
-    terms/it.json, electronics.json, office.json
-    kana.ts              Bảng kana (katakana + romaji sinh tự động)
-    index.ts             Registry: getVocab, getKanji, getTerms, ENTRY_BY_ID
-  lib/
-    srs.ts               Thuật toán SM-2 rút gọn
-    storage.ts           Interface ProgressStore + bản localStorage
-    progress.ts          Kho tiến độ dùng chung (useSyncExternalStore)
-    answer.ts            Chuẩn hóa và so khớp đáp án romaji/kana
-    speech.ts            Phát âm qua Web Speech API
-  hooks/                 useProgress, useTheme, useDeck
-  components/            Layout, GridCell, SpeakButton, ProgressBar, PageHeader
-  pages/                 Home, Kana, DeckHub, Flashcards, Kanji, Quiz, Review, Progress
-```
-
-## Thêm dữ liệu
-
-1. Thêm mục vào file JSON tương ứng trong `src/data/`, theo đúng kiểu trong `src/types/index.ts`.
-2. ID phải ổn định và không trùng (`n5-v-021`, `n5-k-021`, `it-021`…), vì tiến độ SRS lưu theo ID.
-3. Muốn thêm nhóm thuật ngữ mới: thêm khóa vào `TERM_CATEGORIES` (`src/types`), tạo file JSON và đăng ký trong `src/data/index.ts` (`TERMS`, `TERM_INFO`).
-
-## Ôn tập ngắt quãng
-
-- Đánh dấu "Đã học" trong flashcard/kanji hoặc trả lời quiz sẽ tạo thẻ ôn.
-- Khi ôn: Quên (q=1), Khó (3), Nhớ (4), Dễ (5). Khoảng cách 1 → 6 → khoảng cách × hệ số dễ.
-- "Đã thuộc" = khoảng cách ôn từ 21 ngày trở lên.

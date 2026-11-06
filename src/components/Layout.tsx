@@ -1,15 +1,40 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useOutlet } from 'react-router-dom'
 import { useTheme, type ThemeChoice } from '../hooks/useTheme'
 import { useDueIds } from '../hooks/useProgress'
+import { isInteractiveTarget } from '../lib/keyboard'
 
-const NAV = [
+// Hộp tìm kiếm và chỉ mục của nó chỉ tải khi mở lần đầu.
+const SearchDialog = lazy(() => import('./SearchDialog'))
+
+interface NavItem {
+  to: string
+  glyph: string
+  label: string
+  short?: string
+  end: boolean
+  /** Ẩn khỏi thanh đáy điện thoại (vẫn có trong sidebar và nav trên) */
+  noBottom?: boolean
+}
+
+const NAV: NavItem[] = [
   { to: '/', glyph: '家', label: 'Trang chủ', end: true },
-  { to: '/kana', glyph: 'あ', label: 'Luyện kana', short: 'Kana', end: false },
+  { to: '/kanji', glyph: '漢', label: 'Chữ Hán', end: false },
+  { to: '/grammar', glyph: '文', label: 'Ngữ pháp', end: false },
+  { to: '/kana', glyph: 'あ', label: 'Luyện kana', short: 'Kana', end: false, noBottom: true },
   { to: '/review', glyph: '復', label: 'Ôn tập', end: false },
   { to: '/progress', glyph: '進', label: 'Tiến độ', end: false },
 ]
+
+function SearchIcon({ className = 'size-5' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </svg>
+  )
+}
 
 const THEME_LABEL: Record<ThemeChoice, string> = {
   system: 'Theo hệ thống',
@@ -74,6 +99,18 @@ export function Layout() {
   const due = useDueIds().length
   const { pathname } = useLocation()
   const themeLabel = `Giao diện: ${THEME_LABEL[choice].toLowerCase()}`
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  // Phím "/" mở tìm kiếm (trừ khi đang gõ trong ô nhập).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== '/' || isInteractiveTarget(e)) return
+      e.preventDefault()
+      setSearchOpen(true)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   return (
     <div className="min-h-dvh pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-14 lg:pl-[240px]">
@@ -82,7 +119,16 @@ export function Layout() {
         <div className="px-2">
           <Logo />
         </div>
-        <nav aria-label="Điều hướng chính" className="mt-9">
+        <button
+          type="button"
+          onClick={() => setSearchOpen(true)}
+          className="mt-7 flex min-h-11 items-center gap-2.5 rounded-xl border border-line bg-paper px-3 text-sm text-muted transition-colors hover:border-ai hover:text-ink"
+        >
+          <SearchIcon className="size-4" />
+          <span className="flex-1 text-left">Tìm từ, chữ Hán…</span>
+          <kbd className="rounded border border-line border-b-2 px-1.5 text-xs font-semibold">/</kbd>
+        </button>
+        <nav aria-label="Điều hướng chính" className="mt-5">
           <ul className="space-y-1">
             {NAV.map((n) => (
               <li key={n.to}>
@@ -133,14 +179,14 @@ export function Layout() {
       <header className="sticky top-0 z-20 border-b border-line bg-paper/90 pt-[env(safe-area-inset-top)] backdrop-blur lg:hidden">
         <div className="mx-auto flex h-14 max-w-[900px] items-center gap-4 px-4 md:px-6">
           <Logo />
-          <nav className="ml-auto hidden items-center gap-1 md:flex" aria-label="Điều hướng chính">
+          <nav className="ml-auto hidden items-center gap-0.5 md:flex" aria-label="Điều hướng chính">
             {NAV.map((n) => (
               <NavLink
                 key={n.to}
                 to={n.to}
                 end={n.end}
                 className={({ isActive }) =>
-                  `relative flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${isActive ? 'text-ai' : 'text-muted hover:text-ink'}`
+                  `relative flex items-center rounded-lg px-2.5 py-2 text-sm font-medium whitespace-nowrap transition-colors ${isActive ? 'text-ai' : 'text-muted hover:text-ink'}`
                 }
               >
                 {({ isActive }) => (
@@ -155,10 +201,19 @@ export function Layout() {
           </nav>
           <button
             type="button"
+            onClick={() => setSearchOpen(true)}
+            aria-label="Tìm kiếm"
+            title="Tìm kiếm (phím /)"
+            className="ml-auto grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink md:ml-0"
+          >
+            <SearchIcon />
+          </button>
+          <button
+            type="button"
             onClick={cycle}
             aria-label={themeLabel}
             title={themeLabel}
-            className="ml-auto grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink md:ml-0"
+            className="grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
           >
             <ThemeIcon choice={choice} />
           </button>
@@ -188,8 +243,8 @@ export function Layout() {
         aria-label="Điều hướng chính"
         className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       >
-        <ul className="mx-auto grid max-w-md grid-cols-4">
-          {NAV.map((n) => (
+        <ul className="mx-auto grid max-w-lg grid-cols-5">
+          {NAV.filter((n) => !n.noBottom).map((n) => (
             <li key={n.to}>
               <NavLink
                 to={n.to}
@@ -215,6 +270,12 @@ export function Layout() {
           ))}
         </ul>
       </nav>
+
+      {searchOpen && (
+        <Suspense fallback={null}>
+          <SearchDialog onClose={() => setSearchOpen(false)} />
+        </Suspense>
+      )}
     </div>
   )
 }

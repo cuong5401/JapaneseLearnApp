@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import './index.css'
 import { Layout } from './components/Layout'
+import { LegacyLevel } from './components/LegacyLevel'
 
 // Mỗi trang tách thành chunk riêng, tải khi điều hướng tới.
 const router = createBrowserRouter([
@@ -14,15 +15,28 @@ const router = createBrowserRouter([
     children: [
       { path: '/', lazy: () => import('./pages/Home').then((m) => ({ Component: m.Home })) },
       { path: '/kana', lazy: () => import('./pages/Kana').then((m) => ({ Component: m.Kana })) },
-      { path: '/level/:level', lazy: () => import('./pages/DeckHub').then((m) => ({ Component: m.DeckHub })) },
-      { path: '/level/:level/flashcards', lazy: () => import('./pages/Flashcards').then((m) => ({ Component: m.Flashcards })) },
-      { path: '/level/:level/kanji', lazy: () => import('./pages/Kanji').then((m) => ({ Component: m.Kanji })) },
-      { path: '/level/:level/quiz', lazy: () => import('./pages/Quiz').then((m) => ({ Component: m.Quiz })) },
+      { path: '/vocab/:deck', lazy: () => import('./pages/VocabDeck').then((m) => ({ Component: m.VocabDeck })) },
+      { path: '/vocab/:deck/:lesson', lazy: () => import('./pages/Lesson').then((m) => ({ Component: m.Lesson })) },
+      { path: '/word/:id', lazy: () => import('./pages/WordPage').then((m) => ({ Component: m.WordPage })) },
+      { path: '/kanji', lazy: () => import('./pages/Kanji').then((m) => ({ Component: m.Kanji })) },
+      { path: '/kanji/:kid/learn', lazy: () => import('./pages/KanjiLearn').then((m) => ({ Component: m.KanjiLearn })) },
+      { path: '/grammar', lazy: () => import('./pages/Grammar').then((m) => ({ Component: m.Grammar })) },
+      { path: '/grammar/:level', lazy: () => import('./pages/Grammar').then((m) => ({ Component: m.Grammar })) },
+      { path: '/grammar/:level/:gid', lazy: () => import('./pages/GrammarDetail').then((m) => ({ Component: m.GrammarDetail })) },
       { path: '/terms/:category', lazy: () => import('./pages/DeckHub').then((m) => ({ Component: m.DeckHub })) },
-      { path: '/terms/:category/flashcards', lazy: () => import('./pages/Flashcards').then((m) => ({ Component: m.Flashcards })) },
-      { path: '/terms/:category/quiz', lazy: () => import('./pages/Quiz').then((m) => ({ Component: m.Quiz })) },
+      {
+        path: '/terms/:category/flashcards',
+        lazy: () => import('./pages/DeckHub').then((m) => ({ Component: () => <m.TermStudy mode="flashcards" /> })),
+      },
+      {
+        path: '/terms/:category/quiz',
+        lazy: () => import('./pages/DeckHub').then((m) => ({ Component: () => <m.TermStudy mode="quiz" /> })),
+      },
       { path: '/review', lazy: () => import('./pages/Review').then((m) => ({ Component: m.Review })) },
       { path: '/progress', lazy: () => import('./pages/Progress').then((m) => ({ Component: m.Progress })) },
+      { path: '/level/:level/kanji', element: <LegacyLevel kanji /> },
+      { path: '/level/:level/*', element: <LegacyLevel /> },
+      { path: '/level/:level', element: <LegacyLevel /> },
       { path: '*', lazy: () => import('./pages/NotFound').then((m) => ({ Component: m.NotFound })) },
     ],
   },

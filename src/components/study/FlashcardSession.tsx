@@ -7,20 +7,23 @@ import {
   type PanInfo,
 } from 'motion/react'
 import { useCallback, useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react'
-import { AnimatedNumber } from '../components/AnimatedNumber'
-import { Celebration } from '../components/Celebration'
-import { PageHeader } from '../components/PageHeader'
-import { Button, ButtonLink } from '../components/Pressable'
-import { STUDY_PAGE, SessionPanel, StudyLayout } from '../components/StudyLayout'
-import { SpeakButton } from '../components/SpeakButton'
-import { deckPath, deckTitle, getDeckWords } from '../data'
-import { shuffle } from '../lib/answer'
-import { isInteractiveTarget } from '../lib/keyboard'
-import { progress } from '../lib/progress'
-import { readJSON, writeJSON } from '../lib/storage'
-import { useDeck } from '../hooks/useDeck'
-import type { Deck, SrsCard, VocabItem } from '../types'
-import { NotFound } from './NotFound'
+import { AnimatedNumber } from '../AnimatedNumber'
+import { Celebration } from '../Celebration'
+import { Button, ButtonLink } from '../Pressable'
+import { SessionPanel, StudyLayout } from '../StudyLayout'
+import { SpeakButton } from '../SpeakButton'
+import { WordHead, WordMeta } from '../VocabBits'
+import { shuffle } from '../../lib/answer'
+import { isInteractiveTarget } from '../../lib/keyboard'
+import { progress } from '../../lib/progress'
+import { speechText } from '../../lib/speech'
+import { readJSON, writeJSON } from '../../lib/storage'
+import type { SrsCard, VocabItem } from '../../types'
+
+export interface SessionLink {
+  to: string
+  label: string
+}
 
 type Verdict = 'known' | 'unknown'
 type Dir = -1 | 1
@@ -32,32 +35,23 @@ const SWIPE_DISTANCE = 100
 const SWIPE_VELOCITY = 500
 const STACK_SPRING = { type: 'spring', stiffness: 420, damping: 34 } as const
 
-/** Hiện cách đọc phía trên khi chữ có kanji. */
-function Word({ item, className, align = 'center' }: { item: VocabItem; className: string; align?: 'center' | 'left' }) {
-  const showReading = item.reading !== item.word
-  return (
-    <div lang="ja" className={`min-w-0 font-jp ${align === 'left' ? 'text-left' : 'text-center'}`}>
-      {showReading && <div className="mb-1 text-lg text-muted">{item.reading}</div>}
-      <div className={`font-bold leading-tight break-words ${className}`}>{item.word}</div>
-    </div>
-  )
-}
-
 function CardFaces({ item, flipped }: { item: VocabItem; flipped: boolean }) {
   return (
     <div className="flip h-full">
       <div className={`flip-inner grid h-full ${flipped ? 'is-flipped' : ''}`}>
         <div className="@container flip-face col-start-1 row-start-1 flex flex-col items-center justify-center rounded-2xl border border-line bg-surface p-6">
-          <Word item={item} className="text-[clamp(2rem,13cqw,3.75rem)]" />
+          <WordHead item={item} showHanViet={false} className="text-[clamp(2rem,13cqw,3.75rem)]" />
           <p className="mt-8 text-sm text-muted">Chạm để lật thẻ</p>
         </div>
-        <div className="flip-face flip-back col-start-1 row-start-1 flex flex-col overflow-hidden rounded-2xl border border-ai bg-surface p-6">
+        <div className="flip-face flip-back col-start-1 row-start-1 flex flex-col overflow-y-auto overscroll-contain rounded-2xl border border-ai bg-surface p-6">
           <div className="flex items-start justify-between gap-4">
-            <Word item={item} className="text-3xl" align="left" />
-            <SpeakButton text={item.reading} />
+            <WordHead item={item} className="text-3xl" align="left" />
+            <SpeakButton text={speechText(item)} />
           </div>
           <p className="mt-4 text-2xl font-semibold">{item.meaning}</p>
-          {item.pos && <p className="mt-1 text-sm text-muted">{item.pos}</p>}
+          <div className="mt-3">
+            <WordMeta item={item} compact />
+          </div>
           {item.example && (
             <div className="mt-auto border-t border-line pt-4">
               <div className="flex items-start gap-3">
@@ -174,14 +168,16 @@ function StackCard({ item, depth, flipped, onFlip, onCommit, ref }: StackCardPro
 }
 
 function Summary({
-  deck,
+  back,
+  next,
   known,
   unknown,
   onRetryUnknown,
   onRestart,
   onUndo,
 }: {
-  deck: Deck
+  back: SessionLink
+  next?: SessionLink
   known: number
   unknown: number
   onRetryUnknown: () => void
@@ -223,10 +219,18 @@ function Summary({
         <button type="button" onClick={onUndo} className="min-h-10 text-muted hover:text-ink">
           Hoàn tác thẻ cuối
         </button>
-        <ButtonLink to={deckPath(deck)} className="inline-flex min-h-10 items-center font-medium text-ai hover:underline">
-          Về {deckTitle(deck)}
+        <ButtonLink to={back.to} className="inline-flex min-h-10 items-center font-medium text-ai hover:underline">
+          {back.label}
         </ButtonLink>
       </div>
+      {next && (
+        <ButtonLink
+          to={next.to}
+          className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-lg border-2 border-ai font-semibold text-ai hover:bg-ai-soft"
+        >
+          {next.label}
+        </ButtonLink>
+      )}
     </div>
   )
 }
@@ -238,8 +242,11 @@ const SHORTCUTS = [
   { keys: ['Z'], label: 'Hoàn tác' },
 ]
 
-function FlashcardsInner({ deck }: { deck: Deck }) {
-  const source = getDeckWords(deck)
+/**
+ * Phiên flashcard vuốt để chấm cho một danh sách từ bất kỳ (bài học, thuật ngữ, từ của một chữ Hán…).
+ * Trang bọc ngoài lo tiêu đề; `key` nên đổi khi danh sách đổi để bắt đầu phiên mới.
+ */
+export function FlashcardSession({ items: source, back, next }: { items: VocabItem[]; back: SessionLink; next?: SessionLink }) {
   const [queue, setQueue] = useState<VocabItem[]>(source)
   const [pos, setPos] = useState(0)
   const [flipped, setFlipped] = useState(false)
@@ -323,20 +330,11 @@ function FlashcardsInner({ deck }: { deck: Deck }) {
   )
 
   return (
-    <div className={STUDY_PAGE}>
-      <PageHeader title="Flashcard" back={{ to: deckPath(deck), label: deckTitle(deck) }}>
-        <Button
-          onClick={() => startSession(shuffle(source))}
-          className="min-h-10 rounded-lg border border-line px-3 text-sm text-muted hover:text-ink"
-        >
-          Trộn và học lại
-        </Button>
-      </PageHeader>
-
-      <StudyLayout aside={aside}>
+    <StudyLayout aside={aside}>
         {done ? (
           <Summary
-            deck={deck}
+            back={back}
+            next={next}
             known={known}
             unknown={unknown}
             onRetryUnknown={() => startSession(queue.filter((w) => results[w.id] === 'unknown'))}
@@ -345,15 +343,19 @@ function FlashcardsInner({ deck }: { deck: Deck }) {
           />
         ) : (
           <>
-            <div className="mb-3 flex items-center justify-between gap-3 text-sm text-muted lg:hidden">
-              <span className="tabular-nums">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm text-muted">
+              <span className="tabular-nums lg:hidden">
                 Thẻ {pos + 1}/{queue.length}
+                <span className="ml-3 text-matsu">Nhớ {known}</span>
+                <span className="ml-3 text-beni">Chưa nhớ {unknown}</span>
               </span>
-              <span className="tabular-nums">
-                <span className="text-matsu">Nhớ {known}</span>
-                <span className="mx-2 text-line">|</span>
-                <span className="text-beni">Chưa nhớ {unknown}</span>
-              </span>
+              <button
+                type="button"
+                onClick={() => startSession(shuffle(source))}
+                className="ml-auto min-h-9 rounded-lg px-2 text-sm text-muted hover:bg-sunken hover:text-ink"
+              >
+                Trộn thẻ
+              </button>
             </div>
 
             <div className="relative h-[clamp(21rem,60vh,28rem)] select-none">
@@ -405,13 +407,6 @@ function FlashcardsInner({ deck }: { deck: Deck }) {
             </div>
           </>
         )}
-      </StudyLayout>
-    </div>
+    </StudyLayout>
   )
-}
-
-export function Flashcards() {
-  const deck = useDeck()
-  if (!deck) return <NotFound />
-  return <FlashcardsInner key={deckPath(deck)} deck={deck} />
 }

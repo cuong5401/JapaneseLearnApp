@@ -1,17 +1,22 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Celebration } from '../components/Celebration'
 import { GridCell } from '../components/GridCell'
 import { PageHeader } from '../components/PageHeader'
 import { Button, ButtonLink } from '../components/Pressable'
 import { STUDY_PAGE, SessionPanel, StudyLayout } from '../components/StudyLayout'
 import { SpeakButton } from '../components/SpeakButton'
-import { ENTRY_BY_ID, deckTitle, type StudyEntry } from '../data'
+import { deckTitle, isCurrentId } from '../data'
+import { useEntries } from '../hooks/useData'
+import { LoadError, PageSkeleton } from '../components/LoadState'
+import { HanViet, WordMeta } from '../components/VocabBits'
+import { speechText } from '../lib/speech'
 import { isInteractiveTarget } from '../lib/keyboard'
 import { progress } from '../lib/progress'
 import { formatInterval, review } from '../lib/srs'
 import { useCards, useDueIds } from '../hooks/useProgress'
-import type { Quality } from '../types'
+import type { Quality, StudyEntry } from '../types'
 
 const GRADES: { q: Quality; label: string; cls: string }[] = [
   { q: 1, label: 'Quên', cls: 'border-beni text-beni hover:bg-beni-soft' },
@@ -30,8 +35,13 @@ const gradeItem = {
 } as const
 
 function Front({ entry }: { entry: StudyEntry }) {
-  if (entry.kind === 'kanji')
-    return <GridCell className="w-[clamp(7rem,34cqw,9.5rem)]">{entry.item.kanji}</GridCell>
+  if (entry.kind === 'kanji') return <GridCell className="w-[clamp(7rem,34cqw,9.5rem)]">{entry.item.kanji}</GridCell>
+  if (entry.kind === 'grammar')
+    return (
+      <p lang="ja" className="max-w-full text-center font-jp text-[clamp(1.5rem,8cqw,2.25rem)] leading-snug font-bold break-words">
+        {entry.item.title}
+      </p>
+    )
   return (
     <p lang="ja" className="max-w-full text-center font-jp text-[clamp(2rem,12cqw,3.25rem)] font-bold break-words">
       {entry.item.word}
@@ -45,24 +55,48 @@ function Back({ entry }: { entry: StudyEntry }) {
     return (
       <div className="text-center">
         <p className="text-2xl font-bold tracking-wide">{k.hanViet}</p>
-        <p className="text-muted">{k.meaning}</p>
-        <p lang="ja" className="mt-3 font-jp">
-          {[...k.onyomi, ...k.kunyomi].join('、')}
-        </p>
-        <p lang="ja" className="mt-2 font-jp text-sm text-muted">
-          {k.compounds.map((c) => `${c.word}（${c.reading}）`).join('　')}
-        </p>
+        {k.hanVietAlt?.length ? <p className="text-sm text-muted">Âm khác: {k.hanVietAlt.join(', ')}</p> : null}
+        <p className="mt-2 text-sm text-muted">{k.wordCount} từ chứa chữ này</p>
+      </div>
+    )
+  }
+  if (entry.kind === 'grammar') {
+    const g = entry.item
+    const ex = g.examples?.[0]
+    return (
+      <div className="w-full text-center">
+        <p className="text-lg font-semibold">{g.meaning ?? 'Mẫu này chưa tách được ý nghĩa, mở trang chi tiết để xem.'}</p>
+        {ex && (
+          <p className="mt-3 text-sm text-muted">
+            <span lang="ja" className="font-jp text-base text-ink">
+              {ex.ja}
+            </span>
+            {ex.vi && (
+              <>
+                <br />
+                {ex.vi}
+              </>
+            )}
+          </p>
+        )}
+        <Link to={`/grammar/${g.level.toLowerCase()}/${g.id}`} className="mt-3 inline-block text-sm font-medium text-ai hover:underline">
+          Xem giải thích đầy đủ
+        </Link>
       </div>
     )
   }
   const w = entry.item
   return (
-    <div className="text-center">
+    <div className="w-full text-center">
       <p lang="ja" className="flex items-center justify-center gap-3 font-jp text-xl">
-        {w.reading}
-        <SpeakButton text={w.reading} size="sm" />
+        {w.reading || <span className="font-sans text-sm text-muted">Chưa có cách đọc</span>}
+        <SpeakButton text={speechText(w)} size="sm" />
       </p>
+      <HanViet text={w.hanViet} className="mt-1" />
       <p className="mt-2 text-2xl font-semibold">{w.meaning}</p>
+      <div className="mx-auto mt-3 w-fit max-w-full text-left">
+        <WordMeta item={w} compact />
+      </div>
       {w.example && (
         <p className="mt-3 text-sm text-muted">
           <span lang="ja" className="font-jp text-ink">
@@ -76,6 +110,14 @@ function Back({ entry }: { entry: StudyEntry }) {
   )
 }
 
+const KIND_LABEL = { word: 'Từ vựng', kanji: 'Chữ Hán', grammar: 'Ngữ pháp' } as const
+
+function entryLabel(entry: StudyEntry) {
+  if (entry.kind === 'word') return `${KIND_LABEL.word}, ${deckTitle(entry.deck)}`
+  if (entry.kind === 'grammar') return `${KIND_LABEL.grammar} ${entry.item.level}`
+  return entry.item.firstLevel ? `${KIND_LABEL.kanji}, xuất hiện từ ${entry.item.firstLevel}` : KIND_LABEL.kanji
+}
+
 const SHORTCUTS = [
   { keys: ['Space'], label: 'Lật thẻ' },
   { keys: ['1'], label: 'Quên' },
@@ -87,16 +129,20 @@ const SHORTCUTS = [
 export function Review() {
   const dueIds = useDueIds()
   const cards = useCards()
-  // Chốt danh sách lúc bắt đầu phiên để thẻ không nhảy khi đang chấm.
-  const [queue, setQueue] = useState<string[]>(() => dueIds.filter((id) => ENTRY_BY_ID.has(id)))
+  // Chốt danh sách lúc mở trang: thẻ "Quên" bị dời hạn sang mai vẫn tra được khi quay lại cuối hàng.
+  const [sessionIds] = useState(dueIds)
+  const lookup = useEntries(sessionIds)
+  // Hàng đợi dựng khi dữ liệu tải xong; thẻ có ID không còn tồn tại (bộ mẫu cũ, từ đã xoá) bị bỏ qua.
+  const [queue, setQueue] = useState<string[] | null>(null)
+  if (queue === null && lookup.status === 'ready') setQueue(sessionIds.filter((id) => lookup.entries.has(id)))
   const [shown, setShown] = useState(false)
   const [done, setDone] = useState(0)
   const [lapses, setLapses] = useState(0)
   // Đếm số lần đã chấm để làm key, thẻ quên quay lại vẫn có hiệu ứng chuyển.
   const [turn, setTurn] = useState(0)
 
-  const id = queue[0]
-  const entry = id ? ENTRY_BY_ID.get(id) : undefined
+  const id = queue?.[0]
+  const entry = id ? lookup.entries.get(id) : undefined
   const card = id ? cards[id] : undefined
 
   const previews = useMemo(
@@ -105,7 +151,9 @@ export function Review() {
   )
 
   const nextDue = useMemo(() => {
-    const upcoming = Object.values(cards).sort((a, b) => a.due - b.due)[0]
+    const upcoming = Object.values(cards)
+      .filter((c) => isCurrentId(c.id))
+      .sort((a, b) => a.due - b.due)[0]
     return upcoming ? new Date(upcoming.due) : null
   }, [cards])
 
@@ -115,7 +163,7 @@ export function Review() {
     setShown(false)
     setTurn((t) => t + 1)
     // Quên thì đưa xuống cuối hàng để gặp lại trong phiên này.
-    setQueue((qs) => (q < 3 ? [...qs.slice(1), qs[0]] : qs.slice(1)))
+    setQueue((qs) => (qs ? (q < 3 ? [...qs.slice(1), qs[0]] : qs.slice(1)) : qs))
     if (q >= 3) setDone((d) => d + 1)
     else setLapses((l) => l + 1)
   }
@@ -132,7 +180,7 @@ export function Review() {
         progress.grade(id, g.q)
         setShown(false)
         setTurn((t) => t + 1)
-        setQueue((qs) => (g.q < 3 ? [...qs.slice(1), qs[0]] : qs.slice(1)))
+        setQueue((qs) => (qs ? (g.q < 3 ? [...qs.slice(1), qs[0]] : qs.slice(1)) : qs))
         if (g.q >= 3) setDone((d) => d + 1)
         else setLapses((l) => l + 1)
       }
@@ -140,6 +188,9 @@ export function Review() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [id, shown])
+
+  if (lookup.status === 'error') return <LoadError error={lookup.error} onRetry={lookup.retry} />
+  if (queue === null) return <PageSkeleton header rows={4} />
 
   if (!entry || !card) {
     return (
@@ -192,9 +243,7 @@ export function Review() {
             transition={{ duration: 0.18, ease: 'easeOut' }}
             className="@container flex min-h-[clamp(22rem,58vh,27rem)] flex-col items-center justify-center gap-6 rounded-2xl border border-line bg-surface p-6"
           >
-            <span className="text-xs text-muted">
-              {entry.kind === 'kanji' ? 'Chữ Hán' : 'Từ vựng'}, {deckTitle(entry.deck)}
-            </span>
+            <span className="text-xs text-muted">{entryLabel(entry)}</span>
             <Front entry={entry} />
             <AnimatePresence mode="wait" initial={false}>
               {shown ? (

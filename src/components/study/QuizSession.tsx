@@ -1,20 +1,18 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { toHiragana } from 'wanakana'
-import { AnimatedNumber } from '../components/AnimatedNumber'
-import { Celebration } from '../components/Celebration'
-import { PageHeader } from '../components/PageHeader'
-import { Button, ButtonLink } from '../components/Pressable'
-import { STUDY_PAGE, SessionPanel, StudyLayout } from '../components/StudyLayout'
-import { SpeakButton } from '../components/SpeakButton'
-import { Stagger, StaggerItem } from '../components/Stagger'
-import { deckPath, deckTitle, getDeckWords } from '../data'
-import { readingMatches, shuffle } from '../lib/answer'
-import { isInteractiveTarget } from '../lib/keyboard'
-import { progress } from '../lib/progress'
-import { useDeck } from '../hooks/useDeck'
-import type { Deck, VocabItem } from '../types'
-import { NotFound } from './NotFound'
+import { AnimatedNumber } from '../AnimatedNumber'
+import { Celebration } from '../Celebration'
+import { Button, ButtonLink } from '../Pressable'
+import { SessionPanel, StudyLayout } from '../StudyLayout'
+import { SpeakButton } from '../SpeakButton'
+import { Stagger, StaggerItem } from '../Stagger'
+import { readingMatches, shuffle } from '../../lib/answer'
+import { isInteractiveTarget } from '../../lib/keyboard'
+import { progress } from '../../lib/progress'
+import { speechText } from '../../lib/speech'
+import type { VocabItem } from '../../types'
+import type { SessionLink } from './FlashcardSession'
 
 type Mode = 'choice' | 'typing'
 const LENGTH = 10
@@ -28,32 +26,57 @@ interface Question {
   options: VocabItem[]
 }
 
-function buildQuestions(words: VocabItem[]): Question[] {
-  return shuffle(words)
+/** Từ dùng được cho chế độ gõ: phải có cách đọc. */
+const typeable = (w: VocabItem) => Boolean(w.reading)
+
+/**
+ * Câu hỏi lấy từ `items` (bài đang học); đáp án nhiễu lấy từ `pool` (cả bộ) và bỏ các từ
+ * trùng chữ hoặc trùng nghĩa với đáp án đúng để không có hai lựa chọn cùng đúng.
+ */
+function buildQuestions(items: VocabItem[], pool: VocabItem[], mode: Mode): Question[] {
+  const source = mode === 'typing' ? items.filter(typeable) : items
+  return shuffle(source)
     .slice(0, LENGTH)
-    .map((item, i) => ({
-      item,
-      direction: i % 2 === 0 ? 'ja-vi' : 'vi-ja',
-      options: shuffle([item, ...shuffle(words.filter((w) => w.id !== item.id)).slice(0, 3)]),
-    }))
+    .map((item, i) => {
+      const seen = new Set([item.meaning, item.word])
+      const distractors: VocabItem[] = []
+      for (const w of shuffle(pool.length >= 4 ? pool : items)) {
+        if (distractors.length === 3) break
+        if (seen.has(w.meaning) || seen.has(w.word)) continue
+        seen.add(w.meaning)
+        seen.add(w.word)
+        distractors.push(w)
+      }
+      return { item, direction: i % 2 === 0 ? 'ja-vi' : 'vi-ja', options: shuffle([item, ...distractors]) }
+    })
 }
 
-function Setup({ deck, onStart }: { deck: Deck; onStart: (m: Mode) => void }) {
-  const modes: { mode: Mode; title: string; detail: string; glyph: string }[] = [
-    { mode: 'choice', glyph: '選', title: 'Trắc nghiệm', detail: 'Chọn 1 trong 4 đáp án, xen kẽ Nhật → Việt và Việt → Nhật.' },
-    { mode: 'typing', glyph: '打', title: 'Gõ cách đọc', detail: 'Xem từ và nghĩa, gõ cách đọc bằng romaji hoặc kana.' },
+function Setup({ items, onStart }: { items: VocabItem[]; onStart: (m: Mode) => void }) {
+  const total = Math.min(LENGTH, items.length)
+  const typing = Math.min(LENGTH, items.filter(typeable).length)
+  const modes: { mode: Mode; title: string; detail: string; glyph: string; disabled?: boolean }[] = [
+    { mode: 'choice', glyph: '選', title: 'Trắc nghiệm', detail: `${total} câu, chọn 1 trong 4 đáp án, xen kẽ Nhật → Việt và Việt → Nhật.` },
+    {
+      mode: 'typing',
+      glyph: '打',
+      title: 'Gõ cách đọc',
+      detail: typing
+        ? `${typing} câu, gõ cách đọc bằng romaji hoặc kana.${typing < total ? ' Từ thiếu cách đọc được bỏ qua.' : ''}`
+        : 'Các từ ở đây chưa có cách đọc nên không gõ được.',
+      disabled: typing === 0,
+    },
   ]
   return (
-    <div className="mx-auto max-w-[720px]">
-      <PageHeader title="Quiz" back={{ to: deckPath(deck), label: deckTitle(deck) }} />
-      <p className="text-muted">Mỗi lượt {LENGTH} câu. Kết quả được đưa vào lịch ôn tập: câu sai sẽ quay lại sớm hơn.</p>
+    <div>
+      <p className="text-muted">Kết quả được đưa vào lịch ôn tập: câu sai sẽ quay lại sớm hơn.</p>
       <Stagger as="ul" className="mt-6 grid gap-3 md:grid-cols-2">
         {modes.map((m) => (
           <StaggerItem as="li" key={m.mode}>
             <Button
               onClick={() => onStart(m.mode)}
-              whileHover={{ y: -3 }}
-              className="flex h-full w-full items-start gap-4 rounded-2xl border border-line bg-surface p-5 text-left transition-colors hover:border-ai"
+              disabled={m.disabled}
+              whileHover={m.disabled ? undefined : { y: -3 }}
+              className="flex h-full w-full items-start gap-4 rounded-2xl border border-line bg-surface p-5 text-left transition-colors hover:border-ai disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-line"
             >
               <span lang="ja" className="grid size-12 shrink-0 place-items-center rounded-[3px] border-2 border-cell-line font-jp text-2xl text-ai">
                 {m.glyph}
@@ -71,22 +94,24 @@ function Setup({ deck, onStart }: { deck: Deck; onStart: (m: Mode) => void }) {
 }
 
 function Result({
-  deck,
   answers,
   onRestart,
+  back,
+  next,
 }: {
-  deck: Deck
   answers: { item: VocabItem; correct: boolean }[]
   onRestart: () => void
+  back: SessionLink
+  next?: SessionLink
 }) {
   const right = answers.filter((a) => a.correct).length
   const wrong = answers.filter((a) => !a.correct)
   const perfect = right === answers.length
   return (
-    <div className="mx-auto max-w-[560px]">
+    <div className="max-w-[560px]">
       {perfect && <Celebration />}
-      <PageHeader title="Kết quả" back={{ to: deckPath(deck), label: deckTitle(deck) }} />
-      <p className="text-6xl font-bold">
+      <h2 className="text-lg font-semibold text-muted">Kết quả</h2>
+      <p className="mt-1 text-6xl font-bold">
         <AnimatedNumber value={right} className={perfect ? 'text-matsu' : ''} />
         <span className="text-2xl text-muted">/{answers.length}</span>
       </p>
@@ -104,7 +129,7 @@ function Result({
                   {item.word}
                 </span>
                 <span lang="ja" className="font-jp text-sm text-muted">
-                  {item.reading !== item.word && item.reading}
+                  {item.reading && item.reading !== item.word && item.reading}
                 </span>
                 <span className="ml-auto text-right text-sm">{item.meaning}</span>
               </StaggerItem>
@@ -117,18 +142,37 @@ function Result({
         <Button onClick={onRestart} className="min-h-12 rounded-lg bg-ai font-semibold text-on-ai hover:opacity-90">
           Làm lượt mới
         </Button>
-        <ButtonLink to="/review" className="grid min-h-12 place-items-center rounded-lg border border-line font-medium hover:bg-sunken">
-          Đi tới ôn tập
-        </ButtonLink>
+        {next ? (
+          <ButtonLink to={next.to} className="grid min-h-12 place-items-center rounded-lg border-2 border-ai font-semibold text-ai hover:bg-ai-soft">
+            {next.label}
+          </ButtonLink>
+        ) : (
+          <ButtonLink to="/review" className="grid min-h-12 place-items-center rounded-lg border border-line font-medium hover:bg-sunken">
+            Đi tới ôn tập
+          </ButtonLink>
+        )}
       </div>
+      <ButtonLink to={back.to} className="mt-4 inline-flex min-h-10 items-center text-sm font-medium text-ai hover:underline">
+        {back.label}
+      </ButtonLink>
     </div>
   )
 }
 
-function QuizInner({ deck }: { deck: Deck }) {
-  const words = getDeckWords(deck)
+/** Phiên quiz cho một danh sách từ; `pool` (mặc định = items) cung cấp đáp án nhiễu. */
+export function QuizSession({
+  items,
+  pool = items,
+  back,
+  next: nextLesson,
+}: {
+  items: VocabItem[]
+  pool?: VocabItem[]
+  back: SessionLink
+  next?: SessionLink
+}) {
   const [mode, setMode] = useState<Mode | null>(null)
-  const [questions, setQuestions] = useState(() => buildQuestions(words))
+  const [questions, setQuestions] = useState<Question[]>([])
   const [index, setIndex] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
   const [typed, setTyped] = useState('')
@@ -175,10 +219,19 @@ function QuizInner({ deck }: { deck: Deck }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [mode, finished, answered, q])
 
-  if (!mode) return <Setup deck={deck} onStart={setMode} />
+  if (!mode)
+    return (
+      <Setup
+        items={items}
+        onStart={(m) => {
+          setQuestions(buildQuestions(items, pool, m))
+          setMode(m)
+        }}
+      />
+    )
 
   const restart = () => {
-    setQuestions(buildQuestions(words))
+    setQuestions([])
     setIndex(0)
     setPicked(null)
     setTyped('')
@@ -186,7 +239,7 @@ function QuizInner({ deck }: { deck: Deck }) {
     setMode(null)
   }
 
-  if (finished) return <Result deck={deck} answers={answers} onRestart={restart} />
+  if (finished) return <Result answers={answers} onRestart={restart} back={back} next={nextLesson} />
 
   const onType = (e: FormEvent) => {
     e.preventDefault()
@@ -222,9 +275,7 @@ function QuizInner({ deck }: { deck: Deck }) {
   )
 
   return (
-    <div className={STUDY_PAGE}>
-      <PageHeader title="Quiz" back={{ to: deckPath(deck), label: deckTitle(deck) }} />
-      <StudyLayout aside={aside}>
+    <StudyLayout aside={aside}>
         <div className="mb-5 flex items-center gap-3 text-sm text-muted">
           <span className="tabular-nums lg:hidden">
             Câu {index + 1}/{questions.length}
@@ -262,8 +313,9 @@ function QuizInner({ deck }: { deck: Deck }) {
                   <p lang="ja" className="mt-3 flex min-h-9 items-center justify-center gap-3 font-jp text-muted">
                     {answered && (
                       <>
-                        {q.item.word}【{q.item.reading}】
-                        <SpeakButton text={q.item.reading} size="sm" />
+                        {q.item.word}
+                        {q.item.reading && q.item.reading !== q.item.word && `【${q.item.reading}】`}
+                        <SpeakButton text={speechText(q.item)} size="sm" />
                       </>
                     )}
                   </p>
@@ -358,7 +410,7 @@ function QuizInner({ deck }: { deck: Deck }) {
                   </span>
                 )}
               </p>
-              {mode === 'typing' && <SpeakButton text={q.item.reading} size="sm" />}
+              {mode === 'typing' && <SpeakButton text={speechText(q.item)} size="sm" />}
               {mode === 'choice' && (
                 <Button
                   onClick={next}
@@ -371,13 +423,6 @@ function QuizInner({ deck }: { deck: Deck }) {
             </>
           )}
         </div>
-      </StudyLayout>
-    </div>
+    </StudyLayout>
   )
-}
-
-export function Quiz() {
-  const deck = useDeck()
-  if (!deck) return <NotFound />
-  return <QuizInner key={deckPath(deck)} deck={deck} />
 }

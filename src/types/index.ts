@@ -1,8 +1,16 @@
+import type { GrammarEntry, KanjiEntry, VocabEntry } from './data'
+
+export type { DataFile, DataManifest, GrammarEntry, GrammarExample, KanjiEntry, RadicalEntry, VocabEntry } from './data'
+
 export const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'] as const
 export type Level = (typeof LEVELS)[number]
 
 export const TERM_CATEGORIES = ['it', 'electronics', 'office'] as const
 export type TermCategory = (typeof TERM_CATEGORIES)[number]
+
+/** Bộ từ lấy từ public/data (tải khi cần). */
+export const VOCAB_DECKS = ['n5', 'n4', 'n3', 'n2', 'n1', 'compounds', 'onomatopoeia', 'adverbs'] as const
+export type VocabDeckKey = (typeof VOCAB_DECKS)[number]
 
 export interface Example {
   /** Câu tiếng Nhật */
@@ -11,42 +19,11 @@ export interface Example {
   vi: string
 }
 
-/** Một mục từ vựng (dùng chung cho từ vựng JLPT và thuật ngữ chuyên ngành). */
-export interface VocabItem {
-  /** ID ổn định, ví dụ "n5-v-001", "it-001" — làm khóa cho tiến độ SRS. */
-  id: string
-  /** Cách viết (kanji/kana) */
-  word: string
-  /** Cách đọc bằng kana */
-  reading: string
-  /** Nghĩa tiếng Việt */
-  meaning: string
-  /** Từ loại (tùy chọn) */
-  pos?: string
-  example?: Example
-}
-
-export interface KanjiCompound {
-  word: string
-  reading: string
-  meaning: string
-}
-
-export interface KanjiItem {
-  /** ID ổn định, ví dụ "n5-k-001" */
-  id: string
-  kanji: string
-  /** Âm On (katakana) */
-  onyomi: string[]
-  /** Âm Kun (hiragana, phần okurigana đặt trong ngoặc) */
-  kunyomi: string[]
-  /** Âm Hán Việt */
-  hanViet: string
-  /** Nghĩa tiếng Việt */
-  meaning: string
-  strokes?: number
-  compounds: KanjiCompound[]
-}
+/**
+ * Một mục từ vựng dùng trong toàn app: dữ liệu public/data (VocabEntry)
+ * hoặc thuật ngữ chuyên ngành có sẵn câu ví dụ.
+ */
+export type VocabItem = VocabEntry & { example?: Example }
 
 export type KanaScript = 'hiragana' | 'katakana'
 export type KanaGroup = 'basic' | 'dakuten' | 'yoon'
@@ -58,10 +35,14 @@ export interface KanaChar {
   group: KanaGroup
 }
 
-/** Một bộ học: theo cấp JLPT hoặc theo nhóm thuật ngữ. */
-export type Deck =
-  | { kind: 'level'; level: Level }
-  | { kind: 'terms'; category: TermCategory }
+/** Một bộ học: bộ từ trong public/data hoặc nhóm thuật ngữ có sẵn. */
+export type Deck = { kind: 'vocab'; key: VocabDeckKey } | { kind: 'terms'; category: TermCategory }
+
+/** Một mục bất kỳ tra được theo ID (dùng cho Ôn tập, tìm kiếm). */
+export type StudyEntry =
+  | { kind: 'word'; item: VocabItem; deck: Deck }
+  | { kind: 'kanji'; item: KanjiEntry }
+  | { kind: 'grammar'; item: GrammarEntry }
 
 /** Thẻ ôn tập ngắt quãng (SM-2 rút gọn). */
 export interface SrsCard {

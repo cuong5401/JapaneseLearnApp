@@ -1,0 +1,1464 @@
+# Báo cáo chuyển đổi
+
+Nguồn: `42de3902-1793970631376_TU-VUNG-NGU-PHAP-N5-1.xlsx`
+
+| File | Số mục | Dung lượng |
+|---|---:|---:|
+| vocab/n5.json | 703 | 91 KB |
+| vocab/n4.json | 902 | 102 KB |
+| vocab/n3.json | 863 | 97 KB |
+| vocab/n2.json | 1695 | 219 KB |
+| vocab/n1.json | 3058 | 515 KB |
+| vocab/compounds.json | 1428 | 161 KB |
+| vocab/onomatopoeia.json | 59 | 7 KB |
+| vocab/adverbs.json | 189 | 18 KB |
+| kanji/kanji.json | 1489 | 259 KB |
+| kanji/radicals.json | 205 | 13 KB |
+| grammar/n5.json | 0 | 0 KB |
+| grammar/n4.json | 68 | 157 KB |
+| grammar/n3.json | 12 | 236 KB |
+| grammar/n2.json | 173 | 353 KB |
+| grammar/n1.json | 99 | 200 KB |
+
+- Sheet "ngữ pháp n5" trống nên grammar/n5.json rỗng.
+
+## N5 (31)
+
+- dòng 21: "お名前は" cách đọc "おなまえは？" không phải kana
+- dòng 65: "煙草" trùng, đã gộp nghĩa
+- dòng 153: "先週" thiếu cách đọc
+- dòng 154: "今週" thiếu cách đọc
+- dòng 155: "来週" thiếu cách đọc
+- dòng 176: "煙草" trùng, đã gộp nghĩa
+- dòng 212: "家族" trùng, đã gộp nghĩa
+- dòng 326: "机" trùng, đã gộp nghĩa
+- dòng 328: "公園" trùng, đã gộp nghĩa
+- dòng 392: "空港" trùng, đã gộp nghĩa
+- dòng 406: "見学する" trùng, đã gộp nghĩa
+- dòng 468: "起きる" trùng, đã gộp nghĩa
+- dòng 485: "思い出す" trùng, đã gộp nghĩa
+- dòng 487: "高校" trùng, đã gộp nghĩa
+- dòng 494: "出す" trùng, đã gộp nghĩa
+- dòng 514: "お腹" trùng, đã gộp nghĩa
+- dòng 536: "飲む" trùng, đã gộp nghĩa
+- dòng 539: "入れる" trùng, đã gộp nghĩa
+- dòng 540: "出す" trùng, đã gộp nghĩa
+- dòng 550: bỏ, thiếu chữ (nghĩa: "")
+- dòng 551: "薬" trùng, đã gộp nghĩa
+- dòng 555: "先生" trùng, đã gộp nghĩa
+- dòng 570: "始める" trùng, đã gộp nghĩa
+- dòng 652: "けれども" cách đọc "Lịch sự của が" không phải kana
+- dòng 672: "聞く" trùng, đã gộp nghĩa
+- dòng 674: "引く" trùng, đã gộp nghĩa
+- dòng 676: "動く" trùng, đã gộp nghĩa
+- dòng 685: "寂しい" trùng, đã gộp nghĩa
+- dòng 700: "送る" trùng, đã gộp nghĩa
+- dòng 705: "入れる" trùng, đã gộp nghĩa
+- dòng 724: "世界" trùng, đã gộp nghĩa
+
+## N4 (83)
+
+- dòng 25: "月" cách đọc "げつ。すい。きん" không phải kana
+- dòng 60: "～しか" cách đọc "đi với phủ định có" không phải kana
+- dòng 98: "形" trùng, đã gộp nghĩa
+- dòng 113: "自分" trùng, đã gộp nghĩa
+- dòng 114: "将来" trùng, đã gộp nghĩa
+- dòng 184: "お知らせ" trùng, đã gộp nghĩa
+- dòng 193: "壁" trùng, đã gộp nghĩa
+- dòng 210: "すると" cách đọc "trạng từ" không phải kana
+- dòng 234: "ずっと" cách đọc "trợ từ" không phải kana
+- dòng 240: "嫌（な）" trùng, đã gộp nghĩa
+- dòng 241: "空" trùng, đã gộp nghĩa
+- dòng 244: "自由に" trùng, đã gộp nghĩa
+- dòng 249: "素晴らしい" trùng, đã gộp nghĩa
+- dòng 271: "空" trùng, đã gộp nghĩa
+- dòng 274: "月" trùng, đã gộp nghĩa
+- dòng 278: "西" trùng, đã gộp nghĩa
+- dòng 320: "無料" trùng, đã gộp nghĩa
+- dòng 335: "例えば" trùng, đã gộp nghĩa
+- dòng 387: "困る" trùng, đã gộp nghĩa
+- dòng 388: "付ける" trùng, đã gộp nghĩa
+- dòng 396: "村" trùng, đã gộp nghĩa
+- dòng 413: "もっと" cách đọc "trợ từ chú ý trong bài" không phải kana
+- dòng 415: "それなら" cách đọc "trợ từ chú ý khi dịch" không phải kana
+- dòng 427: "打つ" trùng, đã gộp nghĩa
+- dòng 438: "健康" trùng, đã gộp nghĩa
+- dòng 441: "毎月" cách đọc "まい月額" không phải kana
+- dòng 443: "やっと" cách đọc "trợ từ" không phải kana
+- dòng 448: "できるだけ" trùng, đã gộp nghĩa
+- dòng 452: "お客様" trùng, đã gộp nghĩa
+- dòng 466: "飛ぶ" trùng, đã gộp nghĩa
+- dòng 468: "宇宙" trùng, đã gộp nghĩa
+- dòng 469: "地球" trùng, đã gộp nghĩa
+- dòng 496: "漫画" trùng, đã gộp nghĩa
+- dòng 497: "世界中" trùng, đã gộp nghĩa
+- dòng 498: "～によって" cách đọc "do bởi vì tùy vào" không phải kana
+- dòng 503: "利用する" trùng, đã gộp nghĩa
+- dòng 504: "―世紀" trùng, đã gộp nghĩa
+- dòng 515: "運ぶ" trùng, đã gộp nghĩa
+- dòng 516: "亡くなる" trùng, đã gộp nghĩa
+- dòng 521: "掛ける" trùng, đã gộp nghĩa
+- dòng 549: "大好き（な）" trùng, đã gộp nghĩa
+- dòng 552: "不思議（な）" trùng, đã gộp nghĩa
+- dòng 554: "倒れる" trùng, đã gộp nghĩa
+- dòng 563: "喧嘩する" trùng, đã gộp nghĩa
+- dòng 568: "嬉しい" trùng, đã gộp nghĩa
+- dòng 571: "地震" trùng, đã gộp nghĩa
+- dòng 595: "が 合う" trùng, đã gộp nghĩa
+- dòng 600: "必要" trùng, đã gộp nghĩa
+- dòng 601: "宇宙" trùng, đã gộp nghĩa
+- dòng 602: "地球" trùng, đã gộp nghĩa
+- dòng 619: "―個" trùng, đã gộp nghĩa
+- dòng 622: "―キロ" thiếu cách đọc
+- dòng 623: "―グラム" thiếu cách đọc
+- dòng 624: "―センチ" thiếu cách đọc
+- dòng 625: "―ミリ" thiếu cách đọc
+- dòng 640: "一生懸命" trùng, đã gộp nghĩa
+- dòng 691: "中身" cách đọc "中身" không phải kana
+- dòng 701: "歴史" trùng, đã gộp nghĩa
+- dòng 708: "安全" trùng, đã gộp nghĩa
+- dòng 716: "材料" trùng, đã gộp nghĩa
+- dòng 719: "鍋" trùng, đã gộp nghĩa
+- dòng 720: "丼" trùng, đã gộp nghĩa
+- dòng 725: "今では" trùng, đã gộp nghĩa
+- dòng 742: "服のセンスがある" thiếu cách đọc
+- dòng 763: "薄い" trùng, đã gộp nghĩa
+- dòng 772: "たんす" / "箪笥" có vẻ đảo cột, đã đổi chỗ
+- dòng 778: "例えば" trùng, đã gộp nghĩa
+- dòng 794: "急に" trùng, đã gộp nghĩa
+- dòng 801: "眠る" trùng, đã gộp nghĩa
+- dòng 811: "留守" trùng, đã gộp nghĩa
+- dòng 829: "が 出る" trùng, đã gộp nghĩa
+- dòng 835: "怖い" trùng, đã gộp nghĩa
+- dòng 850: "恋人" trùng, đã gộp nghĩa
+- dòng 863: "世話を する" trùng, đã gộp nghĩa
+- dòng 864: "嫌（な）" trùng, đã gộp nghĩa
+- dòng 871: "自由に" trùng, đã gộp nghĩa
+- dòng 880: "―世紀" trùng, đã gộp nghĩa
+- dòng 884: "美しい" trùng, đã gộp nghĩa
+- dòng 893: "いらっしゃいます" trùng, đã gộp nghĩa
+- dòng 930: "頂きます" trùng, đã gộp nghĩa
+- dòng 935: "伺います" trùng, đã gộp nghĩa
+- dòng 955: "自然" trùng, đã gộp nghĩa
+- dòng 965: "美しい" trùng, đã gộp nghĩa
+
+## N3 (45)
+
+- dòng 202: "決める" trùng, đã gộp nghĩa
+- dòng 292: "決まる" trùng, đã gộp nghĩa
+- dòng 295: "頼む" trùng, đã gộp nghĩa
+- dòng 296: "疲れる" trùng, đã gộp nghĩa
+- dòng 302: "喜ぶ" trùng, đã gộp nghĩa
+- dòng 332: "けち（な）" thiếu cách đọc
+- dòng 377: "介護" trùng, đã gộp nghĩa
+- dòng 405: "流行する" trùng, đã gộp nghĩa
+- dòng 420: "事故" trùng, đã gộp nghĩa
+- dòng 454: "書類" trùng, đã gộp nghĩa
+- dòng 477: "別れる" trùng, đã gộp nghĩa
+- dòng 505: "比べる" trùng, đã gộp nghĩa
+- dòng 529: "女性" trùng, đã gộp nghĩa
+- dòng 530: "付き合う" trùng, đã gộp nghĩa
+- dòng 531: "盗む" trùng, đã gộp nghĩa
+- dòng 550: "確かめる" trùng, đã gộp nghĩa
+- dòng 556: "行う" trùng, đã gộp nghĩa
+- dòng 564: "立てる" trùng, đã gộp nghĩa
+- dòng 568: "育てる" trùng, đã gộp nghĩa
+- dòng 604: "薄い" trùng, đã gộp nghĩa
+- dòng 625: "必要（な）" trùng, đã gộp nghĩa
+- dòng 630: "そっくり（な）" thiếu cách đọc
+- dòng 641: "ばらばら（な）" thiếu cách đọc
+- dòng 642: "ぼろぼろ（な）" thiếu cách đọc
+- dòng 657: "命" trùng, đã gộp nghĩa
+- dòng 677: "場面" trùng, đã gộp nghĩa
+- dòng 683: "実力" trùng, đã gộp nghĩa
+- dòng 696: "詳しい" trùng, đã gộp nghĩa
+- dòng 704: "貯金する" trùng, đã gộp nghĩa
+- dòng 712: "都心" trùng, đã gộp nghĩa
+- dòng 719: "商品" trùng, đã gộp nghĩa
+- dòng 726: "倒産する" trùng, đã gộp nghĩa
+- dòng 729: "情報" trùng, đã gộp nghĩa
+- dòng 731: "文化" trùng, đã gộp nghĩa
+- dòng 732: "都市" trùng, đã gộp nghĩa
+- dòng 738: "坂" trùng, đã gộp nghĩa
+- dòng 745: "布" trùng, đã gộp nghĩa
+- dòng 757: "成績" trùng, đã gộp nghĩa
+- dòng 845: "父親" trùng, đã gộp nghĩa
+- dòng 867: "友人" trùng, đã gộp nghĩa
+- dòng 870: "先輩" trùng, đã gộp nghĩa
+- dòng 871: "後輩" trùng, đã gộp nghĩa
+- dòng 872: "上司" trùng, đã gộp nghĩa
+- dòng 877: "家庭" trùng, đã gộp nghĩa
+- dòng 880: "独身" trùng, đã gộp nghĩa
+
+## N2 (146)
+
+- dòng 240: "仕方（が）ない" cách đọc "しかた（が）ない" không phải kana
+- dòng 259: "でたらめ(な)" thiếu cách đọc
+- dòng 390: "区別" trùng, đã gộp nghĩa
+- dòng 394: "介護" trùng, đã gộp nghĩa
+- dòng 410: "～上がる ①<自> 上へ移動する、上方へ向けて～する" thiếu nghĩa
+- dòng 410: "～上がる ①<自> 上へ移動する" thiếu cách đọc
+- dòng 418: "～上がる ②<自> 十分に～する、ひどく～する" thiếu nghĩa
+- dòng 418: "～上がる ②<自> 十分に～する" thiếu cách đọc
+- dòng 423: "～上がる ③<自> 完了する" thiếu nghĩa
+- dòng 423: "～上がる ③<自> 完了する" thiếu cách đọc
+- dòng 425: "～上げる① <他> 上へ移動させる、上方へ向けて～させる、前へいどうさせる" thiếu nghĩa
+- dòng 425: "～上げる① <他> 上へ移動させる" thiếu cách đọc
+- dòng 433: "～上げる② <他> 十分に～する、程度を高める" thiếu nghĩa
+- dòng 433: "～上げる② <他> 十分に～する" thiếu cách đọc
+- dòng 436: "～上げる③ <他> 完了する、達成する" thiếu nghĩa
+- dòng 436: "～上げる③ <他> 完了する" thiếu cách đọc
+- dòng 439: "～上げる④ <他> 一つ一つ取り上げて示す" thiếu nghĩa
+- dòng 439: "～上げる④ <他> 一つ一つ取り上げて示す" thiếu cách đọc
+- dòng 442: "～出す①<他> 中から外に出す" thiếu nghĩa
+- dòng 442: "～出す①<他> 中から外に出す" thiếu cách đọc
+- dòng 451: "～出す②<自> 中から外に出る" thiếu nghĩa
+- dòng 451: "～出す②<自> 中から外に出る" thiếu cách đọc
+- dòng 454: "～出す③<他> 内にあるものを、外から見えるようにする" thiếu nghĩa
+- dòng 454: "～出す③<他> 内にあるものを" thiếu cách đọc
+- dòng 458: "～込む①<自> 中に入る" thiếu nghĩa
+- dòng 458: "～込む①<自> 中に入る" thiếu cách đọc
+- dòng 465: "～込む②<他> 中に入れる" thiếu nghĩa
+- dòng 465: "～込む②<他> 中に入れる" thiếu cách đọc
+- dòng 476: "～込む③<自> すっかり～して、その状態のままでいる" thiếu nghĩa
+- dòng 476: "～込む③<自> すっかり～して" thiếu cách đọc
+- dòng 483: "～込む④<他> 十分に行う、相手に強く～する" thiếu nghĩa
+- dòng 483: "～込む④<他> 十分に行う" thiếu cách đọc
+- dòng 488: "～会う 互いに～する" thiếu nghĩa
+- dòng 488: "～会う 互いに～する" thiếu cách đọc
+- dòng 497: "～合わせる① 二人以上で～する、互いに～する" thiếu nghĩa
+- dòng 497: "～合わせる① 二人以上で～する" thiếu cách đọc
+- dòng 501: "～合わせる②<他> 一つにする" thiếu nghĩa
+- dòng 501: "～合わせる②<他> 一つにする" thiếu cách đọc
+- dòng 505: "～合わせる③ 偶然～する" thiếu nghĩa
+- dòng 505: "～合わせる③ 偶然～する" thiếu cách đọc
+- dòng 509: "～合わせる④<他> ～して調べる" thiếu nghĩa
+- dòng 509: "～合わせる④<他> ～して調べる" thiếu cách đọc
+- dòng 512: "～直す① 良くなるように、改めてもう一度～する" thiếu nghĩa
+- dòng 512: "～直す① 良くなるように" thiếu cách đọc
+- dòng 518: "～直す② もう一度考えて、考えを変える" thiếu nghĩa
+- dòng 518: "～直す② もう一度考えて" thiếu cách đọc
+- dòng 536: "サイン" cách đọc "ｓｉｇｎ" không phải kana
+- dòng 573: "【気の付く言葉】" thiếu nghĩa
+- dòng 573: "【気の付く言葉】" thiếu cách đọc
+- dòng 574: "気が合う" cách đọc "あの人とはよく気が合う。" không phải kana
+- dòng 575: "気が大きい" thiếu nghĩa
+- dòng 575: "気が大きい" cách đọc "お酒を飲むとつい気が大きくなる。 Hào phóng" không phải kana
+- dòng 576: "気が小さい" thiếu nghĩa
+- dòng 576: "気が小さい" cách đọc "お金があるのに" không phải kana
+- dòng 577: "気が強い" thiếu nghĩa
+- dòng 577: "気が強い" cách đọc "気が弱いので" không phải kana
+- dòng 578: "気が弱い" thiếu nghĩa
+- dòng 578: "気が弱い" cách đọc "気が弱くて" không phải kana
+- dòng 579: "気が長い" thiếu nghĩa
+- dòng 579: "気が長い" cách đọc "気が長いので" không phải kana
+- dòng 580: "気が短い" thiếu nghĩa
+- dòng 580: "気が短い" cách đọc "課長は気が短いので" không phải kana
+- dòng 581: "気が若い" thiếu nghĩa
+- dòng 581: "気が若い" cách đọc "田村さんは年齢に比べて" không phải kana
+- dòng 582: "気が重い" thiếu nghĩa
+- dòng 582: "気が重い" cách đọc "もうすぐ試験があるので" không phải kana
+- dòng 583: "気がある" thiếu nghĩa
+- dòng 583: "気がある" cách đọc "彼は仕事をする気があるのかないのか" không phải kana
+- dòng 584: "気が変わる" thiếu nghĩa
+- dòng 584: "気が変わる" cách đọc "映画を見に行こうと思って出かけたが" không phải kana
+- dòng 585: "気に進まない" thiếu nghĩa
+- dòng 585: "気に進まない" cách đọc "買い物に誘われたが" không phải kana
+- dòng 586: "気がする" thiếu nghĩa
+- dòng 586: "気がする" cách đọc "この問題は試験に出るような気がある。 Có linh cảm" không phải kana
+- dòng 587: "気が付く" thiếu nghĩa
+- dòng 587: "気が付く" cách đọc "家を出てから" không phải kana
+- dòng 588: "気が楽だ" thiếu nghĩa
+- dòng 588: "気が楽だ" cách đọc "両親が元気なうちは別々に住む方が楽だ。 thoải mái" không phải kana
+- dòng 589: "気を付ける" thiếu nghĩa
+- dòng 589: "気を付ける" cách đọc "これから寒くなるから" không phải kana
+- dòng 590: "気を悪くする" thiếu nghĩa
+- dòng 590: "気を悪くする" cách đọc "彼は友達に注意されて" không phải kana
+- dòng 591: "気になる" thiếu nghĩa
+- dòng 591: "気になる" cách đọc "明日から山に行くので天気が気になる。 tò mò" không phải kana
+- dòng 592: "気にする" thiếu nghĩa
+- dòng 592: "気にする" cách đọc "リーさんは何週間も前から発表のことを気にしている。 để ý" không phải kana
+- dòng 594: "【する】のいろいろな使い方" thiếu nghĩa
+- dòng 594: "【する】のいろいろな使い方" thiếu cách đọc
+- dòng 596: "1.感覚" thiếu nghĩa
+- dòng 596: "1.感覚" cách đọc "食堂からいいにおいがするね。 ngửi thấy" không phải kana
+- dòng 597: bỏ, thiếu chữ (nghĩa: "")
+- dòng 598: bỏ, thiếu chữ (nghĩa: "")
+- dòng 599: "2.病気" thiếu nghĩa
+- dòng 599: "2.病気" cách đọc "風邪をひいて" không phải kana
+- dòng 600: bỏ, thiếu chữ (nghĩa: "")
+- dòng 601: bỏ, thiếu chữ (nghĩa: "")
+- dòng 602: bỏ, thiếu chữ (nghĩa: "")
+- dòng 603: bỏ, thiếu chữ (nghĩa: "")
+- dòng 604: "3.仕事" thiếu nghĩa
+- dòng 604: "3.仕事" cách đọc "私の父は学校の先生をしている。Làm" không phải kana
+- dòng 605: bỏ, thiếu chữ (nghĩa: "")
+- dòng 606: "4.値段" thiếu nghĩa
+- dòng 606: "4.値段" cách đọc "このあたりで一戸建てを買うと" không phải kana
+- dòng 607: bỏ, thiếu chữ (nghĩa: "")
+- dòng 608: "5.時間" thiếu nghĩa
+- dòng 608: "5.時間" cách đọc "田中さんは事務所にいません。３０分ほどしたら" không phải kana
+- dòng 609: bỏ, thiếu chữ (nghĩa: "")
+- dòng 610: "6.その他" thiếu nghĩa
+- dòng 610: "6.その他" cách đọc "レントゲンを撮りますから" không phải kana
+- dòng 611: bỏ, thiếu chữ (nghĩa: "")
+- dòng 634: "後(に)" cách đọc "のち(に)" không phải kana
+- dòng 636: "そのうち(に)" cách đọc "そのうち(に)" không phải kana
+- dòng 957: "謙遜" trùng, đã gộp nghĩa
+- dòng 993: "活気" thiếu cách đọc
+- dòng 1044: "修正" trùng, đã gộp nghĩa
+- dòng 1156: "適当する" thiếu cách đọc
+- dòng 1330: "しわ" trùng, đã gộp nghĩa
+- dòng 1389: "測る" trùng, đã gộp nghĩa
+- dòng 1406: "下げる" trùng, đã gộp nghĩa
+- dòng 1410: "解ける" trùng, đã gộp nghĩa
+- dòng 1411: "解く" trùng, đã gộp nghĩa
+- dòng 1420: "立つ" trùng, đã gộp nghĩa
+- dòng 1438: "諄い" trùng, đã gộp nghĩa
+- dòng 1484: "回答" trùng, đã gộp nghĩa
+- dòng 1495: "切掛" trùng, đã gộp nghĩa
+- dòng 1504: "配布" trùng, đã gộp nghĩa
+- dòng 1541: "制作" trùng, đã gộp nghĩa
+- dòng 1544: "交代" trùng, đã gộp nghĩa
+- dòng 1568: "絞る" trùng, đã gộp nghĩa
+- dòng 1597: "偏る" trùng, đã gộp nghĩa
+- dòng 1601: "整える" trùng, đã gộp nghĩa
+- dòng 1611: "頑固" trùng, đã gộp nghĩa
+- dòng 1621: "穏やか" trùng, đã gộp nghĩa
+- dòng 1630: "特有" cách đọc "特有" không phải kana
+- dòng 1660: "的確" cách đọc "的確" không phải kana
+- dòng 1661: "不的確" cách đọc "不的確" không phải kana
+- dòng 1662: "確実" cách đọc "確実" không phải kana
+- dòng 1663: "不確実" cách đọc "不確実" không phải kana
+- dòng 1664: "明らか" cách đọc "明らか" không phải kana
+- dòng 1688: "説 (原子説)" cách đọc "せつ（げんしせつ）" không phải kana
+- dòng 1707: "収まる" trùng, đã gộp nghĩa
+- dòng 1710: "収める" trùng, đã gộp nghĩa
+- dòng 1723: "戴く" thiếu nghĩa
+- dòng 1731: "https://drive.google.com/file/d/10Tpiu5MDCa7D620ilmYTTz7-cbTM5GOV/view" thiếu nghĩa
+- dòng 1731: "https:" thiếu cách đọc
+- thêm 4 từ chỉ có trong sheet "N2.for ref"
+
+## N2.for ref (1)
+
+- dòng 1196: "沿う" trùng, đã gộp nghĩa
+
+## N1 (896)
+
+- dòng 21: "夜更かし（を）する" thiếu cách đọc
+- dòng 24: "家出する" thiếu cách đọc
+- dòng 29: "身なりをする" thiếu cách đọc
+- dòng 30: "身なりがいい⇔悪い" thiếu cách đọc
+- dòng 32: "身の回りのこと" thiếu cách đọc
+- dòng 35: "良心がある⇔ない" thiếu cách đọc
+- dòng 36: "良心が痛む" thiếu cách đọc
+- dòng 43: "ため息をつく" thiếu cách đọc
+- dòng 45: "ど忘れする" thiếu cách đọc
+- dòng 48: "予感がある" thiếu cách đọc
+- dòng 49: "予感がする" thiếu cách đọc
+- dòng 51: "視線が合う" thiếu cách đọc
+- dòng 52: "視線を合わせる" thiếu cách đọc
+- dòng 55: "視線を浴びる" thiếu cách đọc
+- dòng 57: "迷信を信じる" thiếu cách đọc
+- dòng 66: "下取りに出す" thiếu cách đọc
+- dòng 85: "転勤する" thiếu cách đọc
+- dòng 99: "例年にない+N" thiếu cách đọc
+- dòng 101: "話の種" thiếu cách đọc
+- dòng 105: "とげがある言葉" thiếu cách đọc
+- dòng 107: "有毒⇔無毒" cách đọc "ゆうどく⇔むどく" không phải kana
+- dòng 128: "隅から隅まで" thiếu cách đọc
+- dòng 135: "ひびが入る" thiếu cách đọc
+- dòng 142: "携帯電話が振動する" thiếu cách đọc
+- dòng 145: "100℃で沸騰する" thiếu cách đọc
+- dòng 146: "人気が沸騰している" thiếu cách đọc
+- dòng 150: "循環バス" thiếu cách đọc
+- dòng 182: "依存心" thiếu cách đọc
+- dòng 195: "意図的" thiếu cách đọc
+- dòng 196: "狙う" thiếu cách đọc
+- dòng 209: "勝利者" thiếu cách đọc
+- dòng 217: "調和がとれる" thiếu cách đọc
+- dòng 218: "調和をとる" thiếu cách đọc
+- dòng 220: "欠く" thiếu cách đọc
+- dòng 221: "欠ける" thiếu cách đọc
+- dòng 225: "権力者" thiếu cách đọc
+- dòng 229: "権威者" thiếu cách đọc
+- dòng 234: "強制的な" thiếu cách đọc
+- dòng 252: "抗議を申し入れる" thiếu cách đọc
+- dòng 254: "抗議デモ" thiếu cách đọc
+- dòng 256: "革新的な" thiếu cách đọc
+- dòng 258: "技術革新" thiếu cách đọc
+- dòng 260: "原則として" thiếu cách đọc
+- dòng 261: "原則的な" thiếu cách đọc
+- dòng 281: "引っかき回す" thiếu cách đọc
+- dòng 288: "こつを掴む" thiếu cách đọc
+- dòng 296: "頭をひねる" thiếu cách đọc
+- dòng 297: "（が）ちぎれる" thiếu cách đọc
+- dòng 298: "（を）ちぎる" thiếu cách đọc
+- dòng 305: "意をくむ" thiếu cách đọc
+- dòng 309: "軽く見る" thiếu cách đọc
+- dòng 310: "甘く見る" thiếu cách đọc
+- dòng 317: "泣き喚く" thiếu cách đọc
+- dòng 318: "言いつける" thiếu cách đọc
+- dòng 334: "(が)もつ" thiếu cách đọc
+- dòng 335: "体がもたない" thiếu cách đọc
+- dòng 336: "身がもたない" thiếu cách đọc
+- dòng 337: "もちがいい⇔悪い" thiếu cách đọc
+- dòng 345: "途切れ途切れ" thiếu cách đọc
+- dòng 346: "連絡が途切れる" thiếu cách đọc
+- dòng 347: "連絡が途絶える" thiếu cách đọc
+- dòng 360: "押し付ける" thiếu cách đọc
+- dòng 365: "（を）やっつける" thiếu cách đọc
+- dòng 367: "励みになる" thiếu cách đọc
+- dòng 382: "(を)よこす" thiếu cách đọc
+- dòng 384: "気がはやる" thiếu cách đọc
+- dòng 385: "気がせく" thiếu cách đọc
+- dòng 386: "学校をさぼる" thiếu cách đọc
+- dòng 391: "(が)むっとする" thiếu cách đọc
+- dòng 392: "(が)ぞっとする" thiếu cách đọc
+- dòng 393: "(が)ぎょっとする" thiếu cách đọc
+- dòng 407: "（が）にじむ" thiếu cách đọc
+- dòng 408: "(が)ぼやける" thiếu cách đọc
+- dòng 413: "（が）かなう" thiếu cách đọc
+- dòng 414: "（を）かなえる" thiếu cách đọc
+- dòng 418: "（を）よす" thiếu cách đọc
+- dòng 419: "（を）やめる" thiếu cách đọc
+- dòng 421: "さかずきを交わす" thiếu cách đọc
+- dòng 433: "が平行する" thiếu cách đọc
+- dòng 435: "手近に置く" thiếu cách đọc
+- dòng 469: "残りわずか" thiếu cách đọc
+- dòng 532: "不審な" trùng, đã gộp nghĩa
+- dòng 537: "が楽観する" thiếu cách đọc
+- dòng 549: "落ち着く" thiếu cách đọc
+- dòng 578: "口が重い" thiếu cách đọc
+- dòng 584: "臆病な" trùng, đã gộp nghĩa
+- dòng 585: "臆病になる" thiếu cách đọc
+- dòng 606: "乱暴する" thiếu cách đọc
+- dòng 607: "乱暴を働く" thiếu cách đọc
+- dòng 610: "利己中心的な" thiếu cách đọc
+- dòng 624: "軽快する" thiếu cách đọc
+- dòng 638: "嘆かわしい" trùng, đã gộp nghĩa
+- dòng 639: "見っともない" trùng, đã gộp nghĩa
+- dòng 644: "密接する" thiếu cách đọc
+- dòng 650: "やる気がある⇔ない" thiếu cách đọc
+- dòng 651: "やる気になる" thiếu cách đọc
+- dòng 652: "やる気が出る" thiếu cách đọc
+- dòng 653: "やる気を出す" thiếu cách đọc
+- dòng 654: "やる気を持つ" thiếu cách đọc
+- dòng 655: "やる気がわく" thiếu cách đọc
+- dòng 658: "～に優越感を持つ" thiếu cách đọc
+- dòng 659: "～に優越感を抱く" thiếu cách đọc
+- dòng 663: "誇りがある⇔ない" thiếu cách đọc
+- dòng 664: "誇りを持つ" thiếu cách đọc
+- dòng 665: "誇りに思う" thiếu cách đọc
+- dòng 671: "誇りらしい" thiếu cách đọc
+- dòng 673: "決断を下す" thiếu cách đọc
+- dòng 675: "決断力がある⇔ない" thiếu cách đọc
+- dòng 689: "絶望的" thiếu cách đọc
+- dòng 690: "絶望感" thiếu cách đọc
+- dòng 693: "に先入観を持つ" thiếu cách đọc
+- dòng 697: "過ちを認める" thiếu cách đọc
+- dòng 703: "欲がある⇔ない" thiếu cách đọc
+- dòng 704: "欲が深い" thiếu cách đọc
+- dòng 705: "欲を出す" thiếu cách đọc
+- dòng 706: "欲を言えば。。。" thiếu cách đọc
+- dòng 713: "恥をかく" thiếu cách đọc
+- dòng 714: "に恥をさらす" thiếu cách đọc
+- dòng 715: "恥知らず" thiếu cách đọc
+- dòng 717: "～の名に恥じない" thiếu cách đọc
+- dòng 720: "から罰を受ける" thiếu cách đọc
+- dòng 727: "に念を押す" thiếu cách đọc
+- dòng 728: "に念を入れる" thiếu cách đọc
+- dòng 730: "に本音をもらす" thiếu cách đọc
+- dòng 735: "弁解の余地がない" thiếu cách đọc
+- dòng 739: "沈黙を守る" thiếu cách đọc
+- dòng 742: "沈黙は金" thiếu cách đọc
+- dòng 756: "相性がいい⇔悪い" thiếu cách đọc
+- dòng 757: "相性が合う" thiếu cách đọc
+- dòng 758: "相性がぴったりだ" thiếu cách đọc
+- dòng 764: "共感性が高い人" thiếu cách đọc
+- dòng 778: "支援を受ける" thiếu cách đọc
+- dòng 789: "嫌がらせをする" thiếu cách đọc
+- dòng 790: "嫌がらせを受ける" thiếu cách đọc
+- dòng 797: "説得力に欠ける" thiếu cách đọc
+- dòng 800: "理屈に合わない" thiếu cách đọc
+- dòng 815: "根拠がある⇔ない" thiếu cách đọc
+- dòng 822: "暗示的" thiếu cách đọc
+- dòng 824: "暗示にかかる" thiếu cách đọc
+- dòng 825: "暗示にかける" thiếu cách đọc
+- dòng 831: "視野が開ける" thiếu cách đọc
+- dòng 837: "視野が広い⇔狭い" thiếu cách đọc
+- dòng 842: "空白を埋める" thiếu cách đọc
+- dòng 843: "空白期間" thiếu cách đọc
+- dòng 845: "接触が悪い" thiếu cách đọc
+- dòng 847: "接触事故" thiếu cách đọc
+- dòng 848: "接触感染" thiếu cách đọc
+- dòng 850: "交渉がまとまる" thiếu cách đọc
+- dòng 855: "交渉がない" thiếu cách đọc
+- dòng 856: "交渉を持つ" thiếu cách đọc
+- dòng 870: "損害が出る" thiếu cách đọc
+- dòng 871: "損害を出す" thiếu cách đọc
+- dòng 872: "損害を与える" thiếu cách đọc
+- dòng 873: "損害を受ける" thiếu cách đọc
+- dòng 882: "利害関係" thiếu cách đọc
+- dòng 911: "取引がある⇔ない" thiếu cách đọc
+- dòng 917: "独占インタビュー" thiếu cách đọc
+- dòng 930: "加減がいい⇔悪い" thiếu cách đọc
+- dòng 938: "コスト削減" thiếu cách đọc
+- dòng 940: "余分" trùng, đã gộp nghĩa
+- dòng 941: "余分がある⇔ない" thiếu cách đọc
+- dòng 942: "余分が出る" thiếu cách đọc
+- dòng 945: "余地がある⇔ない" thiếu cách đọc
+- dòng 966: "アルコール発酵" thiếu cách đọc
+- dòng 968: "発育がいい⇔悪い" thiếu cách đọc
+- dòng 969: "発育が早い⇔遅い" thiếu cách đọc
+- dòng 974: "確信がある⇔ない" thiếu cách đọc
+- dòng 975: "確信を持つ" thiếu cách đọc
+- dòng 976: "確信を得る" thiếu cách đọc
+- dòng 985: "反応を見る" thiếu cách đọc
+- dòng 988: "反応がある⇔ない" thiếu cách đọc
+- dòng 989: "反応がいい⇔悪い" thiếu cách đọc
+- dòng 990: "反応が鋭い⇔鈍い" cách đọc "するそい⇔にぶい" không phải kana
+- dòng 999: "反発を招く" thiếu cách đọc
+- dòng 1000: "～から反発を買う" thiếu cách đọc
+- dòng 1004: "反則を犯す" thiếu cách đọc
+- dòng 1005: "反則を取られる" thiếu cách đọc
+- dòng 1009: "特許を取る" thiếu cách đọc
+- dòng 1010: "特許を得る" thiếu cách đọc
+- dòng 1029: "追跡調査" thiếu cách đọc
+- dòng 1031: "手本にする" thiếu cách đọc
+- dòng 1032: "手本になる" thiếu cách đọc
+- dòng 1035: "手がかりがある⇔ない" thiếu cách đọc
+- dòng 1036: "手がかりをつかむ" thiếu cách đọc
+- dòng 1045: "手際がいい⇔悪い" thiếu cách đọc
+- dòng 1046: "手際よく" thiếu cách đọc
+- dòng 1049: "人手がかかる" thiếu cách đọc
+- dòng 1050: "人手をかける" thiếu cách đọc
+- dòng 1051: "人手が足りない" thiếu cách đọc
+- dòng 1053: "人手を借りる" thiếu cách đọc
+- dòng 1054: "人手に頼る" thiếu cách đọc
+- dòng 1055: "人手を加える" thiếu cách đọc
+- dòng 1056: "人手が入る" thiếu cách đọc
+- dòng 1057: "人手に渡る" thiếu cách đọc
+- dòng 1059: "人目がある" thiếu cách đọc
+- dòng 1060: "人目が気になる" thiếu cách đọc
+- dòng 1061: "人目を気にする" thiếu cách đọc
+- dòng 1062: "人目を避ける" thiếu cách đọc
+- dòng 1063: "人目に付く" thiếu cách đọc
+- dòng 1064: "人目を引く" thiếu cách đọc
+- dòng 1065: "人目をはばがる" thiếu cách đọc
+- dòng 1067: "人気がない" thiếu cách đọc
+- dòng 1069: "～かかる①＜自＞ 相手に対して作用を及ぼす" thiếu nghĩa
+- dòng 1069: "～かかる①＜自＞ 相手に対して作用を及ぼす" thiếu cách đọc
+- dòng 1072: "（が）つかみかかる" thiếu cách đọc
+- dòng 1076: "～かかる②＜自＞ ～を始める" thiếu nghĩa
+- dòng 1076: "～かかる②＜自＞ ～を始める" thiếu cách đọc
+- dòng 1079: "～かかる③＜自＞ もう少しで～しそうである" thiếu nghĩa
+- dòng 1079: "～かかる③＜自＞ もう少しで～しそうである" thiếu cách đọc
+- dòng 1083: "～かける①＜自/他＞ 相手に対して作用を及ぼす" thiếu nghĩa
+- dòng 1083: "～かける①＜自" thiếu cách đọc
+- dòng 1087: "働きかけをする" thiếu cách đọc
+- dòng 1092: "～かける②＜自/他＞ ～し始めてやめる" thiếu nghĩa
+- dòng 1092: "～かける②＜自" thiếu cách đọc
+- dòng 1095: "～かける③＜自＞ もう少しで～しそうである" thiếu nghĩa
+- dòng 1095: "～かける③＜自＞ もう少しで～しそうである" thiếu cách đọc
+- dòng 1098: "～つける①＜自/他＞ 相手に強く～する、強い勢いで～する" thiếu nghĩa
+- dòng 1098: "～つける①＜自" thiếu cách đọc
+- dòng 1109: "～つける②＜他＞ ものに何かを付けるようにする" thiếu nghĩa
+- dòng 1109: "～つける②＜他＞ ものに何かを付けるようにする" thiếu cách đọc
+- dòng 1113: "～つける③＜自/他＞ ～することに慣れている、いつも～している" thiếu nghĩa
+- dòng 1113: "～つける③＜自" thiếu cách đọc
+- dòng 1116: "行きつけの店" thiếu cách đọc
+- dòng 1118: "～とる①＜他＞ 自分のものにする" thiếu nghĩa
+- dòng 1118: "～とる①＜他＞ 自分のものにする" thiếu cách đọc
+- dòng 1129: "～返す①＜他＞ 他からされたことを、こちらからもする" thiếu nghĩa
+- dòng 1129: "～返す①＜他＞ 他からされたことを" thiếu cách đọc
+- dòng 1132: "～返す②＜他＞ もう一度～する" thiếu nghĩa
+- dòng 1132: "～返す②＜他＞ もう一度～する" thiếu cách đọc
+- dòng 1143: "～切る①＜自/他＞最後まで～する (関)～果たす、～抜く、～尽くす" thiếu nghĩa
+- dòng 1143: "～切る①＜自" thiếu cách đọc
+- dòng 1147: "～切る②＜自/他＞すっかり～する、完全に～する" thiếu nghĩa
+- dòng 1147: "～切る②＜自" thiếu cách đọc
+- dòng 1153: "～切る③＜自＞強く～する" thiếu nghĩa
+- dòng 1153: "～切る③＜自＞強く～する" thiếu cách đọc
+- dòng 1157: "取り～①「取り」が付かないと意味が変わるもの" thiếu nghĩa
+- dòng 1157: "取り～①「取り」が付かないと意味が変わるもの" thiếu cách đọc
+- dòng 1170: "取り～②「取り」が付かないと意味があまり変わらないもの" thiếu nghĩa
+- dòng 1170: "取り～②「取り」が付かないと意味があまり変わらないもの" thiếu cách đọc
+- dòng 1184: "取りやめになる" thiếu cách đọc
+- dòng 1185: "取りやめにする" thiếu cách đọc
+- dòng 1188: "突き～① 激しい勢いで～する、間近に～する" thiếu nghĩa
+- dòng 1188: "突き～① 激しい勢いで～する" thiếu cách đọc
+- dòng 1192: "（が）こみ上げる" thiếu cách đọc
+- dòng 1198: "～突き～② 最後まで～する" thiếu nghĩa
+- dòng 1198: "～突き～② 最後まで～する" thiếu cách đọc
+- dòng 1202: "飛び～" thiếu nghĩa
+- dòng 1202: "飛び～" thiếu cách đọc
+- dòng 1212: "差し～" thiếu nghĩa
+- dòng 1212: "差し～" thiếu cách đọc
+- dòng 1222: "を取り替える" trùng, đã gộp nghĩa
+- dòng 1225: "引き～" thiếu nghĩa
+- dòng 1225: "引き～" thiếu cách đọc
+- dòng 1228: "が撤退する" trùng, đã gộp nghĩa
+- dòng 1240: "振り～" thiếu nghĩa
+- dòng 1240: "振り～" thiếu cách đọc
+- dòng 1241: "を振り返る" trùng, đã gộp nghĩa
+- dòng 1251: "センサーが働く" thiếu cách đọc
+- dòng 1255: "N+グッズ" thiếu cách đọc
+- dòng 1264: "パック料金" thiếu cách đọc
+- dòng 1288: "ブランド品" thiếu cách đọc
+- dòng 1289: "ブランド物" thiếu cách đọc
+- dòng 1290: "一流ブランド" thiếu cách đọc
+- dòng 1292: "高級ブランド" thiếu cách đọc
+- dòng 1294: "有名ブランド" thiếu cách đọc
+- dòng 1295: "偽ブランド" thiếu cách đọc
+- dòng 1298: "フリーマーケットに出す" thiếu cách đọc
+- dòng 1299: "フリーマーケットに出品する" thiếu cách đọc
+- dòng 1300: "フリーマーケットを開く" thiếu cách đọc
+- dòng 1301: "フリーマーケットを開催する" thiếu cách đọc
+- dòng 1307: "キャンペーンを行う" thiếu cách đọc
+- dòng 1310: "イベントを行う" thiếu cách đọc
+- dòng 1311: "イベントを開く" thiếu cách đọc
+- dòng 1312: "イベントを開催する" thiếu cách đọc
+- dòng 1315: "イベント情報" thiếu cách đọc
+- dòng 1318: "フェスティバルを開く" thiếu cách đọc
+- dòng 1321: "優勝パレード" thiếu cách đọc
+- dòng 1323: "結婚パレード" thiếu cách đọc
+- dòng 1327: "ライブ活動" thiếu cách đọc
+- dòng 1329: "ライブ放送" thiếu cách đọc
+- dòng 1330: "ライブ中継" thiếu cách đọc
+- dòng 1333: "アウトドア活動" thiếu cách đọc
+- dòng 1336: "リゾート地" thiếu cách đọc
+- dòng 1338: "リゾート開発" thiếu cách đọc
+- dòng 1341: "スリルがある⇔ない" thiếu cách đọc
+- dòng 1342: "スリル満点" thiếu cách đọc
+- dòng 1347: "ミステリー小説" thiếu cách đọc
+- dòng 1348: "ミステリー映画" thiếu cách đọc
+- dòng 1367: "ヘルシー料理" thiếu cách đọc
+- dòng 1371: "レシピ本" thiếu cách đọc
+- dòng 1378: "ボリュームがある⇔ない" thiếu cách đọc
+- dòng 1379: "ボリュームが多い⇔少ない" thiếu cách đọc
+- dòng 1381: "ボリュームが大きい⇔小さい" thiếu cách đọc
+- dòng 1382: "ボリュームを上げる⇔下げる" thiếu cách đọc
+- dòng 1391: "チームワークがある⇔ない" thiếu cách đọc
+- dòng 1392: "チームワークがいい⇔悪い" thiếu cách đọc
+- dòng 1393: "チームワークが取れる" thiếu cách đọc
+- dòng 1395: "プロジェクトが立ち上がる" thiếu cách đọc
+- dòng 1396: "プロジェクトを立ち上げる" thiếu cách đọc
+- dòng 1403: "セミナーを行う" thiếu cách đọc
+- dòng 1404: "セミナーを開く" thiếu cách đọc
+- dòng 1405: "セミナーを開催する" thiếu cách đọc
+- dòng 1407: "シンポジウムを行う" thiếu cách đọc
+- dòng 1408: "シンポジウムを開く" thiếu cách đọc
+- dòng 1409: "シンポジウムを開催する" thiếu cách đọc
+- dòng 1413: "ゼミ形式" thiếu cách đọc
+- dòng 1414: "ゼミ発表" thiếu cách đọc
+- dòng 1421: "ランクが高い⇔低い" thiếu cách đọc
+- dòng 1422: "ランクが上がる⇔下がる" thiếu cách đọc
+- dòng 1423: "ランクがアップする⇔ダウン" thiếu cách đọc
+- dòng 1424: "ランクを上げる⇔下げる" thiếu cách đọc
+- dòng 1425: "上のランク⇔下のランク" thiếu cách đọc
+- dòng 1426: "ランクを付ける" thiếu cách đọc
+- dòng 1427: "ランクアップ⇔ランクダウン" cách đọc "rankup⇔rankdown" không phải kana
+- dòng 1428: "ランク付け" thiếu cách đọc
+- dòng 1433: "インターンシップ制" thiếu cách đọc
+- dòng 1435: "リストラ策" thiếu cách đọc
+- dòng 1441: "セクハラを働く" thiếu cách đọc
+- dòng 1442: "セクハラを受ける" thiếu cách đọc
+- dòng 1446: "フェアな" cách đọc "fair" không phải kana
+- dòng 1455: "アレルギーがある⇔ない" thiếu cách đọc
+- dòng 1456: "アレルギーが出る" thiếu cách đọc
+- dòng 1457: "アレルギーが起きる" thiếu cách đọc
+- dòng 1458: "アレルギーを起こす" thiếu cách đọc
+- dòng 1459: "拒絶反応" trùng, đã gộp nghĩa
+- dòng 1461: "近年まれにみる" thiếu cách đọc
+- dòng 1462: "近年にない" thiếu cách đọc
+- dòng 1465: "かつて。。。ない" thiếu cách đọc
+- dòng 1470: "ただ今" thiếu cách đọc
+- dòng 1476: "間をおかず" thiếu cách đọc
+- dòng 1479: "突如として" thiếu cách đọc
+- dòng 1483: "ぼつぼつ（と）" thiếu cách đọc
+- dòng 1487: "今さらのように" thiếu cách đọc
+- dòng 1488: "今さらながら" thiếu cách đọc
+- dòng 1496: "始終" trùng, đã gộp nghĩa
+- dòng 1510: "～もそこそこに+「動詞」" thiếu cách đọc
+- dòng 1518: "散々な" thiếu nghĩa
+- dòng 1518: "散々な" thiếu cách đọc
+- dòng 1525: "がっちり（と）する" thiếu cách đọc
+- dòng 1526: "がっしり（と）する" thiếu cách đọc
+- dòng 1527: "くっきり（と）する" thiếu cách đọc
+- dòng 1528: "すんなり（と）する" thiếu cách đọc
+- dòng 1531: "着々と進む" thiếu cách đọc
+- dòng 1532: "ぐんぐん（と）" thiếu cách đọc
+- dòng 1536: "ごたごた（と）する" thiếu cách đọc
+- dòng 1537: "ごちゃごちゃ（と）する" thiếu cách đọc
+- dòng 1538: "べたべた（と）する" thiếu cách đọc
+- dòng 1555: "一見して" thiếu cách đọc
+- dòng 1559: "ろくに。。。ない" thiếu cách đọc
+- dòng 1577: "一家団らん" thiếu cách đọc
+- dòng 1578: "家族団らん" thiếu cách đọc
+- dòng 1581: "行楽に出かける" thiếu cách đọc
+- dòng 1582: "行楽地" cách đọc "行楽地" không phải kana
+- dòng 1583: "行楽客" cách đọc "行楽客" không phải kana
+- dòng 1584: "行楽シーズン" thiếu cách đọc
+- dòng 1586: "danh động từ+日和" thiếu cách đọc
+- dòng 1591: "相席になる" thiếu cách đọc
+- dòng 1593: "褒美をあげる⇔もらう" thiếu cách đọc
+- dòng 1594: "褒美を与える" thiếu cách đọc
+- dòng 1596: "遺産を残す" thiếu cách đọc
+- dòng 1599: "世界遺産" thiếu cách đọc
+- dòng 1600: "文化遺産" thiếu cách đọc
+- dòng 1603: "台無しになる" thiếu cách đọc
+- dòng 1604: "台無しにする" thiếu cách đọc
+- dòng 1606: "心構えをする" thiếu cách đọc
+- dòng 1607: "心がけ" thiếu cách đọc
+- dòng 1617: "根気がある⇔ない" thiếu cách đọc
+- dòng 1618: "根気がいる" thiếu cách đọc
+- dòng 1620: "根気よく" thiếu cách đọc
+- dòng 1622: "意地が悪い" thiếu cách đọc
+- dòng 1623: "意地悪" trùng, đã gộp nghĩa
+- dòng 1625: "意地になる" thiếu cách đọc
+- dòng 1626: "意地を通す" thiếu cách đọc
+- dòng 1627: "意地でも" thiếu cách đọc
+- dòng 1629: "食い意地" thiếu cách đọc
+- dòng 1632: "自覚を持つ" thiếu cách đọc
+- dòng 1633: "自覚がある⇔ない" thiếu cách đọc
+- dòng 1634: "自覚が足りない" thiếu cách đọc
+- dòng 1636: "偏見" trùng, đã gộp nghĩa
+- dòng 1637: "に偏見を持つ" thiếu cách đọc
+- dòng 1639: "偏見を捨てる" thiếu cách đọc
+- dòng 1640: "偏見が強い" thiếu cách đọc
+- dòng 1641: "を偏見の目で見る" thiếu cách đọc
+- dòng 1644: "誘惑と戦う" thiếu cách đọc
+- dòng 1652: "油断ならない" thiếu cách đọc
+- dòng 1654: "油断も隙もない" thiếu cách đọc
+- dòng 1656: "野心がある⇔ない" thiếu cách đọc
+- dòng 1657: "野心を持つ" thiếu cách đọc
+- dòng 1658: "野心を抱く" thiếu cách đọc
+- dòng 1659: "野心的な" thiếu cách đọc
+- dòng 1668: "衝動的な" thiếu cách đọc
+- dòng 1671: "信念を持つ" thiếu cách đọc
+- dòng 1672: "信念を抱く" thiếu cách đọc
+- dòng 1676: "配慮がある⇔ない" thiếu cách đọc
+- dòng 1677: "配慮に欠ける" thiếu cách đọc
+- dòng 1678: "に配慮を欠く" thiếu cách đọc
+- dòng 1680: "思いやり" trùng, đã gộp nghĩa
+- dòng 1682: "ゆとり教育" thiếu cách đọc
+- dòng 1683: "ゆとりがある⇔ない" thiếu cách đọc
+- dòng 1684: "にゆとりを持つ" thiếu cách đọc
+- dòng 1686: "包容力がある⇔ない" thiếu cách đọc
+- dòng 1692: "中程度" thiếu cách đọc
+- dòng 1698: "例年並み" thiếu nghĩa
+- dòng 1701: "体裁が悪い" thiếu cách đọc
+- dòng 1702: "体裁を気にする" thiếu cách đọc
+- dòng 1703: "体裁を気にかける" thiếu cách đọc
+- dòng 1712: "に愚痴をこぼす" thiếu cách đọc
+- dòng 1713: "愚痴っぽい" thiếu cách đọc
+- dòng 1716: "に野次が飛ぶ" thiếu cách đọc
+- dòng 1717: "に野次を飛ばす" thiếu cách đọc
+- dòng 1722: "差し入れ" thiếu cách đọc
+- dòng 1724: "声援を送る⇔受ける" thiếu cách đọc
+- dòng 1726: "首脳会談" thiếu cách đọc
+- dòng 1727: "首脳会議" thiếu cách đọc
+- dòng 1728: "首脳部" thiếu cách đọc
+- dòng 1733: "兵を挙げる" cách đọc "兵を挙げる" không phải kana
+- dòng 1734: "兵隊" thiếu cách đọc
+- dòng 1735: "兵力" thiếu cách đọc
+- dòng 1736: "兵士" thiếu cách đọc
+- dòng 1744: "侵害に与える" thiếu cách đọc
+- dòng 1745: "保護する" thiếu cách đọc
+- dòng 1747: "警戒にあたる" thiếu cách đọc
+- dòng 1748: "警戒を強める⇔緩める" thiếu cách đọc
+- dòng 1761: "エネルギー危機" thiếu cách đọc
+- dòng 1765: "衝撃を受ける⇔与える" thiếu cách đọc
+- dòng 1766: "衝撃的な" thiếu cách đọc
+- dòng 1779: "に歯止めがかかる" thiếu cách đọc
+- dòng 1780: "に歯止めにかける" thiếu cách đọc
+- dòng 1781: "歯止めが利く" thiếu cách đọc
+- dòng 1783: "成果がある⇔ない" thiếu cách đọc
+- dòng 1784: "成果をあげる" thiếu cách đọc
+- dòng 1785: "成果を収める" thiếu cách đọc
+- dòng 1789: "規律を守る⇔破る" thiếu cách đọc
+- dòng 1790: "規律が緩む" thiếu cách đọc
+- dòng 1795: "秩序がある⇔ない" thiếu cách đọc
+- dòng 1808: "を犠牲にする" thiếu cách đọc
+- dòng 1809: "犠牲{に" thiếu cách đọc
+- dòng 1817: "見込みがある⇔ない" thiếu cách đọc
+- dòng 1820: "見通しがいい⇔悪い" thiếu cách đọc
+- dòng 1821: "見通しが立つ" thiếu cách đọc
+- dòng 1822: "見通しを立てる" thiếu cách đọc
+- dòng 1823: "見通しが明るい⇔暗い" thiếu cách đọc
+- dòng 1824: "～見通しを持つ" thiếu cách đọc
+- dòng 1825: "見当" thiếu cách đọc
+- dòng 1826: "読み" thiếu cách đọc
+- dòng 1827: "見通し" thiếu cách đọc
+- dòng 1828: "見込み" thiếu cách đọc
+- dòng 1830: "見積もりをする" thiếu cách đọc
+- dòng 1831: "見積もりを出す" thiếu cách đọc
+- dòng 1832: "見積もりを立てる" thiếu cách đọc
+- dòng 1833: "見積もりを取る" thiếu cách đọc
+- dòng 1846: "不振にあえぐ" thiếu cách đọc
+- dòng 1856: "が成熟する" trùng, đã gộp nghĩa
+- dòng 1860: "飛躍的な" thiếu cách đọc
+- dòng 1863: "統計をとる" thiếu cách đọc
+- dòng 1864: "統計的な" thiếu cách đọc
+- dòng 1869: "均衡を保つ" thiếu cách đọc
+- dòng 1870: "均衡を破る" thiếu cách đọc
+- dòng 1871: "不均衡" thiếu cách đọc
+- dòng 1873: "～蓄積がある⇔ない" thiếu cách đọc
+- dòng 1875: "延べ+「数値」" thiếu cách đọc
+- dòng 1876: "延べ人数" thiếu cách đọc
+- dòng 1878: "延べ時間" thiếu cách đọc
+- dòng 1880: "人材が不足する" thiếu cách đọc
+- dòng 1882: "人材を集まる" thiếu cách đọc
+- dòng 1884: "人材派遣" thiếu cách đọc
+- dòng 1885: "人材スカウト" thiếu cách đọc
+- dòng 1888: "公衆電話" thiếu cách đọc
+- dòng 1889: "公衆トイレ" thiếu cách đọc
+- dòng 1894: "教養がある⇔ない" thiếu cách đọc
+- dòng 1895: "教養を身につける" thiếu cách đọc
+- dòng 1896: "高い教養" thiếu cách đọc
+- dòng 1897: "一般教養" thiếu cách đọc
+- dòng 1900: "教養的観点" thiếu cách đọc
+- dòng 1905: "問題に直面する" thiếu cách đọc
+- dòng 1910: "仕掛けがある⇔ない" thiếu cách đọc
+- dòng 1915: "にこつがある⇔ない" thiếu cách đọc
+- dòng 1917: "こつを飲み込む" thiếu cách đọc
+- dòng 1920: "技を磨く" thiếu cách đọc
+- dòng 1925: "技が決まる" thiếu cách đọc
+- dòng 1926: "技を決める" thiếu cách đọc
+- dòng 1930: "大技⇔小技" cách đọc "おおわざ⇔こわざ" không phải kana
+- dòng 1935: "先に立つ" thiếu cách đọc
+- dòng 1938: "～より前" thiếu cách đọc
+- dòng 1939: "先が見える⇔見えない" thiếu cách đọc
+- dòng 1941: "先を読む" thiếu cách đọc
+- dòng 1944: "外出先" thiếu cách đọc
+- dòng 1946: "先端を行く" thiếu cách đọc
+- dòng 1954: "起源をさかのぼる" thiếu cách đọc
+- dòng 1958: "ただ一つ" thiếu cách đọc
+- dòng 1959: "ただ一人" thiếu cách đọc
+- dòng 1960: "ただ一度" thiếu cách đọc
+- dòng 1965: "を目前に控える" thiếu cách đọc
+- dòng 1975: "群れをなす" thiếu cách đọc
+- dòng 1980: "正体を現す" thiếu cách đọc
+- dòng 1983: "正体をつかむ" thiếu cách đọc
+- dòng 1985: "が罠にはまる" thiếu cách đọc
+- dòng 1986: "を罠をはめる" thiếu cách đọc
+- dòng 1987: "に罠を敷かれる" thiếu cách đọc
+- dòng 1988: "が罠にかかる" thiếu cách đọc
+- dòng 1989: "を罠にかける" thiếu cách đọc
+- dòng 1993: "が枠にはまる" thiếu cách đọc
+- dòng 1994: "を枠にはめる" thiếu cách đọc
+- dòng 1995: "枠からはみ出る" thiếu cách đọc
+- dòng 1998: "枠内⇔枠外" cách đọc "わくない⇔わくがい" không phải kana
+- dòng 2001: "艶が出る" thiếu cách đọc
+- dòng 2002: "艶を出す" thiếu cách đọc
+- dòng 2005: "艶がある⇔ない" thiếu cách đọc
+- dòng 2018: "ヒョウ柄" thiếu cách đọc
+- dòng 2021: "大柄⇔小柄" cách đọc "おおがら⇔こがら" không phải kana
+- dòng 2022: "柄が悪い" thiếu cách đọc
+- dòng 2023: "柄ではない" thiếu cách đọc
+- dòng 2029: "つじつまが合う" thiếu cách đọc
+- dòng 2030: "つじつまを合わせる" thiếu cách đọc
+- dòng 2032: "差支えがある⇔ない" thiếu cách đọc
+- dòng 2033: "差支えない" thiếu cách đọc
+- dòng 2036: "にしわ寄せが来る⇔行く" thiếu cách đọc
+- dòng 2045: "(が)ばれる" thiếu cách đọc
+- dòng 2046: "(を) ばらす" thiếu cách đọc
+- dòng 2048: "すり替え" thiếu cách đọc
+- dòng 2057: "をのぞき見る" thiếu cách đọc
+- dòng 2060: "控え室" thiếu cách đọc
+- dòng 2061: "を控える" thiếu cách đọc
+- dòng 2062: "控え目な" thiếu cách đọc
+- dòng 2063: "控え" thiếu cách đọc
+- dòng 2075: "～の後を継ぐ" thiếu cách đọc
+- dòng 2087: "仲を裂く" thiếu cách đọc
+- dòng 2090: "割り当て" thiếu cách đọc
+- dòng 2097: "を見逃す" trùng, đã gộp nghĩa
+- dòng 2099: "見逃しがある⇔ない" thiếu cách đọc
+- dòng 2102: "を見つけ出す" thiếu cách đọc
+- dòng 2104: "おだてに乗る" thiếu cách đọc
+- dòng 2120: "身を委ねる" thiếu cách đọc
+- dòng 2124: "訴えを聞く" thiếu cách đọc
+- dòng 2125: "が" trùng, đã gộp nghĩa
+- dòng 2127: "親しみやすい" thiếu cách đọc
+- dòng 2128: "親しみを感じる" thiếu cách đọc
+- dòng 2129: "親しみを持つ" thiếu cách đọc
+- dòng 2130: "慣れ親しむ" thiếu cách đọc
+- dòng 2133: "が挑戦する" trùng, đã gộp nghĩa
+- dòng 2135: "仰向け⇔うつ伏せ" cách đọc "あおむけ⇔うつぶせ" không phải kana
+- dòng 2141: "思い切りがいい⇔悪い" thiếu cách đọc
+- dòng 2145: "悔いがある⇔ない" thiếu cách đọc
+- dòng 2146: "悔いが残る" thiếu cách đọc
+- dòng 2148: "憤りを感じる" thiếu cách đọc
+- dòng 2149: "憤りを覚える" thiếu cách đọc
+- dòng 2152: "嘆かわしい" trùng, đã gộp nghĩa
+- dòng 2153: "（が）うぬぼれる" thiếu cách đọc
+- dòng 2155: "が思い上がる" thiếu cách đọc
+- dòng 2156: "（が）もがく" thiếu cách đọc
+- dòng 2157: "がもがき苦しむ" thiếu cách đọc
+- dòng 2159: "が出回る" trùng, đã gộp nghĩa
+- dòng 2161: "が群がる" trùng, đã gộp nghĩa
+- dòng 2162: "が溶け込む" thiếu cách đọc
+- dòng 2166: "弾み" thiếu cách đọc
+- dòng 2167: "に弾みが付く" thiếu cách đọc
+- dòng 2168: "弾みで" thiếu cách đọc
+- dòng 2169: "～弾みに" thiếu cách đọc
+- dòng 2171: "粘り付く" thiếu cách đọc
+- dòng 2172: "粘っこい" thiếu cách đọc
+- dòng 2174: "粘りがある⇔ない" thiếu cách đọc
+- dòng 2180: "弛みがある⇔ない" thiếu cách đọc
+- dòng 2182: "を盛り付ける" thiếu cách đọc
+- dòng 2183: "が盛り上がる" thiếu cách đọc
+- dòng 2184: "盛り付け" thiếu cách đọc
+- dòng 2195: "優先的な" thiếu cách đọc
+- dòng 2196: "優先権" thiếu cách đọc
+- dòng 2197: "優先順位" thiếu cách đọc
+- dòng 2201: "を遠のける" thiếu cách đọc
+- dòng 2208: "が繁栄する" trùng, đã gộp nghĩa
+- dòng 2210: "が衰退する" trùng, đã gộp nghĩa
+- dòng 2213: "(を)なす" thiếu cách đọc
+- dòng 2216: "（が）とどまる" thiếu cách đọc
+- dòng 2217: "とどまるところを知らない" thiếu cách đọc
+- dòng 2218: "を思いとどまる" thiếu cách đọc
+- dòng 2219: "が踏みとどまる" thiếu cách đọc
+- dòng 2221: "を押しとどめる" thiếu cách đọc
+- dòng 2222: "を引きとどめる" thiếu cách đọc
+- dòng 2228: "「動詞」+尽くす" thiếu cách đọc
+- dòng 2233: "（が）さまよう" thiếu cách đọc
+- dòng 2243: "（が）はびこる" thiếu cách đọc
+- dòng 2250: "（が）ありふれている" thiếu cách đọc
+- dòng 2251: "ありふれた+名詞" thiếu cách đọc
+- dòng 2253: "さえ渡る" thiếu cách đọc
+- dòng 2254: "勘がさえる" thiếu cách đọc
+- dòng 2255: "目がさえる" thiếu cách đọc
+- dòng 2259: "ずば抜けている" thiếu cách đọc
+- dòng 2260: "ずば抜けて+形容詞" thiếu cách đọc
+- dòng 2261: "（が）飛び抜ける" thiếu cách đọc
+- dòng 2278: "ピンチ" trùng, đã gộp nghĩa
+- dòng 2280: "ピンチに陥る⇔脱する" thiếu cách đọc
+- dòng 2281: "ピンチの直面する" thiếu cách đọc
+- dòng 2282: "絶体絶命のピンチ" thiếu cách đọc
+- dòng 2283: "大ピンチ" thiếu cách đọc
+- dòng 2287: "マンネリに陥る⇔脱する" thiếu cách đọc
+- dòng 2288: "マンネリ化する" thiếu cách đọc
+- dòng 2289: "マンネリ気味" thiếu cách đọc
+- dòng 2291: "バラエティーがある⇔ない" thiếu cách đọc
+- dòng 2292: "バラエティーに富む" thiếu cách đọc
+- dòng 2294: "パワーがある⇔ない" thiếu cách đọc
+- dòng 2295: "パワーが強い⇔弱い" thiếu cách đọc
+- dòng 2296: "パワーが上がる⇔下がる" thiếu cách đọc
+- dòng 2299: "パワーが不足する" thiếu cách đọc
+- dòng 2302: "バイタリティーがある⇔ない" thiếu cách đọc
+- dòng 2303: "バイタリティーのに富む" thiếu cách đọc
+- dòng 2308: "ダイナミックさがある⇔ない" thiếu cách đọc
+- dòng 2309: "ダイナミックに欠ける" thiếu cách đọc
+- dòng 2312: "スタミナがある⇔ない" thiếu cách đọc
+- dòng 2315: "スタミナが続く⇔切れる" thiếu cách đọc
+- dòng 2317: "スタミナを使う" thiếu cách đọc
+- dòng 2318: "スタミナを消費する" thiếu cách đọc
+- dòng 2320: "スタミナ切れ" thiếu cách đọc
+- dòng 2323: "ピークを迎える" thiếu cách đọc
+- dòng 2324: "ピークに達する" thiếu cách đọc
+- dòng 2325: "ピークを越える" thiếu cách đọc
+- dòng 2327: "クライマックスを迎える" thiếu cách đọc
+- dòng 2330: "インパクトがある⇔ない" thiếu cách đọc
+- dòng 2331: "インパクトが強い⇔弱い" thiếu cách đọc
+- dòng 2333: "コントラストが強い⇔弱い" thiếu cách đọc
+- dòng 2335: "対象" thiếu cách đọc
+- dòng 2336: "対比" thiếu cách đọc
+- dòng 2339: "不純物のない" thiếu cách đọc
+- dòng 2340: "消去する" thiếu cách đọc
+- dòng 2342: "トーンが高い⇔低い" thiếu cách đọc
+- dòng 2343: "トーンを上がる⇔下がる" thiếu cách đọc
+- dòng 2347: "ニュアンスに富む" thiếu cách đọc
+- dòng 2348: "ニュアンスを出す" thiếu cách đọc
+- dòng 2351: "フィーリングが合う" thiếu cách đọc
+- dòng 2353: "ギャップがある⇔ない" thiếu cách đọc
+- dòng 2354: "ギャップが大きい⇔小さい" thiếu cách đọc
+- dòng 2355: "ギャップを埋める" thiếu cách đọc
+- dòng 2356: "隔たり" thiếu cách đọc
+- dòng 2360: "にレッテルを貼る" thiếu cách đọc
+- dòng 2366: "フィルターを通して見る" thiếu cách đọc
+- dòng 2368: "ベース" trùng, đã gộp nghĩa
+- dòng 2371: "にべーそを置く" thiếu cách đọc
+- dòng 2374: "インフラを整える" thiếu cách đọc
+- dòng 2375: "インフラを整備する" thiếu cách đọc
+- dòng 2376: "インフラを敷く" thiếu cách đọc
+- dòng 2377: "インフラを築く" thiếu cách đọc
+- dòng 2381: "テクニックがある⇔ない" thiếu cách đọc
+- dòng 2382: "テクニックを持つ" thiếu cách đọc
+- dòng 2383: "高度なテクニック" thiếu cách đọc
+- dòng 2384: "メカニズム" trùng, đã gộp nghĩa
+- dòng 2385: "プロセス" trùng, đã gộp nghĩa
+- dòng 2386: "過程" trùng, đã gộp nghĩa
+- dòng 2388: "フィードバックを与える" thiếu cách đọc
+- dòng 2389: "フィードバックを受ける" thiếu cách đọc
+- dòng 2392: "ポリシーがある⇔ない" thiếu cách đọc
+- dòng 2393: "ポリシーを持つ" thiếu cách đọc
+- dòng 2394: "ポリシーを貫く" thiếu cách đọc
+- dòng 2395: "が" trùng, đã gộp nghĩa
+- dòng 2397: "経済のシミュレーション" thiếu cách đọc
+- dòng 2399: "シミュレーション実験" thiếu cách đọc
+- dòng 2400: "シミュレーション装置" thiếu cách đọc
+- dòng 2402: "アクセスがいい⇔悪い" thiếu cách đọc
+- dòng 2403: "がUターンする" thiếu cách đọc
+- dòng 2404: "Uターンラッシュ" thiếu cách đọc
+- dòng 2405: "が" trùng, đã gộp nghĩa
+- dòng 2407: "が" trùng, đã gộp nghĩa
+- dòng 2409: "フォームがいい⇔悪い" thiếu cách đọc
+- dòng 2410: "書式" thiếu cách đọc
+- dòng 2413: "ポーズを取る" thiếu cách đọc
+- dòng 2414: "ポーズが決まる" thiếu cách đọc
+- dòng 2415: "ポーズを決める" thiếu cách đọc
+- dòng 2416: "ポーズを入れる" thiếu nghĩa
+- dòng 2416: "ポーズを入れる" thiếu cách đọc
+- dòng 2418: "タイミングがいい⇔悪い" thiếu cách đọc
+- dòng 2420: "タイミングを逃す" thiếu cách đọc
+- dòng 2424: "好機" thiếu cách đọc
+- dòng 2433: "サイクルが長い⇔短い" thiếu cách đọc
+- dòng 2442: "いい加減な" thiếu cách đọc
+- dòng 2452: "格好悪い" thiếu cách đọc
+- dòng 2461: "ものの見事に" thiếu cách đọc
+- dòng 2464: "模範" trùng, đã gộp nghĩa
+- dòng 2465: "模範解答" thiếu cách đọc
+- dòng 2466: "模範演技" thiếu cách đọc
+- dòng 2467: "手本" trùng, đã gộp nghĩa
+- dòng 2470: "円滑な" trùng, đã gộp nghĩa
+- dòng 2472: "迅速性" thiếu cách đọc
+- dòng 2484: "まれに見る+「名詞」" thiếu cách đọc
+- dòng 2497: "厄介な" trùng, đã gộp nghĩa
+- dòng 2498: "厄介になる" thiếu cách đọc
+- dòng 2499: "厄介にかける" thiếu cách đọc
+- dòng 2509: "もの足りない" thiếu cách đọc
+- dòng 2524: "を重宝する" thiếu cách đọc
+- dòng 2525: "を重宝がる" thiếu cách đọc
+- dòng 2531: "生暖かい" cách đọc "生暖かい" không phải kana
+- dòng 2532: "生易しい" cách đọc "生易しい" không phải kana
+- dòng 2535: "涙もろい" thiếu cách đọc
+- dòng 2561: "莫大な" trùng, đã gộp nghĩa
+- dòng 2562: "多大な" trùng, đã gộp nghĩa
+- dòng 2563: "おびただしい" trùng, đã gộp nghĩa
+- dòng 2567: "を堪能する" thiếu cách đọc
+- dòng 2571: "企画を立てる" thiếu cách đọc
+- dòng 2577: "要領のいい人" thiếu cách đọc
+- dòng 2578: "要領がいい⇔悪い" thiếu cách đọc
+- dòng 2580: "融通がつく" thiếu cách đọc
+- dòng 2581: "融通をつける" thiếu cách đọc
+- dòng 2593: "措置を取る" thiếu cách đọc
+- dòng 2595: "特別措置" thiếu cách đọc
+- dòng 2598: "是非を問う" thiếu cách đọc
+- dòng 2611: "規則緩和" thiếu cách đọc
+- dòng 2612: "緊張緩和" thiếu cách đọc
+- dòng 2617: "自粛を求める" thiếu cách đọc
+- dòng 2621: "治安がいい⇔悪い" thiếu cách đọc
+- dòng 2622: "治安を維持する⇔乱す" thiếu cách đọc
+- dòng 2624: "治安維持法" thiếu cách đọc
+- dòng 2626: "監視カメラ" thiếu cách đọc
+- dòng 2627: "監視の目を逃れる" thiếu cách đọc
+- dòng 2631: "疑惑を持つ" thiếu cách đọc
+- dòng 2633: "疑惑が晴れる" thiếu cách đọc
+- dòng 2634: "疑惑を晴らす" thiếu cách đọc
+- dòng 2635: "疑惑の念" thiếu cách đọc
+- dòng 2637: "見解が分かれる" thiếu cách đọc
+- dòng 2638: "見解を問う" thiếu cách đọc
+- dòng 2639: "否定的見解" thiếu cách đọc
+- dòng 2640: "肯定的見解" thiếu cách đọc
+- dòng 2642: "知識" thiếu cách đọc
+- dòng 2643: "意識" thiếu cách đọc
+- dòng 2644: "認識が甘い" thiếu cách đọc
+- dòng 2645: "認識が不足している" thiếu cách đọc
+- dòng 2646: "認識に欠ける" thiếu cách đọc
+- dòng 2647: "認識を深める" thiếu cách đọc
+- dòng 2648: "認識を改める" thiếu cách đọc
+- dòng 2649: "認識不足" thiếu cách đọc
+- dòng 2657: "神秘に満ちている" thiếu cách đọc
+- dòng 2659: "神秘的な" thiếu cách đọc
+- dòng 2660: "神秘主義" thiếu cách đọc
+- dòng 2662: "驚異的な" thiếu cách đọc
+- dòng 2666: "～兆しが見える" thiếu cách đọc
+- dòng 2667: "～兆しを見せる" thiếu cách đọc
+- dòng 2674: "幕を開ける" thiếu cách đọc
+- dòng 2675: "幕を開く⇔閉じる" thiếu cách đọc
+- dòng 2676: "幕を上がる⇔下りる" thiếu cách đọc
+- dòng 2681: "成り行きに任せる" thiếu cách đọc
+- dòng 2682: "成り行きに注目する" thiếu cách đọc
+- dòng 2683: "成り行きを見守る" thiếu cách đọc
+- dòng 2684: "成り行き次第" thiếu cách đọc
+- dòng 2685: "その場の成り行きで" thiếu cách đọc
+- dòng 2686: "ことの成り行き" thiếu cách đọc
+- dòng 2687: "成り行き任せ" thiếu cách đọc
+- dòng 2689: "行き違いになる" thiếu cách đọc
+- dòng 2697: "果てがない" thiếu cách đọc
+- dòng 2698: "あげくの果てに" thiếu cách đọc
+- dòng 2699: "果てしない" thiếu cách đọc
+- dòng 2701: "決を採る" thiếu cách đọc
+- dòng 2702: "多数決" thiếu cách đọc
+- dòng 2703: "否決⇔可決" cách đọc "ひけつ⇔かけつ" không phải kana
+- dòng 2706: "目処がつく" thiếu cách đọc
+- dòng 2707: "目処が立つ" thiếu cách đọc
+- dòng 2709: "宣告を受ける" thiếu cách đọc
+- dòng 2711: "声明を出す" thiếu cách đọc
+- dòng 2712: "声明を発表する" thiếu cách đọc
+- dòng 2713: "声明書" thiếu cách đọc
+- dòng 2714: "声明文" thiếu cách đọc
+- dòng 2715: "公式声明" thiếu cách đọc
+- dòng 2716: "抗議声明" thiếu cách đọc
+- dòng 2722: "勢力がある⇔ない" thiếu cách đọc
+- dòng 2723: "勢力を得る" thiếu cách đọc
+- dòng 2724: "勢力が増す" thiếu cách đọc
+- dòng 2725: "勢力が伸ばす" thiếu cách đọc
+- dòng 2727: "勢力が失う" thiếu cách đọc
+- dòng 2728: "勢力が強い⇔弱い" thiếu cách đọc
+- dòng 2729: "勢力争い" thiếu cách đọc
+- dòng 2730: "勢力範囲" thiếu cách đọc
+- dòng 2733: "形勢が変わる" thiếu cách đọc
+- dòng 2735: "形勢が有利な⇔不利な" thiếu cách đọc
+- dòng 2745: "新規開拓" thiếu cách đọc
+- dòng 2751: "（が）こだわる" thiếu cách đọc
+- dòng 2757: "社会保障" thiếu cách đọc
+- dòng 2758: "安全保障" thiếu cách đọc
+- dòng 2759: "災害保障" thiếu cách đọc
+- dòng 2760: "医療保障" thiếu cách đọc
+- dòng 2761: "警備保障" thiếu cách đọc
+- dòng 2768: "に補足を加える" thiếu cách đọc
+- dòng 2769: "補足点" thiếu cách đọc
+- dòng 2770: "補足説明" thiếu cách đọc
+- dòng 2771: "補足的な" thiếu cách đọc
+- dòng 2774: "栄養補給" thiếu cách đọc
+- dòng 2790: "平和共存" thiếu cách đọc
+- dòng 2796: "未" thiếu cách đọc
+- dòng 2797: "無" thiếu cách đọc
+- dòng 2798: "非" thiếu cách đọc
+- dòng 2799: "不" thiếu cách đọc
+- dòng 2802: "節度を守る" thiếu cách đọc
+- dòng 2803: "に節度がある⇔ない" thiếu cách đọc
+- dòng 2804: "節度をわきまえる" thiếu cách đọc
+- dòng 2806: "に義理がある⇔ない" thiếu cách đọc
+- dòng 2816: "情緒がある⇔ない" thiếu cách đọc
+- dòng 2821: "情緒不安定" thiếu cách đọc
+- dòng 2822: "情緒障害" thiếu cách đọc
+- dòng 2825: "動揺を抑える" thiếu cách đọc
+- dòng 2829: "にむらがある⇔ない" thiếu cách đọc
+- dòng 2830: "むらが大きい" thiếu cách đọc
+- dòng 2832: "世の中の風潮" thiếu cách đọc
+- dòng 2834: "風潮に従う⇔逆らう" cách đọc "したがう⇔さからう" không phải kana
+- dòng 2838: "暴露記事" thiếu cách đọc
+- dòng 2842: "現実逃避" thiếu cách đọc
+- dòng 2847: "言い分がある⇔ない" thiếu cách đọc
+- dòng 2849: "～の言いなりになる" thiếu cách đọc
+- dòng 2850: "言うがまま" thiếu cách đọc
+- dòng 2854: "を創造する" trùng, đã gộp nghĩa
+- dòng 2857: "趣がある⇔ない" thiếu cách đọc
+- dòng 2862: "渦を巻く" thiếu cách đọc
+- dòng 2865: "溝がある" thiếu cách đọc
+- dòng 2866: "溝が深い" thiếu cách đọc
+- dòng 2867: "溝が大きい" thiếu cách đọc
+- dòng 2868: "溝が深い⇔浅い" thiếu cách đọc
+- dòng 2869: "溝が埋まる" thiếu cách đọc
+- dòng 2870: "溝を埋める" thiếu cách đọc
+- dòng 2874: "折を見て" thiếu cách đọc
+- dòng 2875: "折に触れて" thiếu cách đọc
+- dòng 2876: "折があれば" thiếu cách đọc
+- dòng 2877: "が" trùng, đã gộp nghĩa
+- dòng 2884: "（が）もたれる" thiếu cách đọc
+- dòng 2885: "（が）しがみつく" thiếu cách đọc
+- dòng 2886: "過去の栄光にしがみつく" thiếu cách đọc
+- dòng 2891: "を構う" thiếu cách đọc
+- dòng 2900: "（が）とぼける" thiếu cách đọc
+- dòng 2903: "（が）おびえる" thiếu cách đọc
+- dòng 2905: "戸惑いが覚える" thiếu cách đọc
+- dòng 2907: "慎み深い" thiếu cách đọc
+- dòng 2908: "慎みがある⇔ない" thiếu cách đọc
+- dòng 2916: "が手を焼く" thiếu cách đọc
+- dòng 2919: "が" trùng, đã gộp nghĩa
+- dòng 2922: "を賠償する" trùng, đã gộp nghĩa
+- dòng 2923: "を補償する" trùng, đã gộp nghĩa
+- dòng 2924: "償いをする" thiếu cách đọc
+- dòng 2928: "が。。。にこだわる" thiếu cách đọc
+- dòng 2929: "こだわりがある⇔ない" thiếu cách đọc
+- dòng 2938: "便宜を図る" thiếu cách đọc
+- dòng 2943: "取り仕切る" thiếu cách đọc
+- dòng 2945: "手の施しようがない" thiếu cách đọc
+- dòng 2946: "が間に合う" thiếu cách đọc
+- dòng 2947: "を間に合わせる" thiếu cách đọc
+- dòng 2953: "数をこなす" thiếu cách đọc
+- dòng 2954: "(が)はかどる" thiếu cách đọc
+- dòng 2956: "行き詰まりを感じる" thiếu cách đọc
+- dòng 2957: "が滞る" trùng, đã gộp nghĩa
+- dòng 2965: "（が）たどる" thiếu cách đọc
+- dòng 2970: "手探り" trùng, đã gộp nghĩa
+- dòng 2977: "辺りをうかがう" thiếu cách đọc
+- dòng 2985: "障りがある" thiếu cách đọc
+- dòng 2987: "(が)こもる" thiếu cách đọc
+- dòng 2989: "が引きこもる" trùng, đã gộp nghĩa
+- dòng 2996: "が動揺する" trùng, đã gộp nghĩa
+- dòng 2997: "（が）もめる" thiếu cách đọc
+- dòng 2999: "大もめ" thiếu cách đọc
+- dòng 3004: "（が）ひっくり返る" thiếu cách đọc
+- dòng 3007: "（が）ゆがむ" thiếu cách đọc
+- dòng 3008: "ゆがみがある⇔ない" thiếu cách đọc
+- dòng 3009: "ゆがみが生じる" thiếu cách đọc
+- dòng 3010: "（が）こじれる" thiếu cách đọc
+- dòng 3013: "時間が隔たる" thiếu cách đọc
+- dòng 3014: "隔たりがある⇔ない" thiếu cách đọc
+- dòng 3015: "隔たりができる" thiếu cách đọc
+- dòng 3017: "隔てがある⇔ない" thiếu cách đọc
+- dòng 3018: "隔てなく" thiếu cách đọc
+- dòng 3020: "釣り合いが取れる" thiếu cách đọc
+- dòng 3025: "を関係づける" thiếu cách đọc
+- dòng 3028: "～紛れ" thiếu nghĩa
+- dòng 3031: "を紛らす" trùng, đã gộp nghĩa
+- dòng 3032: "気を紛らす" thiếu cách đọc
+- dòng 3033: "（が）かさばる" thiếu cách đọc
+- dòng 3035: "（が）かさむ" thiếu cách đọc
+- dòng 3036: "（が）しなびる" thiếu cách đọc
+- dòng 3041: "(が)よみがえる" thiếu cách đọc
+- dòng 3048: "（が）とろける" thiếu cách đọc
+- dòng 3050: "（が）くつろぐ" thiếu cách đọc
+- dòng 3052: "きっぱり（と）" thiếu cách đọc
+- dòng 3053: "てきぱき（と）" thiếu cách đọc
+- dòng 3055: "だらだら（と）する" thiếu cách đọc
+- dòng 3056: "ぐずぐず（と）する" thiếu cách đọc
+- dòng 3057: "ゆうゆう（と）" thiếu cách đọc
+- dòng 3058: "いそいそ（と）" thiếu cách đọc
+- dòng 3060: "じっくり（と）" thiếu cách đọc
+- dòng 3061: "おろおろ（と）する" thiếu cách đọc
+- dòng 3063: "ぶつぶつ（と）" thiếu cách đọc
+- dòng 3064: "うっとり（と）する" thiếu cách đọc
+- dòng 3065: "ゆったり（と）する" thiếu cách đọc
+- dòng 3066: "しみじみ（と）" thiếu cách đọc
+- dòng 3067: "つくづく（と）" thiếu cách đọc
+- dòng 3070: "心から" thiếu cách đọc
+- dòng 3071: "がっくり（と）する" thiếu cách đọc
+- dòng 3075: "きっかり（と）" thiếu cách đọc
+- dòng 3076: "きっちり（と）" thiếu cách đọc
+- dòng 3082: "一心に" thiếu cách đọc
+- dòng 3083: "あくまで（も）" thiếu cách đọc
+- dòng 3098: "専らのうわさ" thiếu cách đọc
+- dòng 3113: "ややもすれば" trùng, đã gộp nghĩa
+- dòng 3117: "漠然たる不安" thiếu cách đọc
+- dòng 3119: "「名詞」にもまして" thiếu cách đọc
+- dòng 3121: "なおさら" trùng, đã gộp nghĩa
+- dòng 3126: "明くる日" thiếu cách đọc
+- dòng 3128: "明くる年" thiếu cách đọc
+
+## từ ghép n23 (184)
+
+- dòng 48: "事件" trùng, đã gộp nghĩa
+- dòng 303: "人口" trùng, đã gộp nghĩa
+- dòng 364: "作品" trùng, đã gộp nghĩa
+- dòng 388: "原因" trùng, đã gộp nghĩa
+- dòng 400: "国内" trùng, đã gộp nghĩa
+- dòng 403: "入国" trùng, đã gộp nghĩa
+- dòng 407: "周囲" trùng, đã gộp nghĩa
+- dòng 410: "公園" trùng, đã gộp nghĩa
+- dòng 439: "報告" trùng, đã gộp nghĩa
+- dòng 450: "圧力" trùng, đã gộp nghĩa
+- dòng 502: "友好" trùng, đã gộp nghĩa
+- dòng 517: "原子" trùng, đã gộp nghĩa
+- dòng 531: "乾季" trùng, đã gộp nghĩa
+- dòng 536: "学問" trùng, đã gộp nghĩa
+- dòng 538: "住宅" trùng, đã gộp nghĩa
+- dòng 544: "厳守" trùng, đã gộp nghĩa
+- dòng 545: "安全" trùng, đã gộp nghĩa
+- dòng 558: "乗客" trùng, đã gộp nghĩa
+- dòng 595: "将来" trùng, đã gộp nghĩa
+- dòng 599: "尊厳" trùng, đã gộp nghĩa
+- dòng 624: "半島" trùng, đã gộp nghĩa
+- dòng 644: "公平" trùng, đã gộp nghĩa
+- dòng 666: "在庫" trùng, đã gộp nghĩa
+- dòng 687: "役割" trùng, đã gộp nghĩa
+- dòng 761: "好意" trùng, đã gộp nghĩa
+- dòng 770: "感動" trùng, đã gộp nghĩa
+- dòng 778: "失恋" trùng, đã gộp nghĩa
+- dòng 779: "恋愛" trùng, đã gộp nghĩa
+- dòng 783: "成功" trùng, đã gộp nghĩa
+- dòng 795: "天才" trùng, đã gộp nghĩa
+- dòng 811: "交換" trùng, đã gộp nghĩa
+- dòng 828: "事故" trùng, đã gộp nghĩa
+- dòng 837: "尊敬" trùng, đã gộp nghĩa
+- dòng 843: "数字" trùng, đã gộp nghĩa
+- dòng 902: "普通" trùng, đã gộp nghĩa
+- dòng 903: "普及" trùng, đã gộp nghĩa
+- dòng 904: "普段" trùng, đã gộp nghĩa
+- dòng 905: "数量" trùng, đã gộp nghĩa
+- dòng 906: "数字" trùng, đã gộp nghĩa
+- dòng 907: "奇数" trùng, đã gộp nghĩa
+- dòng 908: "偶数" trùng, đã gộp nghĩa
+- dòng 909: "整理" trùng, đã gộp nghĩa
+- dòng 910: "整形" trùng, đã gộp nghĩa
+- dòng 911: "調整" trùng, đã gộp nghĩa
+- dòng 912: "注文" trùng, đã gộp nghĩa
+- dòng 913: "文章" trùng, đã gộp nghĩa
+- dòng 914: "文句" trùng, đã gộp nghĩa
+- dòng 915: "資料" trùng, đã gộp nghĩa
+- dòng 916: "給料" trùng, đã gộp nghĩa
+- dòng 917: "無料" trùng, đã gộp nghĩa
+- dòng 918: "新聞" trùng, đã gộp nghĩa
+- dòng 919: "革新" trùng, đã gộp nghĩa
+- dòng 920: "新郎" trùng, đã gộp nghĩa
+- dòng 921: "新鮮" trùng, đã gộp nghĩa
+- dòng 922: "診断" trùng, đã gộp nghĩa
+- dòng 923: "中断" trùng, đã gộp nghĩa
+- dòng 924: "判断" trùng, đã gộp nghĩa
+- dòng 925: "旅館" trùng, đã gộp nghĩa
+- dòng 926: "旅客" trùng, đã gộp nghĩa
+- dòng 927: "旅費" trùng, đã gộp nghĩa
+- dòng 928: "民族" trùng, đã gộp nghĩa
+- dòng 929: "貴族" trùng, đã gộp nghĩa
+- dòng 930: "早退" trùng, đã gộp nghĩa
+- dòng 931: "早婚" trùng, đã gộp nghĩa
+- dòng 932: "説明" trùng, đã gộp nghĩa
+- dòng 933: "発明" trùng, đã gộp nghĩa
+- dòng 934: "明確" trùng, đã gộp nghĩa
+- dòng 935: "貿易" trùng, đã gộp nghĩa
+- dòng 936: "交易" trùng, đã gộp nghĩa
+- dòng 937: "衛星" trùng, đã gộp nghĩa
+- dòng 938: "惑星" trùng, đã gộp nghĩa
+- dòng 939: "流星" trùng, đã gộp nghĩa
+- dòng 940: "映像" trùng, đã gộp nghĩa
+- dòng 941: "反映" trùng, đã gộp nghĩa
+- dòng 942: "映画" trùng, đã gộp nghĩa
+- dòng 943: "即時" trùng, đã gộp nghĩa
+- dòng 944: "同時" trùng, đã gộp nghĩa
+- dòng 945: "時給" trùng, đã gộp nghĩa
+- dòng 946: "昼夜" trùng, đã gộp nghĩa
+- dòng 947: "昼食" trùng, đã gộp nghĩa
+- dòng 948: "景品" trùng, đã gộp nghĩa
+- dòng 949: "背景" trùng, đã gộp nghĩa
+- dòng 950: "風景" trùng, đã gộp nghĩa
+- dòng 951: "休暇" trùng, đã gộp nghĩa
+- dòng 952: "余暇" trùng, đã gộp nghĩa
+- dòng 953: "暖冬" trùng, đã gộp nghĩa
+- dòng 954: "暖房" trùng, đã gộp nghĩa
+- dòng 955: "温暖" trùng, đã gộp nghĩa
+- dòng 956: "暗号" trùng, đã gộp nghĩa
+- dòng 957: "暗殺" trùng, đã gộp nghĩa
+- dòng 958: "暗記" trùng, đã gộp nghĩa
+- dòng 959: "秘書" trùng, đã gộp nghĩa
+- dòng 960: "書類" trùng, đã gộp nghĩa
+- dòng 961: "司書" trùng, đã gộp nghĩa
+- dòng 962: "制服" trùng, đã gộp nghĩa
+- dòng 963: "服装" trùng, đã gộp nghĩa
+- dòng 964: "衣服" trùng, đã gộp nghĩa
+- dòng 967: "帰国" trùng, đã gộp nghĩa
+- dòng 970: "必死" trùng, đã gộp nghĩa
+- dòng 971: "残念" trùng, đã gộp nghĩa
+- dòng 980: "比例" trùng, đã gộp nghĩa
+- dòng 984: "毛布" trùng, đã gộp nghĩa
+- dòng 992: "永久" trùng, đã gộp nghĩa
+- dòng 1003: "治安" trùng, đã gộp nghĩa
+- dòng 1007: "宿泊" trùng, đã gộp nghĩa
+- dòng 1036: "深刻" trùng, đã gộp nghĩa
+- dòng 1054: "準備" trùng, đã gộp nghĩa
+- dòng 1058: "温暖" trùng, đã gộp nghĩa
+- dòng 1078: "喫煙" trùng, đã gộp nghĩa
+- dòng 1083: "戦争" trùng, đã gộp nghĩa
+- dòng 1095: "特別" trùng, đã gộp nghĩa
+- dòng 1114: "心理" trùng, đã gộp nghĩa
+- dòng 1115: "理想" trùng, đã gộp nghĩa
+- dòng 1119: "厚生" trùng, đã gộp nghĩa
+- dòng 1123: "応用" trùng, đã gộp nghĩa
+- dòng 1185: "石油" trùng, đã gộp nghĩa
+- dòng 1186: "研修" trùng, đã gộp nghĩa
+- dòng 1191: "祖先" trùng, đã gộp nghĩa
+- dòng 1224: "独立" trùng, đã gộp nghĩa
+- dòng 1242: "季節" trùng, đã gộp nghĩa
+- dòng 1247: "紀元" trùng, đã gộp nghĩa
+- dòng 1264: "絶対" trùng, đã gộp nghĩa
+- dòng 1267: "供給" trùng, đã gộp nghĩa
+- dòng 1289: "参考" trùng, đã gộp nghĩa
+- dòng 1295: "新聞" trùng, đã gộp nghĩa
+- dòng 1307: "教育" trùng, đã gộp nghĩa
+- dòng 1309: "背景" trùng, đã gộp nghĩa
+- dòng 1310: "背泳" trùng, đã gộp nghĩa
+- dòng 1311: "才能" trùng, đã gộp nghĩa
+- dòng 1318: "自然" trùng, đã gộp nghĩa
+- dòng 1339: "落下" trùng, đã gộp nghĩa
+- dòng 1346: "信号" trùng, đã gộp nghĩa
+- dòng 1355: "財政" trùng, đã gộp nghĩa
+- dòng 1358: "責任" trùng, đã gộp nghĩa
+- dòng 1367: "消費" trùng, đã gộp nghĩa
+- dòng 1371: "賃貸" trùng, đã gộp nghĩa
+- dòng 1378: "品質" trùng, đã gộp nghĩa
+- dòng 1379: "物質" trùng, đã gộp nghĩa
+- dòng 1396: "趣味" trùng, đã gộp nghĩa
+- dòng 1398: "満足" trùng, đã gộp nghĩa
+- dòng 1404: "列車" trùng, đã gộp nghĩa
+- dòng 1412: "回転" trùng, đã gộp nghĩa
+- dòng 1427: "返答" trùng, đã gộp nghĩa
+- dòng 1428: "返信" trùng, đã gộp nghĩa
+- dòng 1433: "放送" trùng, đã gộp nghĩa
+- dòng 1437: "通信" trùng, đã gộp nghĩa
+- dòng 1438: "通知" trùng, đã gộp nghĩa
+- dòng 1439: "普通" trùng, đã gộp nghĩa
+- dòng 1440: "速度" trùng, đã gộp nghĩa
+- dòng 1441: "減速" trùng, đã gộp nghĩa
+- dòng 1447: "連休" trùng, đã gộp nghĩa
+- dòng 1452: "進展" trùng, đã gộp nghĩa
+- dòng 1456: "運賃" trùng, đã gộp nghĩa
+- dòng 1458: "海運" trùng, đã gộp nghĩa
+- dòng 1459: "過去" trùng, đã gộp nghĩa
+- dòng 1469: "違反" trùng, đã gộp nghĩa
+- dòng 1473: "永遠" trùng, đã gộp nghĩa
+- dòng 1476: "遅刻" trùng, đã gộp nghĩa
+- dòng 1484: "郵便" trùng, đã gộp nghĩa
+- dòng 1489: "配布" trùng, đã gộp nghĩa
+- dòng 1491: "支配" trùng, đã gộp nghĩa
+- dòng 1499: "野菜" trùng, đã gộp nghĩa
+- dòng 1506: "借金" trùng, đã gộp nghĩa
+- dòng 1510: "鉛筆" trùng, đã gộp nghĩa
+- dòng 1518: "成長" trùng, đã gộp nghĩa
+- dòng 1527: "開花" trùng, đã gộp nghĩa
+- dòng 1530: "展開" trùng, đã gộp nghĩa
+- dòng 1545: "国際" trùng, đã gộp nghĩa
+- dòng 1546: "実際" trùng, đã gộp nghĩa
+- dòng 1547: "障害" trùng, đã gộp nghĩa
+- dòng 1548: "故障" trùng, đã gộp nghĩa
+- dòng 1559: "困難" trùng, đã gộp nghĩa
+- dòng 1566: "停電" trùng, đã gộp nghĩa
+- dòng 1567: "電源" trùng, đã gộp nghĩa
+- dòng 1572: "冷静" trùng, đã gộp nghĩa
+- dòng 1579: "画面" trùng, đã gộp nghĩa
+- dòng 1582: "音声" trùng, đã gộp nghĩa
+- dòng 1594: "書類" trùng, đã gộp nghĩa
+- dòng 1595: "種類" trùng, đã gộp nghĩa
+- dòng 1597: "風景" trùng, đã gộp nghĩa
+- dòng 1599: "台風" trùng, đã gộp nghĩa
+- dòng 1609: "養育" trùng, đã gộp nghĩa
+- dòng 1610: "経験" trùng, đã gộp nghĩa
+- dòng 1611: "受験" trùng, đã gộp nghĩa
+
+## Từ láy (16)
+
+- dòng 36: "びしょびしょ" trùng, đã gộp nghĩa
+- dòng 37: "のろのろ" trùng, đã gộp nghĩa
+- dòng 46: "ますます" trùng, đã gộp nghĩa
+- dòng 48: "とうとう" trùng, đã gộp nghĩa
+- dòng 57: "たまたま" trùng, đã gộp nghĩa
+- dòng 62: "たびたび" trùng, đã gộp nghĩa
+- dòng 66: "にこにこ" trùng, đã gộp nghĩa
+- dòng 67: "にやにや" trùng, đã gộp nghĩa
+- dòng 68: "どきどき" trùng, đã gộp nghĩa
+- dòng 69: "はらはら" trùng, đã gộp nghĩa
+- dòng 70: "かんかん" trùng, đã gộp nghĩa
+- dòng 71: "びしょびしょ" trùng, đã gộp nghĩa
+- dòng 72: "うろうろ" trùng, đã gộp nghĩa
+- dòng 73: "のろのろ" trùng, đã gộp nghĩa
+- dòng 74: "ふらふら" trùng, đã gộp nghĩa
+- dòng 75: "ぶらぶら" trùng, đã gộp nghĩa
+
+## Trợ từ (7)
+
+- dòng 8: "だいぶ
+だいぶん" / "大分" có vẻ đảo cột, đã đổi chỗ
+- dòng 16: "すぐ（に）" cách đọc "すぐ（に）" không phải kana
+- dòng 85: "一層" cách đọc "いっそう（tầng)" không phải kana
+- dòng 94: "後（に）" cách đọc "のち（に）" không phải kana
+- dòng 96: "そのうち（に）" cách đọc "そのうち（に）" không phải kana
+- dòng 167: "一斉に" cách đọc "いっせいに (tế)" không phải kana
+- dòng 184: "実際（に）" cách đọc "じっさい（に）" không phải kana
+
+## kanji (1)
+
+- 89 từ không ghép được (số chữ Hán khác số âm Hán Việt)
