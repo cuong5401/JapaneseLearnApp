@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Bảng màu "Aizome": giấy trắng ngả lam, mực chàm, điểm nhấn vàng hoàng bá (kihada).
+ * Mọi màu khai báo một lần dưới dạng biến, dark mode chỉ đổi giá trị biến.
+ */
+:root {
+  --paper: #f1f3f8;
+  --surface: #ffffff;
+  --sunken: #e6eaf3;
+  --ink: #17213f;
+  --muted: #586384;
+  --line: #d3d9e8;
+  --ai: #27458c;
+  --ai-soft: #dfe6f6;
+  --on-ai: #ffffff;
+  --kihada: #e2ae2f;
+  --kihada-soft: #fbefcc;
+  --beni: #b8323f;
+  --beni-soft: #f8e0e2;
+  --matsu: #2a7552;
+  --matsu-soft: #dcf0e5;
+  --cell-line: #9fb0d6;
+  --cell-guide: #c4cfe7;
+}
+
+.dark {
+  --paper: #0f1631;
+  --surface: #172043;
+  --sunken: #0b1128;
+  --ink: #e7eaf4;
+  --muted: #9aa4c4;
+  --line: #2b3765;
+  --ai: #93abeb;
+  --ai-soft: #22305e;
+  --on-ai: #0f1631;
+  --kihada: #f0c45a;
+  --kihada-soft: #3a3320;
+  --beni: #f2808e;
+  --beni-soft: #3d1f2b;
+  --matsu: #74d0a2;
+  --matsu-soft: #183a35;
+  --cell-line: #3e4d85;
+  --cell-guide: #2c3a6c;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-ai: var(--ai);
+  --color-ai-soft: var(--ai-soft);
+  --color-on-ai: var(--on-ai);
+  --color-kihada: var(--kihada);
+  --color-kihada-soft: var(--kihada-soft);
+  --color-beni: var(--beni);
+  --color-beni-soft: var(--beni-soft);
+  --color-matsu: var(--matsu);
+  --color-matsu-soft: var(--matsu-soft);
+  --color-cell-line: var(--cell-line);
+  --color-cell-guide: var(--cell-guide);
+
+  --font-sans: "Be Vietnam Pro", "Noto Sans JP", system-ui, sans-serif;
+  --font-jp: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    min-height: 100dvh;
+  }
+  :lang(ja) {
+    font-family: var(--font-jp);
+  }
+  :focus-visible {
+    outline: 2px solid var(--ai);
+    outline-offset: 2px;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: default;
+  }
+}
+
+/* Lật flashcard */
+.flip {
+  perspective: 1400px;
+}
+.flip-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.flip-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+.flip-face {
+  backface-visibility: hidden;
+}
+.flip-back {
+  transform: rotateY(180deg);
+}
+
+@keyframes stamp {
+  from {
+    transform: scale(1.12);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.animate-stamp {
+  animation: stamp 0.22s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-inner {
+    transition: none;
+  }
+  .animate-stamp {
+    animation: none;
+  }
+}

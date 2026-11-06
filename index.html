@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="Học tiếng Nhật từ N5 đến N1: kana, từ vựng, chữ Hán, quiz và ôn tập ngắt quãng." />
+    <meta name="theme-color" content="#f1f3f8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f1631" media="(prefers-color-scheme: dark)" />
+    <title>Kotonoha | Học tiếng Nhật</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      // Đặt theme trước khi render để không bị nháy màu.
+      ;(function () {
+        try {
+          var t = localStorage.getItem('jla:theme')
+          var dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+          if (dark) document.documentElement.classList.add('dark')
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+        } catch (e) {}
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

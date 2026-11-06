@@ -1,0 +1,22 @@
+[
+  { "id": "of-001", "word": "会議", "reading": "かいぎ", "meaning": "cuộc họp", "pos": "danh từ", "example": { "ja": "午後二時から会議があります。", "vi": "Có cuộc họp từ 2 giờ chiều." } },
+  { "id": "of-002", "word": "資料", "reading": "しりょう", "meaning": "tài liệu", "pos": "danh từ", "example": { "ja": "会議の資料を準備します。", "vi": "Chuẩn bị tài liệu cho cuộc họp." } },
+  { "id": "of-003", "word": "報告", "reading": "ほうこく", "meaning": "báo cáo", "pos": "danh từ, động từ する", "example": { "ja": "上司に進捗を報告します。", "vi": "Báo cáo tiến độ cho cấp trên." } },
+  { "id": "of-004", "word": "連絡", "reading": "れんらく", "meaning": "liên lạc", "pos": "danh từ, động từ する", "example": { "ja": "決まったら連絡します。", "vi": "Khi quyết định xong tôi sẽ liên lạc." } },
+  { "id": "of-005", "word": "相談", "reading": "そうだん", "meaning": "trao đổi, xin ý kiến", "pos": "danh từ, động từ する", "example": { "ja": "困ったときは先輩に相談します。", "vi": "Khi gặp khó khăn tôi xin ý kiến tiền bối." } },
+  { "id": "of-006", "word": "上司", "reading": "じょうし", "meaning": "cấp trên", "pos": "danh từ", "example": { "ja": "上司に休みの許可をもらいました。", "vi": "Tôi đã được cấp trên cho nghỉ." } },
+  { "id": "of-007", "word": "部下", "reading": "ぶか", "meaning": "cấp dưới", "pos": "danh từ", "example": { "ja": "部下に仕事を任せます。", "vi": "Giao việc cho cấp dưới." } },
+  { "id": "of-008", "word": "取引先", "reading": "とりひきさき", "meaning": "đối tác kinh doanh", "pos": "danh từ", "example": { "ja": "明日、取引先を訪問します。", "vi": "Ngày mai tôi đến thăm đối tác." } },
+  { "id": "of-009", "word": "名刺", "reading": "めいし", "meaning": "danh thiếp", "pos": "danh từ", "example": { "ja": "初対面の人と名刺を交換しました。", "vi": "Tôi đã trao đổi danh thiếp với người mới gặp." } },
+  { "id": "of-010", "word": "締め切り", "reading": "しめきり", "meaning": "hạn chót (deadline)", "pos": "danh từ", "example": { "ja": "報告書の締め切りは金曜日です。", "vi": "Hạn nộp báo cáo là thứ Sáu." } },
+  { "id": "of-011", "word": "残業", "reading": "ざんぎょう", "meaning": "làm thêm giờ", "pos": "danh từ, động từ する", "example": { "ja": "今週は毎日残業しています。", "vi": "Tuần này ngày nào tôi cũng làm thêm giờ." } },
+  { "id": "of-012", "word": "有給休暇", "reading": "ゆうきゅうきゅうか", "meaning": "nghỉ phép có lương", "pos": "danh từ", "example": { "ja": "来週、有給休暇を取ります。", "vi": "Tuần sau tôi nghỉ phép có lương." } },
+  { "id": "of-013", "word": "出張", "reading": "しゅっちょう", "meaning": "đi công tác", "pos": "danh từ, động từ する", "example": { "ja": "来月、大阪へ出張します。", "vi": "Tháng sau tôi đi công tác Osaka." } },
+  { "id": "of-014", "word": "稟議", "reading": "りんぎ", "meaning": "tờ trình xin phê duyệt nội bộ", "pos": "danh từ", "example": { "ja": "パソコン購入の稟議を出しました。", "vi": "Đã nộp tờ trình xin mua máy tính." } },
+  { "id": "of-015", "word": "議事録", "reading": "ぎじろく", "meaning": "biên bản cuộc họp", "pos": "danh từ", "example": { "ja": "議事録をチームに共有します。", "vi": "Chia sẻ biên bản cuộc họp cho cả nhóm." } },
+  { "id": "of-016", "word": "承認", "reading": "しょうにん", "meaning": "phê duyệt", "pos": "danh từ, động từ する", "example": { "ja": "この申請には部長の承認が必要です。", "vi": "Đơn này cần trưởng phòng phê duyệt." } },
+  { "id": "of-017", "word": "請求書", "reading": "せいきゅうしょ", "meaning": "hóa đơn đề nghị thanh toán", "pos": "danh từ", "example": { "ja": "月末に請求書を発行します。", "vi": "Cuối tháng sẽ xuất hóa đơn." } },
+  { "id": "of-018", "word": "経費", "reading": "けいひ", "meaning": "chi phí, kinh phí", "pos": "danh từ", "example": { "ja": "交通費を経費で精算します。", "vi": "Thanh toán tiền đi lại vào chi phí công ty." } },
+  { "id": "of-019", "word": "引き継ぎ", "reading": "ひきつぎ", "meaning": "bàn giao công việc", "pos": "danh từ", "example": { "ja": "休む前に引き継ぎをしておきます。", "vi": "Tôi sẽ bàn giao công việc trước khi nghỉ." } },
+  { "id": "of-020", "word": "打ち合わせ", "reading": "うちあわせ", "meaning": "buổi họp trao đổi", "pos": "danh từ, động từ する", "example": { "ja": "明日の十時に打ち合わせをしましょう。", "vi": "Họp trao đổi lúc 10 giờ ngày mai nhé." } }
+]

@@ -1,0 +1,22 @@
+[
+  { "id": "el-001", "word": "回路", "reading": "かいろ", "meaning": "mạch điện", "pos": "danh từ", "example": { "ja": "回路図を見ながら配線します。", "vi": "Vừa xem sơ đồ mạch vừa đi dây." } },
+  { "id": "el-002", "word": "電圧", "reading": "でんあつ", "meaning": "điện áp", "pos": "danh từ", "example": { "ja": "テスターで電圧を測定してください。", "vi": "Hãy đo điện áp bằng đồng hồ vạn năng." } },
+  { "id": "el-003", "word": "電流", "reading": "でんりゅう", "meaning": "dòng điện", "pos": "danh từ", "example": { "ja": "電流が流れすぎています。", "vi": "Dòng điện đang chạy quá lớn." } },
+  { "id": "el-004", "word": "抵抗", "reading": "ていこう", "meaning": "điện trở", "pos": "danh từ", "example": { "ja": "抵抗の値をカラーコードで確認します。", "vi": "Kiểm tra giá trị điện trở bằng mã màu." } },
+  { "id": "el-005", "word": "基板", "reading": "きばん", "meaning": "bo mạch (PCB)", "pos": "danh từ", "example": { "ja": "基板に部品を実装します。", "vi": "Gắn linh kiện lên bo mạch." } },
+  { "id": "el-006", "word": "半導体", "reading": "はんどうたい", "meaning": "chất bán dẫn", "pos": "danh từ", "example": { "ja": "半導体の需要が増えています。", "vi": "Nhu cầu về bán dẫn đang tăng." } },
+  { "id": "el-007", "word": "コンデンサ", "reading": "コンデンサ", "meaning": "tụ điện", "pos": "danh từ", "example": { "ja": "コンデンサが膨らんでいます。", "vi": "Tụ điện bị phồng lên." } },
+  { "id": "el-008", "word": "はんだ付け", "reading": "はんだづけ", "meaning": "hàn thiếc", "pos": "danh từ, động từ する", "example": { "ja": "はんだ付けの練習をしました。", "vi": "Tôi đã luyện hàn thiếc." } },
+  { "id": "el-009", "word": "配線", "reading": "はいせん", "meaning": "đi dây, nối dây", "pos": "danh từ, động từ する", "example": { "ja": "配線を間違えないよう注意してください。", "vi": "Chú ý đừng nối dây sai." } },
+  { "id": "el-010", "word": "絶縁", "reading": "ぜつえん", "meaning": "cách điện", "pos": "danh từ, động từ する", "example": { "ja": "接続部に絶縁テープを巻きます。", "vi": "Quấn băng cách điện ở mối nối." } },
+  { "id": "el-011", "word": "接地", "reading": "せっち", "meaning": "nối đất (tiếp địa)", "pos": "danh từ, động từ する", "example": { "ja": "機器は必ず接地してください。", "vi": "Thiết bị bắt buộc phải nối đất." } },
+  { "id": "el-012", "word": "電源", "reading": "でんげん", "meaning": "nguồn điện", "pos": "danh từ", "example": { "ja": "電源を切ってから作業します。", "vi": "Ngắt nguồn điện rồi mới thao tác." } },
+  { "id": "el-013", "word": "短絡", "reading": "たんらく", "meaning": "ngắn mạch (chập mạch)", "pos": "danh từ, động từ する", "example": { "ja": "短絡が原因で火災が起きました。", "vi": "Hỏa hoạn xảy ra do chập mạch." } },
+  { "id": "el-014", "word": "周波数", "reading": "しゅうはすう", "meaning": "tần số", "pos": "danh từ", "example": { "ja": "東日本と西日本では電気の周波数が違います。", "vi": "Tần số điện ở Đông Nhật và Tây Nhật khác nhau." } },
+  { "id": "el-015", "word": "交流", "reading": "こうりゅう", "meaning": "dòng điện xoay chiều (AC)", "pos": "danh từ", "example": { "ja": "家庭のコンセントは交流です。", "vi": "Ổ cắm gia đình là điện xoay chiều." } },
+  { "id": "el-016", "word": "直流", "reading": "ちょくりゅう", "meaning": "dòng điện một chiều (DC)", "pos": "danh từ", "example": { "ja": "電池は直流を出力します。", "vi": "Pin cho ra dòng điện một chiều." } },
+  { "id": "el-017", "word": "部品", "reading": "ぶひん", "meaning": "linh kiện, phụ tùng", "pos": "danh từ", "example": { "ja": "壊れた部品を交換しました。", "vi": "Đã thay linh kiện bị hỏng." } },
+  { "id": "el-018", "word": "検査", "reading": "けんさ", "meaning": "kiểm tra", "pos": "danh từ, động từ する", "example": { "ja": "出荷前に全数検査を行います。", "vi": "Kiểm tra toàn bộ trước khi xuất hàng." } },
+  { "id": "el-019", "word": "不良品", "reading": "ふりょうひん", "meaning": "hàng lỗi", "pos": "danh từ", "example": { "ja": "ラインから不良品を取り除きます。", "vi": "Loại bỏ hàng lỗi khỏi dây chuyền." } },
+  { "id": "el-020", "word": "消費電力", "reading": "しょうひでんりょく", "meaning": "công suất tiêu thụ", "pos": "danh từ", "example": { "ja": "この製品は消費電力が少ないです。", "vi": "Sản phẩm này tiêu thụ ít điện." } }
+]

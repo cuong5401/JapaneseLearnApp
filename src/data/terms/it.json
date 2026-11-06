@@ -1,0 +1,22 @@
+[
+  { "id": "it-001", "word": "データベース", "reading": "データベース", "meaning": "cơ sở dữ liệu", "pos": "danh từ", "example": { "ja": "顧客情報をデータベースに保存します。", "vi": "Lưu thông tin khách hàng vào cơ sở dữ liệu." } },
+  { "id": "it-002", "word": "サーバー", "reading": "サーバー", "meaning": "máy chủ (server)", "pos": "danh từ", "example": { "ja": "深夜にサーバーが停止しました。", "vi": "Máy chủ đã ngừng hoạt động lúc nửa đêm." } },
+  { "id": "it-003", "word": "仕様書", "reading": "しようしょ", "meaning": "bản đặc tả (spec)", "pos": "danh từ", "example": { "ja": "仕様書を確認してから実装してください。", "vi": "Hãy đọc bản đặc tả rồi mới triển khai." } },
+  { "id": "it-004", "word": "実装", "reading": "じっそう", "meaning": "triển khai, cài đặt (code)", "pos": "danh từ, động từ する", "example": { "ja": "検索機能を実装しました。", "vi": "Đã triển khai chức năng tìm kiếm." } },
+  { "id": "it-005", "word": "不具合", "reading": "ふぐあい", "meaning": "lỗi, trục trặc (bug)", "pos": "danh từ", "example": { "ja": "ログイン画面に不具合があります。", "vi": "Màn hình đăng nhập đang có lỗi." } },
+  { "id": "it-006", "word": "要件定義", "reading": "ようけんていぎ", "meaning": "định nghĩa yêu cầu", "pos": "danh từ", "example": { "ja": "要件定義はお客様と一緒に行います。", "vi": "Việc định nghĩa yêu cầu được làm cùng khách hàng." } },
+  { "id": "it-007", "word": "設計", "reading": "せっけい", "meaning": "thiết kế", "pos": "danh từ, động từ する", "example": { "ja": "基本設計が完了しました。", "vi": "Thiết kế cơ bản đã hoàn thành." } },
+  { "id": "it-008", "word": "単体テスト", "reading": "たんたいテスト", "meaning": "kiểm thử đơn vị (unit test)", "pos": "danh từ", "example": { "ja": "単体テストも書いてください。", "vi": "Hãy viết cả unit test." } },
+  { "id": "it-009", "word": "結合テスト", "reading": "けつごうテスト", "meaning": "kiểm thử tích hợp", "pos": "danh từ", "example": { "ja": "来週から結合テストを始めます。", "vi": "Từ tuần sau sẽ bắt đầu kiểm thử tích hợp." } },
+  { "id": "it-010", "word": "本番環境", "reading": "ほんばんかんきょう", "meaning": "môi trường thật (production)", "pos": "danh từ", "example": { "ja": "本番環境にリリースしました。", "vi": "Đã phát hành lên môi trường production." } },
+  { "id": "it-011", "word": "修正", "reading": "しゅうせい", "meaning": "sửa, chỉnh sửa", "pos": "danh từ, động từ する", "example": { "ja": "指摘されたバグを修正しました。", "vi": "Đã sửa lỗi được chỉ ra." } },
+  { "id": "it-012", "word": "納期", "reading": "のうき", "meaning": "thời hạn bàn giao", "pos": "danh từ", "example": { "ja": "納期に間に合うように進めます。", "vi": "Tiến hành sao cho kịp thời hạn bàn giao." } },
+  { "id": "it-013", "word": "工数", "reading": "こうすう", "meaning": "khối lượng công việc (man-hour)", "pos": "danh từ", "example": { "ja": "この機能の工数を見積もってください。", "vi": "Hãy ước tính man-hour cho chức năng này." } },
+  { "id": "it-014", "word": "見積もり", "reading": "みつもり", "meaning": "báo giá, ước tính", "pos": "danh từ", "example": { "ja": "お客様に見積もりを送りました。", "vi": "Đã gửi báo giá cho khách hàng." } },
+  { "id": "it-015", "word": "障害", "reading": "しょうがい", "meaning": "sự cố (hệ thống)", "pos": "danh từ", "example": { "ja": "システム障害が発生しました。", "vi": "Đã xảy ra sự cố hệ thống." } },
+  { "id": "it-016", "word": "権限", "reading": "けんげん", "meaning": "quyền hạn", "pos": "danh từ", "example": { "ja": "この操作には管理者権限が必要です。", "vi": "Thao tác này cần quyền quản trị viên." } },
+  { "id": "it-017", "word": "暗号化", "reading": "あんごうか", "meaning": "mã hóa", "pos": "danh từ, động từ する", "example": { "ja": "パスワードは暗号化して保存します。", "vi": "Mật khẩu được mã hóa trước khi lưu." } },
+  { "id": "it-018", "word": "変数", "reading": "へんすう", "meaning": "biến (lập trình)", "pos": "danh từ", "example": { "ja": "変数には分かりやすい名前を付けましょう。", "vi": "Hãy đặt tên biến dễ hiểu." } },
+  { "id": "it-019", "word": "関数", "reading": "かんすう", "meaning": "hàm", "pos": "danh từ", "example": { "ja": "この関数は合計を返します。", "vi": "Hàm này trả về tổng." } },
+  { "id": "it-020", "word": "ソースコード", "reading": "ソースコード", "meaning": "mã nguồn", "pos": "danh từ", "example": { "ja": "ソースコードをレビューしてください。", "vi": "Hãy review mã nguồn giúp tôi." } }
+]

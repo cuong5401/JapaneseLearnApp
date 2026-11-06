@@ -1,0 +1,22 @@
+[
+  { "id": "n3-v-001", "word": "影響", "reading": "えいきょう", "meaning": "ảnh hưởng", "pos": "danh từ, động từ する", "example": { "ja": "天気は気分に影響します。", "vi": "Thời tiết ảnh hưởng đến tâm trạng." } },
+  { "id": "n3-v-002", "word": "環境", "reading": "かんきょう", "meaning": "môi trường", "pos": "danh từ", "example": { "ja": "環境を守ることは大切です。", "vi": "Bảo vệ môi trường là điều quan trọng." } },
+  { "id": "n3-v-003", "word": "解決", "reading": "かいけつ", "meaning": "giải quyết", "pos": "danh từ, động từ する", "example": { "ja": "やっと問題が解決しました。", "vi": "Cuối cùng vấn đề đã được giải quyết." } },
+  { "id": "n3-v-004", "word": "比べる", "reading": "くらべる", "meaning": "so sánh", "pos": "động từ", "example": { "ja": "二つの店の値段を比べます。", "vi": "So sánh giá của hai cửa hàng." } },
+  { "id": "n3-v-005", "word": "増える", "reading": "ふえる", "meaning": "tăng lên", "pos": "động từ", "example": { "ja": "外国人観光客が増えています。", "vi": "Khách du lịch nước ngoài đang tăng lên." } },
+  { "id": "n3-v-006", "word": "減る", "reading": "へる", "meaning": "giảm đi", "pos": "động từ", "example": { "ja": "体重が三キロ減りました。", "vi": "Cân nặng đã giảm 3 kg." } },
+  { "id": "n3-v-007", "word": "目的", "reading": "もくてき", "meaning": "mục đích", "pos": "danh từ", "example": { "ja": "留学の目的は何ですか。", "vi": "Mục đích du học của bạn là gì?" } },
+  { "id": "n3-v-008", "word": "状態", "reading": "じょうたい", "meaning": "trạng thái, tình trạng", "pos": "danh từ", "example": { "ja": "この中古車は状態がいいです。", "vi": "Chiếc xe cũ này còn trong tình trạng tốt." } },
+  { "id": "n3-v-009", "word": "効果", "reading": "こうか", "meaning": "hiệu quả", "pos": "danh từ", "example": { "ja": "この薬はすぐに効果が出ます。", "vi": "Thuốc này có tác dụng ngay." } },
+  { "id": "n3-v-010", "word": "我慢", "reading": "がまん", "meaning": "chịu đựng, nhẫn nại", "pos": "danh từ, động từ する", "example": { "ja": "歯の痛みを我慢しました。", "vi": "Tôi đã cố chịu cơn đau răng." } },
+  { "id": "n3-v-011", "word": "適当", "reading": "てきとう", "meaning": "thích hợp; qua loa, tùy tiện", "pos": "tính từ な", "example": { "ja": "適当な言葉が見つかりません。", "vi": "Tôi không tìm được từ thích hợp." } },
+  { "id": "n3-v-012", "word": "確認", "reading": "かくにん", "meaning": "xác nhận, kiểm tra lại", "pos": "danh từ, động từ する", "example": { "ja": "メールの内容を確認してください。", "vi": "Hãy kiểm tra lại nội dung email." } },
+  { "id": "n3-v-013", "word": "共通", "reading": "きょうつう", "meaning": "chung, giống nhau", "pos": "danh từ, tính từ な", "example": { "ja": "二人には共通の趣味があります。", "vi": "Hai người có chung sở thích." } },
+  { "id": "n3-v-014", "word": "普通", "reading": "ふつう", "meaning": "bình thường, thông thường", "pos": "danh từ, trạng từ", "example": { "ja": "普通は七時に起きます。", "vi": "Bình thường tôi dậy lúc 7 giờ." } },
+  { "id": "n3-v-015", "word": "預ける", "reading": "あずける", "meaning": "gửi (đồ, tiền)", "pos": "động từ", "example": { "ja": "銀行にお金を預けます。", "vi": "Gửi tiền vào ngân hàng." } },
+  { "id": "n3-v-016", "word": "諦める", "reading": "あきらめる", "meaning": "từ bỏ", "pos": "động từ", "example": { "ja": "最後まで夢を諦めないでください。", "vi": "Đừng từ bỏ ước mơ cho đến cùng." } },
+  { "id": "n3-v-017", "word": "似る", "reading": "にる", "meaning": "giống", "pos": "động từ", "example": { "ja": "彼女はお母さんによく似ています。", "vi": "Cô ấy rất giống mẹ." } },
+  { "id": "n3-v-018", "word": "表情", "reading": "ひょうじょう", "meaning": "nét mặt, biểu cảm", "pos": "danh từ", "example": { "ja": "彼は表情が豊かです。", "vi": "Anh ấy có nét mặt rất biểu cảm." } },
+  { "id": "n3-v-019", "word": "支払う", "reading": "しはらう", "meaning": "thanh toán, trả tiền", "pos": "động từ", "example": { "ja": "カードで支払ってもいいですか。", "vi": "Tôi trả bằng thẻ được không?" } },
+  { "id": "n3-v-020", "word": "機会", "reading": "きかい", "meaning": "cơ hội", "pos": "danh từ", "example": { "ja": "日本へ行く機会がありました。", "vi": "Tôi đã có cơ hội đi Nhật." } }
+]
