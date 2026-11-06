@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useMemo } from 'react'
 import { GridCell } from '../components/GridCell'
+import { CardLink } from '../components/Pressable'
+import { Stagger, StaggerItem } from '../components/Stagger'
 import { PageHeader } from '../components/PageHeader'
 import { ProgressBar } from '../components/ProgressBar'
 import { LEVEL_INFO, TERM_INFO, deckIds, deckPath, deckTitle, getDeckWords, getKanji } from '../data'
@@ -60,22 +62,22 @@ function DeckHubInner({ deck }: { deck: Deck }) {
         )}
       </div>
 
-      <ul className="mt-6 space-y-3">
+      <Stagger as="ul" className={`mt-6 grid gap-3 lg:gap-4 ${activities.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
         {activities.map((a) => (
-          <li key={a.to}>
-            <Link
+          <StaggerItem as="li" key={a.to}>
+            <CardLink
               to={a.to}
-              className="flex items-center gap-4 rounded-xl border border-line bg-surface p-4 transition-colors hover:border-ai"
+              className="flex h-full items-center gap-4 rounded-2xl border border-line bg-surface p-4 transition-colors hover:border-ai md:flex-col md:items-start md:p-5"
             >
               <GridCell className="size-14 text-3xl text-ai">{a.glyph}</GridCell>
               <span className="min-w-0">
                 <span className="block font-semibold">{a.title}</span>
                 <span className="block text-sm text-muted">{a.detail}</span>
               </span>
-            </Link>
-          </li>
+            </CardLink>
+          </StaggerItem>
         ))}
-      </ul>
+      </Stagger>
 
       {sample && (
         <p className="mt-8 text-sm text-muted">

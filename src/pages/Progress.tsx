@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { AnimatedNumber } from '../components/AnimatedNumber'
 import { PageHeader } from '../components/PageHeader'
+import { Stagger, StaggerItem } from '../components/Stagger'
 import { ProgressBar } from '../components/ProgressBar'
 import { deckIds, deckPath, deckTitle, getDeckWords, getKanji } from '../data'
 import { progress } from '../lib/progress'
@@ -17,7 +19,7 @@ function DeckRow({ deck }: { deck: Deck }) {
   const s = useStats(all)
 
   return (
-    <li className="py-4">
+    <StaggerItem as="li" className="py-4">
       <div className="flex items-baseline justify-between gap-3">
         <Link to={deckPath(deck)} className="font-semibold hover:text-ai">
           {deckTitle(deck)}
@@ -45,7 +47,7 @@ function DeckRow({ deck }: { deck: Deck }) {
           </div>
         )}
       </dl>
-    </li>
+    </StaggerItem>
   )
 }
 
@@ -70,7 +72,9 @@ export function Progress() {
         {totals.map((t) => (
           <div key={t.label} className="flex flex-col-reverse px-3 py-4 text-center">
             <dt className="mt-1 text-xs text-muted">{t.label}</dt>
-            <dd className="text-3xl font-bold tabular-nums">{t.value}</dd>
+            <dd className="text-3xl font-bold">
+              <AnimatedNumber value={t.value} />
+            </dd>
           </div>
         ))}
       </dl>
@@ -84,19 +88,25 @@ export function Progress() {
         </span>
       </div>
 
-      <h2 className="mt-8 text-lg font-bold">Theo cấp độ</h2>
-      <ul className="divide-y divide-line">
-        {LEVELS.map((level) => (
-          <DeckRow key={level} deck={{ kind: 'level', level }} />
-        ))}
-      </ul>
+      <div className="mt-8 grid gap-x-12 gap-y-8 lg:grid-cols-2">
+        <section>
+          <h2 className="text-lg font-bold">Theo cấp độ</h2>
+          <Stagger as="ul" className="divide-y divide-line">
+            {LEVELS.map((level) => (
+              <DeckRow key={level} deck={{ kind: 'level', level }} />
+            ))}
+          </Stagger>
+        </section>
 
-      <h2 className="mt-8 text-lg font-bold">Thuật ngữ chuyên ngành</h2>
-      <ul className="divide-y divide-line">
-        {TERM_CATEGORIES.map((category) => (
-          <DeckRow key={category} deck={{ kind: 'terms', category }} />
-        ))}
-      </ul>
+        <section>
+          <h2 className="text-lg font-bold">Thuật ngữ chuyên ngành</h2>
+          <Stagger as="ul" className="divide-y divide-line">
+            {TERM_CATEGORIES.map((category) => (
+              <DeckRow key={category} deck={{ kind: 'terms', category }} />
+            ))}
+          </Stagger>
+        </section>
+      </div>
 
       <section className="mt-10 rounded-xl border border-line p-4">
         <h2 className="font-semibold">Xóa tiến độ</h2>

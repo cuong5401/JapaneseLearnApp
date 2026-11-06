@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { GridCell } from '../components/GridCell'
+import { Button } from '../components/Pressable'
 import { PageHeader } from '../components/PageHeader'
 import { KANA, KANA_GROUP_LABELS } from '../data/kana'
 import { kanaMatches } from '../lib/answer'
@@ -102,7 +103,7 @@ export function Kana() {
     })
 
   return (
-    <div>
+    <div className="mx-auto max-w-[640px]">
       <PageHeader title="Luyện kana" back={{ to: '/', label: 'Trang chủ' }} />
 
       <div className="space-y-3">
@@ -149,7 +150,7 @@ export function Kana() {
         <GridCell
           key={current.kana + status}
           tone={status === 'asking' ? 'default' : status}
-          className={`size-44 sm:size-52 ${current.kana.length > 1 ? 'text-[5rem] sm:text-[6rem]' : 'text-[7rem] sm:text-[8.5rem]'} ${status !== 'asking' ? 'animate-stamp' : ''}`}
+          className={`size-[clamp(10rem,46vw,13rem)] ${current.kana.length > 1 ? 'text-[clamp(4.25rem,20vw,6rem)]' : 'text-[clamp(6rem,30vw,8.5rem)]'} ${status !== 'asking' ? 'animate-stamp' : ''}`}
         >
           {current.kana}
         </GridCell>
@@ -191,9 +192,9 @@ export function Kana() {
             >
               Xem đáp án
             </button>
-            <button type="submit" className="min-h-11 rounded-lg bg-ai text-sm font-semibold text-on-ai hover:opacity-90">
+            <Button type="submit" className="min-h-11 rounded-lg bg-ai text-sm font-semibold text-on-ai hover:opacity-90">
               {status === 'wrong' ? 'Chữ tiếp theo' : 'Kiểm tra'}
-            </button>
+            </Button>
           </div>
         </form>
 

@@ -1,20 +1,23 @@
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
+import { useState } from 'react'
+import { Link, NavLink, useLocation, useOutlet } from 'react-router-dom'
 import { useTheme, type ThemeChoice } from '../hooks/useTheme'
 import { useDueIds } from '../hooks/useProgress'
 
 const NAV = [
   { to: '/', glyph: '家', label: 'Trang chủ', end: true },
-  { to: '/kana', glyph: 'あ', label: 'Kana', end: false },
+  { to: '/kana', glyph: 'あ', label: 'Luyện kana', short: 'Kana', end: false },
   { to: '/review', glyph: '復', label: 'Ôn tập', end: false },
   { to: '/progress', glyph: '進', label: 'Tiến độ', end: false },
 ]
 
 const THEME_LABEL: Record<ThemeChoice, string> = {
-  system: 'Giao diện: theo hệ thống',
-  light: 'Giao diện: sáng',
-  dark: 'Giao diện: tối',
+  system: 'Theo hệ thống',
+  light: 'Sáng',
+  dark: 'Tối',
 }
+
+const SLIDE = { type: 'spring', stiffness: 500, damping: 38 } as const
 
 function ThemeIcon({ choice }: { choice: ThemeChoice }) {
   const common = { fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
@@ -39,26 +42,97 @@ function ThemeIcon({ choice }: { choice: ThemeChoice }) {
   )
 }
 
+function Logo() {
+  return (
+    <Link to="/" className="flex items-center gap-2.5 font-bold tracking-tight">
+      <span lang="ja" className="grid size-9 place-items-center rounded-[3px] bg-ai font-jp text-xl text-on-ai">
+        言
+      </span>
+      <span className="text-[1.05rem]">Kotonoha</span>
+    </Link>
+  )
+}
+
+function DueBadge({ due, className = '' }: { due: number; className?: string }) {
+  if (due <= 0) return null
+  return (
+    <span className={`rounded-full bg-kihada px-1.5 text-center text-[11px] font-bold leading-[18px] text-[#2b2205] ${className}`}>
+      {due > 99 ? '99+' : due}
+    </span>
+  )
+}
+
+/** Giữ nguyên nội dung trang cũ trong lúc nó đang mờ đi. */
+function FrozenOutlet() {
+  const outlet = useOutlet()
+  const [frozen] = useState(outlet)
+  return frozen
+}
+
 export function Layout() {
   const { choice, cycle } = useTheme()
   const due = useDueIds().length
   const { pathname } = useLocation()
-
-  useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [pathname])
+  const themeLabel = `Giao diện: ${THEME_LABEL[choice].toLowerCase()}`
 
   return (
-    <div className="min-h-dvh pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-10">
-      <header className="sticky top-0 z-20 border-b border-line bg-paper/90 pt-[env(safe-area-inset-top)] backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-3xl items-center gap-4 px-4">
-          <Link to="/" className="flex items-center gap-2.5 font-bold tracking-tight">
-            <span lang="ja" className="grid size-8 place-items-center rounded-[3px] bg-ai font-jp text-lg text-on-ai">
-              言
-            </span>
-            <span>Kotonoha</span>
-          </Link>
+    <div className="min-h-dvh pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-14 lg:pl-[240px]">
+      {/* Desktop: sidebar trái */}
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[240px] flex-col border-r border-line bg-surface px-4 pt-7 pb-5 lg:flex">
+        <div className="px-2">
+          <Logo />
+        </div>
+        <nav aria-label="Điều hướng chính" className="mt-9">
+          <ul className="space-y-1">
+            {NAV.map((n) => (
+              <li key={n.to}>
+                <NavLink
+                  to={n.to}
+                  end={n.end}
+                  className={({ isActive }) =>
+                    `relative flex min-h-12 items-center gap-3 rounded-xl px-3 font-medium transition-colors ${isActive ? 'text-ai' : 'text-muted hover:text-ink'}`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <motion.span layoutId="nav-side" transition={SLIDE} className="absolute inset-0 rounded-xl bg-ai-soft" />
+                      )}
+                      <span
+                        lang="ja"
+                        className={`relative grid size-8 place-items-center rounded-[3px] border font-jp text-base leading-none ${
+                          isActive ? 'border-ai bg-ai text-on-ai' : 'border-cell-line'
+                        }`}
+                      >
+                        {n.glyph}
+                      </span>
+                      <span className="relative">{n.label}</span>
+                      {n.to === '/review' && <DueBadge due={due} className="relative ml-auto min-w-6" />}
+                    </>
+                  )}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <button
+          type="button"
+          onClick={cycle}
+          aria-label={themeLabel}
+          className="mt-auto flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-muted transition-colors hover:bg-sunken hover:text-ink"
+        >
+          <ThemeIcon choice={choice} />
+          <span className="flex flex-col items-start leading-tight">
+            <span className="text-xs">Giao diện</span>
+            <span className="font-medium text-ink">{THEME_LABEL[choice]}</span>
+          </span>
+        </button>
+      </aside>
 
+      {/* Điện thoại & tablet: header */}
+      <header className="sticky top-0 z-20 border-b border-line bg-paper/90 pt-[env(safe-area-inset-top)] backdrop-blur lg:hidden">
+        <div className="mx-auto flex h-14 max-w-[900px] items-center gap-4 px-4 md:px-6">
+          <Logo />
           <nav className="ml-auto hidden items-center gap-1 md:flex" aria-label="Điều hướng chính">
             {NAV.map((n) => (
               <NavLink
@@ -66,22 +140,24 @@ export function Layout() {
                 to={n.to}
                 end={n.end}
                 className={({ isActive }) =>
-                  `relative rounded-lg px-3 py-2 text-sm font-medium transition-colors ${isActive ? 'bg-ai-soft text-ai' : 'text-muted hover:text-ink'}`
+                  `relative flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${isActive ? 'text-ai' : 'text-muted hover:text-ink'}`
                 }
               >
-                {n.label}
-                {n.to === '/review' && due > 0 && (
-                  <span className="ml-1.5 rounded-full bg-kihada px-1.5 py-0.5 text-xs font-bold text-[#2b2205]">{due}</span>
+                {({ isActive }) => (
+                  <>
+                    {isActive && <motion.span layoutId="nav-top" transition={SLIDE} className="absolute inset-0 rounded-lg bg-ai-soft" />}
+                    <span className="relative">{n.short ?? n.label}</span>
+                    {n.to === '/review' && <DueBadge due={due} className="relative ml-1.5 min-w-5" />}
+                  </>
                 )}
               </NavLink>
             ))}
           </nav>
-
           <button
             type="button"
             onClick={cycle}
-            aria-label={THEME_LABEL[choice]}
-            title={THEME_LABEL[choice]}
+            aria-label={themeLabel}
+            title={themeLabel}
             className="ml-auto grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink md:ml-0"
           >
             <ThemeIcon choice={choice} />
@@ -89,10 +165,25 @@ export function Layout() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 pt-6">
-        <Outlet />
+      <main className="mx-auto w-full max-w-[900px] px-4 pt-6 md:px-6 md:pt-8 lg:max-w-[1200px] lg:px-10 lg:pt-10">
+        {/*
+          Không đặt initial={false} ở đây: giá trị đó truyền xuống cả cây con và chặn
+          hiệu ứng mount của mọi motion component trong trang tải đầu tiên.
+        */}
+        <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+          >
+            <FrozenOutlet />
+          </motion.div>
+        </AnimatePresence>
       </main>
 
+      {/* Điện thoại: thanh điều hướng đáy */}
       <nav
         aria-label="Điều hướng chính"
         className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
@@ -109,20 +200,14 @@ export function Layout() {
               >
                 {({ isActive }) => (
                   <>
-                    <span
-                      lang="ja"
-                      className={`relative grid size-7 place-items-center rounded-[3px] border font-jp text-base leading-none transition-colors ${
-                        isActive ? 'border-ai bg-ai text-on-ai' : 'border-cell-line'
-                      }`}
-                    >
-                      {n.glyph}
-                      {n.to === '/review' && due > 0 && (
-                        <span className="absolute -right-2 -top-2 min-w-4 rounded-full bg-kihada px-1 font-sans text-[10px] font-bold leading-4 text-[#2b2205]">
-                          {due > 99 ? '99+' : due}
-                        </span>
+                    <span lang="ja" className="relative grid size-7 place-items-center rounded-[3px] border border-cell-line font-jp text-base leading-none">
+                      {isActive && (
+                        <motion.span layoutId="nav-bottom" transition={SLIDE} className="absolute -inset-px rounded-[3px] bg-ai" />
                       )}
+                      <span className={`relative ${isActive ? 'text-on-ai' : ''}`}>{n.glyph}</span>
+                      {n.to === '/review' && <DueBadge due={due} className="absolute -right-2.5 -top-2 min-w-4" />}
                     </span>
-                    {n.label}
+                    {n.short ?? n.label}
                   </>
                 )}
               </NavLink>

@@ -32,6 +32,14 @@ export const progress = {
     commit({ ...cards, [id]: review(newCard(id), 4) })
   },
 
+  /** Hoàn tác: đặt lại thẻ về trạng thái trước (hoặc xóa nếu trước đó chưa có). */
+  restore(id: string, card?: SrsCard) {
+    const next = { ...cards }
+    if (card) next[id] = card
+    else delete next[id]
+    commit(next)
+  },
+
   forget(id: string) {
     const next = { ...cards }
     delete next[id]

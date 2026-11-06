@@ -73,6 +73,10 @@
   html {
     -webkit-tap-highlight-color: transparent;
   }
+  html,
+  body {
+    overflow-x: clip;
+  }
   body {
     @apply bg-paper text-ink font-sans antialiased;
     min-height: 100dvh;
