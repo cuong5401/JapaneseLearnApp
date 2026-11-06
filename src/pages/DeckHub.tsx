@@ -69,7 +69,7 @@ function DeckHubInner({ deck }: { deck: Deck }) {
               to={a.to}
               className="flex h-full items-center gap-4 rounded-2xl border border-line bg-surface p-4 transition-colors hover:border-ai md:flex-col md:items-start md:p-5"
             >
-              <GridCell className="size-14 text-3xl text-ai">{a.glyph}</GridCell>
+              <GridCell className="size-14 text-ai">{a.glyph}</GridCell>
               <span className="min-w-0">
                 <span className="block font-semibold">{a.title}</span>
                 <span className="block text-sm text-muted">{a.detail}</span>

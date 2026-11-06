@@ -13,3 +13,5 @@ export function useMediaQuery(query: string): boolean {
 }
 
 export const DESKTOP = '(min-width: 1024px)'
+/** Đủ chỗ cho lưới + panel chi tiết cạnh nhau (vùng nội dung ~860px sau sidebar). */
+export const WIDE_PANEL = '(min-width: 1180px)'

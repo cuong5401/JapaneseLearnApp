@@ -103,7 +103,7 @@ export function Kana() {
     })
 
   return (
-    <div className="mx-auto max-w-[640px]">
+    <div className="@container mx-auto max-w-[640px]">
       <PageHeader title="Luyện kana" back={{ to: '/', label: 'Trang chủ' }} />
 
       <div className="space-y-3">
@@ -150,7 +150,7 @@ export function Kana() {
         <GridCell
           key={current.kana + status}
           tone={status === 'asking' ? 'default' : status}
-          className={`size-[clamp(10rem,46vw,13rem)] ${current.kana.length > 1 ? 'text-[clamp(4.25rem,20vw,6rem)]' : 'text-[clamp(6rem,30vw,8.5rem)]'} ${status !== 'asking' ? 'animate-stamp' : ''}`}
+          className={`w-[clamp(10rem,46cqw,13rem)] ${status !== 'asking' ? 'animate-stamp' : ''}`}
         >
           {current.kana}
         </GridCell>

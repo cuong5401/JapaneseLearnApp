@@ -210,7 +210,7 @@ function QuizInner({ deck }: { deck: Deck }) {
       shortcuts={
         mode === 'choice'
           ? [
-              { keys: ['1', '2', '3', '4'], label: 'Chọn đáp án' },
+              { keys: ['1–4'], label: 'Chọn đáp án' },
               { keys: ['Enter'], label: 'Câu tiếp theo' },
             ]
           : [
@@ -246,17 +246,18 @@ function QuizInner({ deck }: { deck: Deck }) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -40 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="@container"
           >
             {mode === 'choice' ? (
               <>
-                <div className="rounded-2xl border border-line bg-surface p-6 text-center">
+                <div className="@container rounded-2xl border border-line bg-surface p-6 text-center">
                   <p className="text-sm text-muted">{q.direction === 'ja-vi' ? 'Từ này nghĩa là gì?' : 'Chọn từ tiếng Nhật đúng nghĩa'}</p>
                   {q.direction === 'ja-vi' ? (
-                    <p lang="ja" className="mt-3 font-jp text-[clamp(2.5rem,11vw,3.25rem)] font-bold break-words">
+                    <p lang="ja" className="mt-3 font-jp text-[clamp(2rem,12cqw,3.25rem)] font-bold break-words">
                       {q.item.word}
                     </p>
                   ) : (
-                    <p className="mt-3 text-[clamp(1.5rem,6vw,1.875rem)] font-semibold">{q.item.meaning}</p>
+                    <p className="mt-3 text-[clamp(1.375rem,7cqw,1.875rem)] font-semibold">{q.item.meaning}</p>
                   )}
                   <p lang="ja" className="mt-3 flex min-h-9 items-center justify-center gap-3 font-jp text-muted">
                     {answered && (
@@ -267,7 +268,7 @@ function QuizInner({ deck }: { deck: Deck }) {
                     )}
                   </p>
                 </div>
-                <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                <ul className="mt-4 grid gap-2 @md:grid-cols-2">
                   {q.options.map((o, i) => {
                     const isAnswer = o.id === q.item.id
                     const state = !answered ? 'idle' : isAnswer ? 'right' : picked === o.id ? 'wrong' : 'dim'
@@ -306,9 +307,9 @@ function QuizInner({ deck }: { deck: Deck }) {
               </>
             ) : (
               <form onSubmit={onType}>
-                <div className="rounded-2xl border border-line bg-surface p-6 text-center">
+                <div className="@container rounded-2xl border border-line bg-surface p-6 text-center">
                   <p className="text-sm text-muted">Gõ cách đọc của từ</p>
-                  <p lang="ja" className="mt-3 font-jp text-[clamp(2.5rem,11vw,3.25rem)] font-bold break-words">
+                  <p lang="ja" className="mt-3 font-jp text-[clamp(2rem,12cqw,3.25rem)] font-bold break-words">
                     {q.item.word}
                   </p>
                   <p className="mt-3 text-muted">{q.item.meaning}</p>

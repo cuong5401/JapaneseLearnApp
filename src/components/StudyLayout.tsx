@@ -2,12 +2,12 @@ import type { ReactNode } from 'react'
 import { AnimatedNumber } from './AnimatedNumber'
 
 /** Khung trang học: rộng 560px, desktop thêm cột 280px nên tiêu đề và thẻ cùng thẳng hàng. */
-export const STUDY_PAGE = 'mx-auto max-w-[560px] lg:max-w-[880px]'
+export const STUDY_PAGE = 'mx-auto max-w-[560px] lg:max-w-[840px] xl:max-w-[880px]'
 
 /** Vùng học (tối đa 560px) và cột thông tin phiên 280px bên phải trên desktop. */
 export function StudyLayout({ children, aside }: { children: ReactNode; aside: ReactNode }) {
   return (
-    <div className="lg:grid lg:grid-cols-[minmax(0,560px)_280px] lg:gap-10">
+    <div className="lg:grid lg:grid-cols-[minmax(0,560px)_250px] lg:gap-8 xl:grid-cols-[minmax(0,560px)_280px] xl:gap-10">
       <div className="min-w-0">{children}</div>
       <aside className="hidden lg:block" aria-label="Thông tin phiên học">
         <div className="sticky top-10">{aside}</div>

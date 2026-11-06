@@ -29,7 +29,7 @@ function LevelCard({ level }: { level: Level }) {
   return (
     <CardLink to={`/level/${level}`} className={`${CARD} flex-col gap-3 md:gap-4`}>
       <div className="flex items-center gap-4">
-        <GridCell className="size-12 text-base font-bold text-ai md:size-14 md:text-lg">{level}</GridCell>
+        <GridCell fit={0.36} className="size-12 font-bold text-ai md:size-14">{level}</GridCell>
         <div className="min-w-0">
           <p className="font-semibold">{info.name}</p>
           <p lang="ja" className="font-jp text-sm text-muted">
@@ -83,14 +83,14 @@ export function Home() {
     <div className="space-y-10 lg:space-y-12">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-6">
         {/* Chữ của ngày */}
-        <section aria-labelledby="today" className="rounded-2xl bg-ai-soft p-5 sm:p-7">
+        <section aria-labelledby="today" className="@container min-w-0 rounded-2xl bg-ai-soft p-5 sm:p-7">
           <h1 id="today" className="text-sm font-medium text-ai">
             Chữ Hán hôm nay
           </h1>
-          <div className="mt-4 flex items-center gap-5 sm:gap-7">
-            <GridCell className="size-[clamp(7rem,30vw,10rem)] text-[clamp(4.75rem,21vw,7rem)]">{kanji.kanji}</GridCell>
+          <div className="mt-4 flex items-center gap-[clamp(1rem,5cqw,1.75rem)]">
+            <GridCell className="w-[clamp(6rem,32cqw,10rem)]">{kanji.kanji}</GridCell>
             <div className="min-w-0">
-              <p className="text-[clamp(1.75rem,7vw,2.5rem)] font-bold leading-tight tracking-wide">{kanji.hanViet}</p>
+              <p className="text-[clamp(1.5rem,8cqw,2.5rem)] font-bold leading-tight tracking-wide">{kanji.hanViet}</p>
               <p className="mt-1 text-muted">{kanji.meaning}</p>
               <dl lang="ja" className="mt-3 space-y-0.5 text-sm">
                 {kanji.onyomi.length > 0 && (
@@ -164,7 +164,7 @@ export function Home() {
             Chưa thuộc kana? Luyện trước
           </Link>
         </div>
-        <Stagger as="ol" className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 lg:gap-4">
+        <Stagger as="ol" className="grid gap-3 md:grid-cols-2 lg:gap-4 xl:grid-cols-3">
           {LEVELS.map((l) => (
             <StaggerItem as="li" key={l}>
               <LevelCard level={l} />
@@ -178,7 +178,7 @@ export function Home() {
           Thuật ngữ chuyên ngành
         </h2>
         <p className="mt-1 text-sm text-muted">Từ vựng dùng hằng ngày ở công ty Nhật.</p>
-        <Stagger as="ul" className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3 lg:gap-4">
+        <Stagger as="ul" className="mt-4 grid gap-3 md:grid-cols-2 lg:gap-4 xl:grid-cols-3">
           {TERM_CATEGORIES.map((c) => (
             <StaggerItem as="li" key={c}>
               <TermCard category={c} />

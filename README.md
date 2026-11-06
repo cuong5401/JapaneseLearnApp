@@ -9,6 +9,7 @@ npm install
 npm run dev      # http://localhost:5173
 npm run build    # kiểm tra kiểu + build production
 npm run lint
+npm run test:e2e # Playwright: chữ không tràn ô GridCell, không cuộn ngang ở 390–1440px
 ```
 
 ## Công nghệ

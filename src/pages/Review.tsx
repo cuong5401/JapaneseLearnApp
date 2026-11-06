@@ -31,9 +31,9 @@ const gradeItem = {
 
 function Front({ entry }: { entry: StudyEntry }) {
   if (entry.kind === 'kanji')
-    return <GridCell className="size-[clamp(7.5rem,34vw,9.5rem)] text-[clamp(5rem,23vw,6.5rem)]">{entry.item.kanji}</GridCell>
+    return <GridCell className="w-[clamp(7rem,34cqw,9.5rem)]">{entry.item.kanji}</GridCell>
   return (
-    <p lang="ja" className="text-center font-jp text-[clamp(2.5rem,11vw,3.25rem)] font-bold break-words">
+    <p lang="ja" className="max-w-full text-center font-jp text-[clamp(2rem,12cqw,3.25rem)] font-bold break-words">
       {entry.item.word}
     </p>
   )
@@ -147,7 +147,7 @@ export function Review() {
         {done > 0 && <Celebration />}
         <PageHeader title="Ôn tập" />
         <div className="flex flex-col items-center rounded-2xl border border-line bg-surface px-6 py-12 text-center">
-          <GridCell className="size-24 text-6xl text-matsu">済</GridCell>
+          <GridCell className="size-24 text-matsu">済</GridCell>
           <h2 className="mt-5 text-xl font-semibold">
             {done > 0 ? `Xong ${done} thẻ. Hết thẻ cần ôn.` : 'Chưa có thẻ nào đến hạn'}
           </h2>
@@ -190,7 +190,7 @@ export function Review() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -32 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            className="flex min-h-[clamp(22rem,58vh,27rem)] flex-col items-center justify-center gap-6 rounded-2xl border border-line bg-surface p-6"
+            className="@container flex min-h-[clamp(22rem,58vh,27rem)] flex-col items-center justify-center gap-6 rounded-2xl border border-line bg-surface p-6"
           >
             <span className="text-xs text-muted">
               {entry.kind === 'kanji' ? 'Chữ Hán' : 'Từ vựng'}, {deckTitle(entry.deck)}

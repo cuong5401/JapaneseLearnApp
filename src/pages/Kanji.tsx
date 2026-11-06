@@ -10,7 +10,7 @@ import { deckPath, deckTitle, getKanji } from '../data'
 import { progress } from '../lib/progress'
 import { useCards } from '../hooks/useProgress'
 import { useDeck } from '../hooks/useDeck'
-import { DESKTOP, useMediaQuery } from '../hooks/useMediaQuery'
+import { WIDE_PANEL, useMediaQuery } from '../hooks/useMediaQuery'
 import type { KanjiItem, Level } from '../types'
 import { NotFound } from './NotFound'
 
@@ -31,7 +31,7 @@ function Detail({ item }: { item: KanjiItem }) {
   return (
     <article aria-label={`Chi tiết chữ ${item.kanji}`}>
       <div className="flex gap-5">
-        <GridCell className="size-[clamp(6.5rem,28vw,8rem)] text-[clamp(4.25rem,19vw,5.5rem)]">{item.kanji}</GridCell>
+        <GridCell className="size-28 sm:size-32">{item.kanji}</GridCell>
         <div className="min-w-0 flex-1">
           <p className="text-2xl font-bold tracking-wide">{item.hanViet}</p>
           <p className="mt-0.5 text-muted">{item.meaning}</p>
@@ -71,9 +71,19 @@ function Detail({ item }: { item: KanjiItem }) {
   )
 }
 
+/** Âm Hán Việt dài thì khít chữ lại để luôn nằm trên 1 dòng. */
+function hanVietSpacing(text: string): string {
+  const len = [...text].length
+  if (len >= 7) return '-0.04em'
+  if (len >= 6) return '-0.02em'
+  if (len <= 3) return '0.06em'
+  return '0.02em'
+}
+
 function KanjiInner({ level }: { level: Level }) {
   const list = getKanji(level)
-  const desktop = useMediaQuery(DESKTOP)
+  // Panel chi tiết bên phải chỉ khi đủ rộng; hẹp hơn thì dùng bottom sheet.
+  const wide = useMediaQuery(WIDE_PANEL)
   const [selected, setSelected] = useState(0)
   const [sheetOpen, setSheetOpen] = useState(false)
   const cards = useCards()
@@ -82,7 +92,7 @@ function KanjiInner({ level }: { level: Level }) {
 
   const choose = (i: number) => {
     setSelected(i)
-    if (!desktop) setSheetOpen(true)
+    if (!wide) setSheetOpen(true)
   }
 
   const learnedCount = list.filter((k) => cards[k.id]).length
@@ -95,25 +105,31 @@ function KanjiInner({ level }: { level: Level }) {
         </span>
       </PageHeader>
 
-      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-8">
-        <div>
+      <div className="min-[1180px]:grid min-[1180px]:grid-cols-[minmax(0,1fr)_340px] min-[1180px]:items-start min-[1180px]:gap-8">
+        <div className="min-w-0">
           <p className="mb-3 text-sm text-muted">Chạm vào một chữ để xem âm đọc, nghĩa và từ ghép.</p>
-          <Stagger as="ul" className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
+          {/* Số cột tự giảm khi panel chi tiết chiếm chỗ: mỗi ô tối thiểu 88px. */}
+          <Stagger as="ul" className="grid grid-cols-[repeat(auto-fill,minmax(88px,1fr))] gap-2.5 sm:gap-3">
             {list.map((k, i) => {
-              const active = desktop && i === selected
+              const active = wide && i === selected
               return (
-                <StaggerItem as="li" key={k.id}>
+                <StaggerItem as="li" key={k.id} className="min-w-0">
                   <Button
                     onClick={() => choose(i)}
                     whileHover={{ y: -3 }}
                     aria-label={`${k.kanji}, ${k.hanViet}${cards[k.id] ? ', đã học' : ''}`}
-                    aria-pressed={desktop ? active : undefined}
-                    className={`relative flex w-full flex-col items-center gap-2 rounded-xl border p-3 transition-colors ${
+                    aria-pressed={wide ? active : undefined}
+                    className={`@container relative flex w-full flex-col items-center gap-1.5 rounded-xl border p-2 transition-colors sm:p-2.5 ${
                       active ? 'border-ai bg-ai-soft' : 'border-line bg-surface hover:border-ai'
                     }`}
                   >
-                    <GridCell className="aspect-square w-full max-w-28 text-[clamp(2.75rem,12vw,3.5rem)]">{k.kanji}</GridCell>
-                    <span className="text-sm font-semibold tracking-wide">{k.hanViet}</span>
+                    <GridCell className="w-full max-w-28">{k.kanji}</GridCell>
+                    <span
+                      className="block max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[clamp(11px,14cqw,15px)] font-semibold"
+                      style={{ letterSpacing: hanVietSpacing(k.hanViet) }}
+                    >
+                      {k.hanViet}
+                    </span>
                     {cards[k.id] && (
                       <span className="absolute right-2 top-2 size-2.5 rounded-full bg-matsu" aria-hidden />
                     )}
@@ -124,7 +140,7 @@ function KanjiInner({ level }: { level: Level }) {
           </Stagger>
         </div>
 
-        {desktop && (
+        {wide && (
           <aside className="sticky top-10 rounded-2xl border border-line bg-surface p-5" aria-label="Chi tiết chữ Hán">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -141,7 +157,7 @@ function KanjiInner({ level }: { level: Level }) {
         )}
       </div>
 
-      {!desktop && (
+      {!wide && (
         <BottomSheet open={sheetOpen} onClose={closeSheet} label={`Chi tiết chữ ${list[selected].kanji}`}>
           <Detail item={list[selected]} />
         </BottomSheet>

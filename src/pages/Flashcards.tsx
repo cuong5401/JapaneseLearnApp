@@ -47,8 +47,8 @@ function CardFaces({ item, flipped }: { item: VocabItem; flipped: boolean }) {
   return (
     <div className="flip h-full">
       <div className={`flip-inner grid h-full ${flipped ? 'is-flipped' : ''}`}>
-        <div className="flip-face col-start-1 row-start-1 flex flex-col items-center justify-center rounded-2xl border border-line bg-surface p-6">
-          <Word item={item} className="text-[clamp(2.5rem,11vw,3.75rem)]" />
+        <div className="@container flip-face col-start-1 row-start-1 flex flex-col items-center justify-center rounded-2xl border border-line bg-surface p-6">
+          <Word item={item} className="text-[clamp(2rem,13cqw,3.75rem)]" />
           <p className="mt-8 text-sm text-muted">Chạm để lật thẻ</p>
         </div>
         <div className="flip-face flip-back col-start-1 row-start-1 flex flex-col overflow-hidden rounded-2xl border border-ai bg-surface p-6">
