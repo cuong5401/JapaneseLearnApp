@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { createHash } from 'node:crypto'
 import { copyFileSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import react from '@vitejs/plugin-react'
@@ -48,15 +49,30 @@ function kotonohaDist(publicBuild: boolean): Plugin {
   }
 }
 
+/**
+ * Mã mở khóa (VITE_UNLOCK_CODE, 4 số, đặt trong GitHub Actions secret).
+ * Chỉ nhúng mã băm SHA-256 vào bundle, không nhúng con số. Không đặt biến thì không có màn nhập mã.
+ * Đây là rào chắn người lạ, không phải bảo mật: dữ liệu trong data/ vẫn tải trực tiếp được.
+ */
+const UNLOCK_SALT = 'kotonoha-unlock:'
+function unlockHash(): string {
+  const code = (process.env.VITE_UNLOCK_CODE ?? '').trim()
+  if (!code) return ''
+  if (!/^\d{4}$/.test(code)) throw new Error('VITE_UNLOCK_CODE phải gồm đúng 4 chữ số.')
+  return createHash('sha256').update(UNLOCK_SALT + code).digest('hex')
+}
+
 // https://vite.dev/config/
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(({ command, mode, isPreview }) => {
   const publicBuild = process.env.VITE_PUBLIC_BUILD === 'true' || mode === 'public'
-  const base = command === 'build' ? PAGES_BASE : '/'
+  // Build và preview (xem bản build) dùng đường dẫn GitHub Pages; dev chạy ở gốc '/'.
+  const base = command === 'build' || isPreview ? PAGES_BASE : '/'
 
   return {
     base,
     define: {
       __PUBLIC_BUILD__: JSON.stringify(publicBuild),
+      __UNLOCK_HASH__: JSON.stringify(command === 'build' ? unlockHash() : ''),
     },
     plugins: [
       react(),

@@ -5,6 +5,7 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import './index.css'
 import { Layout } from './components/Layout'
 import { LegacyLevel } from './components/LegacyLevel'
+import { UnlockGate } from './components/UnlockGate'
 // Bắt sự kiện beforeinstallprompt sớm, trước khi trang nào kịp render.
 import './lib/install'
 
@@ -47,7 +48,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MotionConfig reducedMotion="user">
-      <RouterProvider router={router} />
+      <UnlockGate>
+        <RouterProvider router={router} />
+      </UnlockGate>
     </MotionConfig>
   </StrictMode>,
 )

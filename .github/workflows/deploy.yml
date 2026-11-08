@@ -1,4 +1,4 @@
-# Build bản public và đưa lên GitHub Pages mỗi khi push lên main.
+# Build bản đầy đủ và đưa lên GitHub Pages mỗi khi push lên main (web dùng cá nhân).
 # Lint hoặc test lỗi thì dừng, không deploy.
 name: Deploy GitHub Pages
 
@@ -31,22 +31,19 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
-      - name: Build bản public
+      - name: Build
         run: npm run build
         env:
-          # Không kèm ngữ pháp N4–N1 lấy từ sách (xem vite.config.ts).
-          # Chỉ đặt ở bước build: test đơn vị chạy với bản đầy đủ.
-          VITE_PUBLIC_BUILD: 'true'
+          # Bản đầy đủ (có ngữ pháp N4–N1). Mã mở khóa 4 số lấy từ secret; không có secret thì không hỏi mã.
+          VITE_UNLOCK_CODE: ${{ secrets.VITE_UNLOCK_CODE }}
 
-      - name: Kiểm tra bản public không còn ngữ pháp N4–N1
+      - name: Kiểm tra dist
         run: |
-          for l in n4 n3 n2 n1; do
-            if [ -e "dist/data/grammar/$l.json" ]; then echo "::error::Còn dist/data/grammar/$l.json"; exit 1; fi
-          done
-          if grep -q 'grammar/n[1-4]' dist/data/manifest.json; then echo "::error::manifest.json còn ngữ pháp N1–N4"; exit 1; fi
+          for l in n4 n3 n2 n1; do test -f "dist/data/grammar/$l.json" || { echo "::error::Thiếu dist/data/grammar/$l.json"; exit 1; }; done
           test -f dist/404.html
           test -f dist/sw.js
-          ls dist/data/grammar
+          test -f dist/robots.txt
+          grep -q 'name="robots" content="noindex, nofollow"' dist/index.html
 
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5

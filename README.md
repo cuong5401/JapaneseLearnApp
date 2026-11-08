@@ -4,15 +4,13 @@ Web app học tiếng Nhật cho người Việt: kana, từ vựng và chữ H�
 
 **Bản web:** https://cuong5401.github.io/JapaneseLearnApp/ (cài được như app trên điện thoại).
 
-## Bản public và bản cá nhân
+## Web dùng cá nhân
 
-| | Bản public (GitHub Pages) | Bản cá nhân (chạy ở máy) |
-|---|---|---|
-| Từ vựng, chữ Hán, bộ thủ, thuật ngữ, kana | Có | Có |
-| Ngữ pháp N4–N1 (soạn từ giáo trình) | Không, mục Ngữ pháp hiện "Phần ngữ pháp chỉ có trong bản cá nhân" | Có |
-| Lệnh | `npm run build:public` hoặc `VITE_PUBLIC_BUILD=true npm run build` | `npm run dev`, `npm run build` |
+Bản trên GitHub Pages là bản đầy đủ (có ngữ pháp N4–N1), dùng cho cá nhân:
+- **Không cho công cụ tìm kiếm lập chỉ mục:** thẻ `<meta name="robots" content="noindex, nofollow">` trong `index.html` và `public/robots.txt`.
+- **Mã mở khóa 4 số:** lần đầu mở trên một máy phải nhập mã; đúng thì lưu trong localStorage, không hỏi lại. Mã lấy từ secret `VITE_UNLOCK_CODE` lúc build; bundle chỉ chứa mã băm SHA-256, không chứa con số. Không đặt secret thì không có màn nhập mã. Đây là rào chắn người lạ, không phải bảo mật thật: file trong `data/` vẫn tải trực tiếp được, và mã 4 số có thể thử dần.
 
-Bản public bỏ `dist/data/grammar/n4–n1.json` sau khi build và sửa `dist/data/manifest.json` cho khớp (plugin `kotonohaDist` trong `vite.config.ts`). Các file ngữ pháp vẫn nằm trong `public/data` của repo.
+`npm run build:public` (hoặc `VITE_PUBLIC_BUILD=true`) vẫn có để build bản không kèm ngữ pháp N4–N1 khi cần, nhưng workflow deploy không dùng.
 
 ## Chạy dự án
 
@@ -20,16 +18,18 @@ Bản public bỏ `dist/data/grammar/n4–n1.json` sau khi build và sửa `dist
 npm install
 npm run dev           # bản đầy đủ: http://localhost:5173
 npm run build         # build bản đầy đủ vào dist/ (base /JapaneseLearnApp/)
-npm run build:public  # build bản public như trên GitHub Pages
+npm run build:public  # bản không kèm ngữ pháp N4–N1 (không dùng khi deploy)
 npm run preview       # xem bản đã build: http://localhost:4173/JapaneseLearnApp/
+# Thử màn nhập mã ở máy: VITE_UNLOCK_CODE=1234 npm run build && npm run preview
 npm run lint
 npm run test:e2e # Playwright: chữ không tràn ô GridCell, không cuộn ngang ở 390–1440px
 ```
 
 ## Deploy
 
-- Mỗi lần push lên `main`, workflow [.github/workflows/deploy.yml](.github/workflows/deploy.yml) chạy `npm ci → lint → test → build` (với `VITE_PUBLIC_BUILD=true`), kiểm tra dist không còn ngữ pháp N4–N1, rồi đưa lên GitHub Pages. Lint hoặc test lỗi thì không deploy.
+- Mỗi lần push lên `main`, workflow [.github/workflows/deploy.yml](.github/workflows/deploy.yml) chạy `npm ci → lint → test → build` (bản đầy đủ, mã mở khóa từ secret `VITE_UNLOCK_CODE`), kiểm tra dist có đủ ngữ pháp, `robots.txt`, `404.html`, rồi đưa lên GitHub Pages. Lint hoặc test lỗi thì không deploy.
 - Cài đặt một lần trên GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+- Mã mở khóa: **Settings → Secrets and variables → Actions → New repository secret**, tên `VITE_UNLOCK_CODE`, giá trị 4 chữ số; sau đó chạy lại workflow.
 - Chạy lại thủ công: tab **Actions → Deploy GitHub Pages → Run workflow**.
 - Build dùng `base = /JapaneseLearnApp/`; router và mọi đường dẫn dữ liệu đi theo `import.meta.env.BASE_URL`. `dist/404.html` là bản sao của `index.html`, nên F5 ở trang con không bị 404.
 
