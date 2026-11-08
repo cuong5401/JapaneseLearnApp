@@ -26,8 +26,8 @@ type Kind = StudyEntry['kind']
 type Filter = 'all' | Kind
 type Mode = 'list' | 'flashcards' | 'quiz'
 
-const KIND_LABEL: Record<Kind, string> = { word: 'Từ vựng', kanji: 'Kanji', radical: 'Bộ thủ', grammar: 'Ngữ pháp' }
-const KIND_ORDER: Kind[] = ['word', 'kanji', 'radical', 'grammar']
+const KIND_LABEL: Record<Kind, string> = { word: 'Từ vựng', kanji: 'Kanji', radical: 'Bộ thủ', grammar: 'Ngữ pháp', char: 'Chữ khác' }
+const KIND_ORDER: Kind[] = ['word', 'kanji', 'radical', 'grammar', 'char']
 const MODES: { value: Mode; label: string }[] = [
   { value: 'list', label: 'Danh sách' },
   { value: 'flashcards', label: 'Flashcard' },
@@ -49,10 +49,10 @@ const QUIZ: ChoiceQuizConfig<EntryCard> = {
         {entry.item.title}
       </p>
     ) : (
-      <GridCell className="w-[clamp(7rem,40cqw,10rem)]">{entry.kind === 'kanji' ? entry.item.kanji : entry.item.radical}</GridCell>
+      <GridCell className="w-[clamp(7rem,40cqw,10rem)]">{entry.kind === 'kanji' ? entry.item.kanji : entry.kind === 'radical' ? entry.item.radical : entry.item.char}</GridCell>
     ),
   answer: ({ entry }) =>
-    entry.kind === 'word' ? entry.item.meaning : entry.kind === 'kanji' ? entry.item.hanViet : entry.kind === 'radical' ? entry.item.name : (entry.item.meaning ?? ''),
+    entry.kind === 'word' ? entry.item.meaning : entry.kind === 'kanji' ? entry.item.hanViet : entry.kind === 'radical' ? entry.item.name : entry.kind === 'grammar' ? (entry.item.meaning ?? '') : '',
   alsoRight: ({ entry }) => (entry.kind === 'kanji' ? (entry.item.hanVietAlt ?? []) : []),
   group: ({ entry }) => entry.kind,
 }
@@ -61,16 +61,17 @@ function searchKeys(e: StudyEntry): { ja: string[]; vi: string[] } {
   if (e.kind === 'word') return { ja: [e.item.word, normalizeKana(e.item.reading || '')], vi: [normalizeVi(e.item.meaning), normalizeVi(e.item.hanViet ?? '')] }
   if (e.kind === 'kanji') return { ja: [e.item.kanji], vi: [normalizeVi(e.item.hanViet)] }
   if (e.kind === 'radical') return { ja: [e.item.radical], vi: [normalizeVi(`${e.item.name} ${e.item.meaning}`)] }
+  if (e.kind === 'char') return { ja: [e.item.char], vi: [] }
   return { ja: [normalizeKana(e.item.title)], vi: [normalizeVi(`${e.item.title} ${e.item.meaning ?? ''}`)] }
 }
 
 function EntryRow({ card, onOpen, onRemove }: { card: EntryCard; onOpen: () => void; onRemove: () => void }) {
   const { entry } = card
   const learned = Boolean(useCards()[card.id])
-  const glyph = entry.kind === 'kanji' ? entry.item.kanji : entry.kind === 'radical' ? entry.item.radical : null
+  const glyph = entry.kind === 'kanji' ? entry.item.kanji : entry.kind === 'radical' ? entry.item.radical : entry.kind === 'char' ? entry.item.char : null
   const head = entry.kind === 'word' ? entry.item.word : entry.kind === 'grammar' ? entry.item.title : ''
   const sub =
-    entry.kind === 'word' ? entry.item.meaning : entry.kind === 'kanji' ? entry.item.hanViet : entry.kind === 'radical' ? `Bộ ${entry.item.name}: ${entry.item.meaning}` : (entry.item.meaning ?? 'Mở để xem giải thích')
+    entry.kind === 'word' ? entry.item.meaning : entry.kind === 'kanji' ? entry.item.hanViet : entry.kind === 'radical' ? `Bộ ${entry.item.name}: ${entry.item.meaning}` : entry.kind === 'char' ? 'Chưa có trong danh sách chữ Hán' : (entry.item.meaning ?? 'Mở để xem giải thích')
   const content = (
     <>
       {glyph ? (
@@ -188,6 +189,7 @@ export function NotebookPage() {
     if (e.kind === 'word') stack.push({ t: 'w', id: c.id })
     else if (e.kind === 'kanji') stack.push({ t: 'k', ch: e.item.kanji })
     else if (e.kind === 'radical') stack.push({ t: 'r', no: e.item.no })
+    else if (e.kind === 'char') stack.push({ t: 'k', ch: e.item.char })
   }
   const remove = (ref: string) => notebooks.removeItem(book.id, ref)
 
@@ -198,6 +200,7 @@ export function NotebookPage() {
     const next: SessionLink | undefined =
       lessonIndex + 1 < lessons.length ? { to: `${base}?bai=${lessonIndex + 2}${mode !== 'list' ? `&mode=${mode}` : ''}`, label: `Bài tiếp theo: Bài ${lessonIndex + 2}` } : undefined
     const quizItems = lesson.filter((c) => QUIZ.answer(c))
+    const quizPool = cards.filter((c) => QUIZ.answer(c))
     return (
       <div className="mx-auto max-w-[880px]">
         {header}
@@ -218,7 +221,7 @@ export function NotebookPage() {
         )}
         {mode === 'quiz' && (
           <div className={STUDY_PAGE}>
-            <ChoiceQuiz key={`${lessonIndex}-${size}`} items={quizItems} pool={cards} config={QUIZ} />
+            <ChoiceQuiz key={`${lessonIndex}-${size}`} items={quizItems} pool={quizPool} config={QUIZ} />
           </div>
         )}
       </div>
@@ -230,7 +233,8 @@ export function NotebookPage() {
 
   const addAllToSrs = () => {
     const have = progress.getSnapshot()
-    const fresh = cards.filter((c) => !have[c.id])
+    // Chữ ngoài kanji.json không có dữ liệu để ôn.
+    const fresh = cards.filter((c) => !have[c.id] && c.entry.kind !== 'char')
     fresh.forEach((c) => progress.markLearned(c.id))
     showToast(fresh.length ? `Đã thêm ${fresh.length} mục vào lịch ôn` : 'Mọi mục đã có trong lịch ôn')
   }

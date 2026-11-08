@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEntries, useKanjiIndex, useRadicals } from '../../hooks/useData'
 import { frameKey, type Frame } from '../../lib/detailStack'
 import { LoadError, PageSkeleton } from '../LoadState'
+import { CharDetail } from './CharDetail'
 import { KanjiDetail } from './KanjiDetail'
 import { RadicalDetail } from './RadicalDetail'
 import { WordDetail } from './WordDetail'
@@ -17,7 +18,8 @@ function KanjiFrame({ ch, onPush }: { ch: string; onPush: Push }) {
   if (index.status === 'error') return <LoadError error={index.error} onRetry={index.retry} />
   if (!index.data) return <PageSkeleton rows={4} />
   const item = index.data.find((k) => k.kanji === ch)
-  return item ? <KanjiDetail item={item} onPush={onPush} /> : <Missing what={`chữ ${ch}`} />
+  // Chữ ngoài kanji.json (chọn từ bảng vẽ tay): trang tối giản, vẫn có từ chứa chữ và nút lưu sổ tay.
+  return item ? <KanjiDetail item={item} onPush={onPush} /> : <CharDetail ch={ch} onPush={onPush} />
 }
 
 function WordFrame({ id, onPush }: { id: string; onPush: Push }) {

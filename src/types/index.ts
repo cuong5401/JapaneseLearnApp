@@ -48,11 +48,18 @@ export type Deck = { kind: 'vocab'; key: VocabDeckKey } | { kind: 'terms'; categ
 /** Bộ thủ kèm id `rd-001` (radicals.json không có id). */
 export type RadicalItem = RadicalEntry & { id: string }
 
+/** Chữ Hán ngoài kanji.json, lưu trong sổ tay bằng ref `ch-<hex>` (xem lib/chars). */
+export interface CharItem {
+  id: string
+  char: string
+}
+
 export type StudyEntry =
   | { kind: 'word'; item: VocabItem; deck: Deck }
   | { kind: 'kanji'; item: KanjiEntry }
   | { kind: 'radical'; item: RadicalItem }
   | { kind: 'grammar'; item: GrammarEntry }
+  | { kind: 'char'; item: CharItem }
 
 /** Thẻ ôn tập ngắt quãng (SM-2 rút gọn). */
 export interface SrsCard {

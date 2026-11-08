@@ -101,6 +101,22 @@ export function radicalFaces(kanjiByChar: Map<string, KanjiEntry>): FacesRendere
   }
 }
 
+/** Chữ ngoài kanji.json (lưu từ bảng vẽ tay): mặt sau chỉ báo chưa có dữ liệu, mở chi tiết để xem từ chứa chữ. */
+function charFaces(ch: string, flipped: boolean) {
+  return (
+    <Flip
+      flipped={flipped}
+      front={<GridCell className="w-[clamp(7rem,40cqw,10rem)]">{ch}</GridCell>}
+      back={
+        <div className="pr-9 text-center">
+          <GridCell className="mx-auto w-24">{ch}</GridCell>
+          <p className="mt-3 text-muted">Chữ này chưa có trong danh sách chữ Hán của Kotonoha. Mở chi tiết để xem các từ chứa chữ.</p>
+        </div>
+      }
+    />
+  )
+}
+
 /** Mục sổ tay: bọc StudyEntry để có `id` cho flashcard. */
 export interface EntryCard {
   id: string
@@ -111,6 +127,7 @@ export function entryLabel(e: StudyEntry): string {
   if (e.kind === 'word') return e.item.word
   if (e.kind === 'kanji') return e.item.kanji
   if (e.kind === 'radical') return `bộ ${e.item.radical}`
+  if (e.kind === 'char') return e.item.char
   return e.item.title
 }
 
@@ -123,6 +140,7 @@ export function entryFaces(words: Map<string, StudyEntry>, kanjiByChar: Map<stri
     if (entry.kind === 'word') return vocab(entry.item, flipped)
     if (entry.kind === 'kanji') return kanji(entry.item, flipped)
     if (entry.kind === 'radical') return radical(entry.item, flipped)
+    if (entry.kind === 'char') return charFaces(entry.item.char, flipped)
     const g = entry.item
     const ex = g.examples?.[0]
     return (

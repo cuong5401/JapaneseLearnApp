@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useSyncExternalStore } from 'react'
 import { TERM_BY_ID, VOCAB_DECK_INFO, deckKeyForId, getTerms } from '../data'
 import { MANIFEST, dataStore, indexById, pathForId, request, type LoadStatus } from '../lib/dataStore'
+import { charOfRef } from '../lib/chars'
 import { withRadicalIds } from '../lib/radicals'
 import type {
   DataManifest,
@@ -97,6 +98,11 @@ export function useEntries(ids: readonly string[]): EntriesResult {
       const term = TERM_BY_ID.get(id)
       if (term) {
         map.set(id, { kind: 'word', item: term.item, deck: { kind: 'terms', category: term.category } })
+        continue
+      }
+      const ch = charOfRef(id)
+      if (ch) {
+        map.set(id, { kind: 'char', item: { id, char: ch } })
         continue
       }
       const path = pathForId(id)

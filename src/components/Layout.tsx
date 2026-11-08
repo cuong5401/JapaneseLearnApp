@@ -4,6 +4,7 @@ import { Link, NavLink, useLocation, useOutlet } from 'react-router-dom'
 import { useTheme, type ThemeChoice } from '../hooks/useTheme'
 import { useDueIds } from '../hooks/useProgress'
 import { isInteractiveTarget } from '../lib/keyboard'
+import { searchUi, useSearchUi } from '../lib/searchUi'
 import { InstallApp } from './InstallApp'
 import { UpdatePrompt } from './UpdatePrompt'
 import { Toaster } from './Toaster'
@@ -32,6 +33,16 @@ const NAV: NavItem[] = [
   { to: '/notebooks', glyph: '帳', label: 'Sổ tay', end: false },
   { to: '/progress', glyph: '進', label: 'Tiến độ', end: false },
 ]
+
+/** Bút vẽ: mở bảng vẽ chữ Hán trong hộp tìm kiếm. */
+function PenIcon({ className = 'size-5' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z" />
+      <path d="m13.5 6.5 4 4" />
+    </svg>
+  )
+}
 
 function SearchIcon({ className = 'size-5' }: { className?: string }) {
   return (
@@ -105,14 +116,14 @@ export function Layout() {
   const due = useDueIds().length
   const { pathname } = useLocation()
   const themeLabel = `Giao diện: ${THEME_LABEL[choice].toLowerCase()}`
-  const [searchOpen, setSearchOpen] = useState(false)
+  const search = useSearchUi()
 
   // Phím "/" mở tìm kiếm (trừ khi đang gõ trong ô nhập).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== '/' || isInteractiveTarget(e)) return
       e.preventDefault()
-      setSearchOpen(true)
+      searchUi.open()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -125,15 +136,26 @@ export function Layout() {
         <div className="px-2">
           <Logo />
         </div>
-        <button
-          type="button"
-          onClick={() => setSearchOpen(true)}
-          className="mt-7 flex min-h-11 items-center gap-2.5 rounded-xl border border-line bg-paper px-3 text-sm text-muted transition-colors hover:border-ai hover:text-ink"
-        >
-          <SearchIcon className="size-4" />
-          <span className="flex-1 text-left">Tìm từ, chữ Hán…</span>
-          <kbd className="rounded border border-line border-b-2 px-1.5 text-xs font-semibold">/</kbd>
-        </button>
+        <div className="mt-7 flex items-stretch gap-1.5">
+          <button
+            type="button"
+            onClick={() => searchUi.open()}
+            className="flex min-h-11 min-w-0 flex-1 items-center gap-2.5 rounded-xl border border-line bg-paper px-3 text-sm text-muted transition-colors hover:border-ai hover:text-ink"
+          >
+            <SearchIcon className="size-4" />
+            <span className="flex-1 truncate text-left">Tìm từ, chữ Hán…</span>
+            <kbd className="rounded border border-line border-b-2 px-1.5 text-xs font-semibold">/</kbd>
+          </button>
+          <button
+            type="button"
+            onClick={() => searchUi.open({ draw: true })}
+            aria-label="Vẽ chữ để tìm"
+            title="Vẽ chữ để tìm"
+            className="grid w-11 shrink-0 place-items-center rounded-xl border border-line bg-paper text-muted transition-colors hover:border-ai hover:text-ink"
+          >
+            <PenIcon className="size-4" />
+          </button>
+        </div>
         <nav aria-label="Điều hướng chính" className="mt-5">
           <ul className="space-y-1">
             {NAV.map((n) => (
@@ -211,12 +233,21 @@ export function Layout() {
           </nav>
           <button
             type="button"
-            onClick={() => setSearchOpen(true)}
+            onClick={() => searchUi.open()}
             aria-label="Tìm kiếm"
             title="Tìm kiếm (phím /)"
             className="ml-auto grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink md:ml-0"
           >
             <SearchIcon />
+          </button>
+          <button
+            type="button"
+            onClick={() => searchUi.open({ draw: true })}
+            aria-label="Vẽ chữ để tìm"
+            title="Vẽ chữ để tìm"
+            className="grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink md:hidden"
+          >
+            <PenIcon />
           </button>
           <button
             type="button"
@@ -286,9 +317,9 @@ export function Layout() {
       <GlobalDetail />
       <SaveSheetHost />
 
-      {searchOpen && (
+      {search.open && (
         <Suspense fallback={null}>
-          <SearchDialog onClose={() => setSearchOpen(false)} />
+          <SearchDialog onClose={searchUi.close} initialDraw={search.draw} />
         </Suspense>
       )}
     </div>

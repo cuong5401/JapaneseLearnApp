@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { useDeferredValue, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { Suspense, lazy, useDeferredValue, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { TERM_INFO, VOCAB_DECK_INFO, getTerms } from '../data'
@@ -40,7 +40,10 @@ const GROUPS: { kind: SearchKind; title: string }[] = [
   { kind: 'grammar', title: 'Ngữ pháp' },
 ]
 
-export default function SearchDialog({ onClose }: { onClose: () => void }) {
+/** Bảng vẽ chữ: chunk riêng, kéo theo Web Worker nhận dạng (~2 MB mẫu nét) chỉ khi mở. */
+const HandwritingPanel = lazy(() => import('./handwriting/HandwritingPanel'))
+
+export default function SearchDialog({ onClose, initialDraw = false }: { onClose: () => void; initialDraw?: boolean }) {
   const navigate = useNavigate()
   const stack = useDetailStack()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -48,6 +51,7 @@ export default function SearchDialog({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState('')
   const deferred = useDeferredValue(query)
   const [active, setActive] = useState(0)
+  const [drawing, setDrawing] = useState(initialDraw)
   const files = useFiles(PATHS)
 
   const loaded = files.data.filter(Boolean).length
@@ -60,13 +64,14 @@ export default function SearchDialog({ onClose }: { onClose: () => void }) {
   const flat = useMemo(() => GROUPS.flatMap((g) => results[g.kind]), [results])
 
   useEffect(() => {
-    inputRef.current?.focus()
+    // Mở thẳng bảng vẽ thì không focus ô nhập (khỏi bật bàn phím điện thoại che khung vẽ).
+    if (!initialDraw) inputRef.current?.focus()
     const overflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = overflow
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     listRef.current?.querySelector(`[data-index="${active}"]`)?.scrollIntoView({ block: 'nearest' })
@@ -79,10 +84,22 @@ export default function SearchDialog({ onClose }: { onClose: () => void }) {
     else navigate(doc.href)
   }
 
+  /** Chữ chọn từ bảng vẽ: nối vào cuối ô tìm (vẽ 日 rồi 本 → 日本). */
+  const pickDrawn = (ch: string) => {
+    setQuery((q) => q + ch)
+    setActive(0)
+  }
+  const viewDrawn = (ch: string) => {
+    onClose()
+    navigate(`/kanji?k=${encodeURIComponent(ch)}`)
+  }
+
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
       e.preventDefault()
-      onClose()
+      // Esc đóng bảng vẽ trước, lần nữa mới đóng hộp tìm.
+      if (drawing) setDrawing(false)
+      else onClose()
     } else if (e.key === 'ArrowDown') {
       e.preventDefault()
       setActive((i) => Math.min(flat.length - 1, i + 1))
@@ -109,7 +126,7 @@ export default function SearchDialog({ onClose }: { onClose: () => void }) {
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.18 }}
-        className="relative flex h-dvh w-full max-w-2xl flex-col overflow-hidden bg-paper pt-[env(safe-area-inset-top)] shadow-2xl sm:h-auto sm:max-h-[75vh] sm:rounded-2xl sm:border sm:border-line"
+        className={`relative flex h-dvh w-full max-w-2xl flex-col overflow-hidden bg-paper pt-[env(safe-area-inset-top)] shadow-2xl sm:h-auto sm:max-h-[85vh] sm:rounded-2xl sm:border sm:border-line ${drawing ? 'sm:min-h-[39rem]' : ''}`}
       >
         <div className="flex items-center gap-2 border-b border-line px-3">
           <svg viewBox="0 0 24 24" className="ml-1 size-5 shrink-0 text-muted" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -134,10 +151,39 @@ export default function SearchDialog({ onClose }: { onClose: () => void }) {
             spellCheck={false}
             className="h-14 min-w-0 flex-1 bg-transparent text-lg outline-none placeholder:text-base placeholder:text-muted"
           />
+          <button
+            type="button"
+            onClick={() => setDrawing((d) => !d)}
+            aria-label="Vẽ chữ để tìm"
+            aria-pressed={drawing}
+            title="Vẽ chữ để tìm"
+            data-draw-toggle
+            className={`grid size-10 shrink-0 place-items-center rounded-lg ${drawing ? 'bg-ai-soft text-ai' : 'text-muted hover:bg-sunken hover:text-ink'}`}
+          >
+            <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z" />
+              <path d="m13.5 6.5 4 4" />
+            </svg>
+          </button>
           <button type="button" onClick={onClose} className="min-h-10 rounded-lg px-3 text-sm text-muted hover:bg-sunken hover:text-ink">
             Đóng
           </button>
         </div>
+
+        {drawing && (
+          // Điện thoại: sheet neo đáy hộp tìm (kết quả vẫn thấy phía trên); desktop: popover dưới ô nhập.
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.18 }}
+            className="absolute inset-x-0 bottom-0 z-10 max-h-[75%] overflow-y-auto overscroll-contain rounded-t-2xl border-t border-line bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgb(0_0_0/0.12)] sm:inset-x-auto sm:top-[3.75rem] sm:right-3 sm:bottom-auto sm:max-h-none sm:w-[22rem] sm:rounded-2xl sm:border sm:pb-4 sm:shadow-xl"
+          >
+            <div aria-hidden className="mx-auto -mt-1.5 mb-3 h-1.5 w-10 rounded-full bg-line sm:hidden" />
+            <Suspense fallback={<p className="py-10 text-center text-sm text-muted">Đang mở bảng vẽ…</p>}>
+              <HandwritingPanel onPick={pickDrawn} onView={viewDrawn} onClose={() => setDrawing(false)} />
+            </Suspense>
+          </motion.div>
+        )}
 
         <div ref={listRef} id="search-results" role="listbox" aria-label="Kết quả tìm kiếm" className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
           {files.status === 'error' && (

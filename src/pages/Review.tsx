@@ -36,6 +36,7 @@ const gradeItem = {
 } as const
 
 function Front({ entry }: { entry: StudyEntry }) {
+  if (entry.kind === 'char') return <GridCell className="w-[clamp(7rem,34cqw,9.5rem)]">{entry.item.char}</GridCell>
   if (entry.kind === 'radical') return <GridCell className="w-[clamp(7rem,34cqw,9.5rem)]">{entry.item.radical}</GridCell>
   if (entry.kind === 'kanji') return <GridCell className="w-[clamp(7rem,34cqw,9.5rem)]">{entry.item.kanji}</GridCell>
   if (entry.kind === 'grammar')
@@ -52,6 +53,8 @@ function Front({ entry }: { entry: StudyEntry }) {
 }
 
 function Back({ entry }: { entry: StudyEntry }) {
+  // Chữ ngoài kanji.json không vào lịch ôn; chỉ phòng khi có thẻ cũ.
+  if (entry.kind === 'char') return <p className="text-center text-muted">Chưa có dữ liệu cho chữ này.</p>
   if (entry.kind === 'radical') {
     const r = entry.item
     const chars = kanjiOfRadical(r.no).slice(0, 8)
@@ -133,6 +136,7 @@ function entryLabel(entry: StudyEntry) {
   if (entry.kind === 'word') return `${KIND_LABEL.word}, ${deckTitle(entry.deck)}`
   if (entry.kind === 'grammar') return `${KIND_LABEL.grammar} ${entry.item.level}`
   if (entry.kind === 'radical') return `${KIND_LABEL.radical} số ${entry.item.no}`
+  if (entry.kind === 'char') return KIND_LABEL.kanji
   return entry.item.firstLevel ? `${KIND_LABEL.kanji}, xuất hiện từ ${entry.item.firstLevel}` : KIND_LABEL.kanji
 }
 

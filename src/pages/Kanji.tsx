@@ -6,6 +6,7 @@ import { GridCell } from '../components/GridCell'
 import { LessonGrid } from '../components/LessonGrid'
 import { LoadError, PageSkeleton } from '../components/LoadState'
 import { PageHeader } from '../components/PageHeader'
+import { searchUi } from '../lib/searchUi'
 import { Button } from '../components/Pressable'
 import { Segmented } from '../components/Segmented'
 import { Stagger, StaggerItem } from '../components/Stagger'
@@ -371,7 +372,20 @@ export function Kanji() {
 
   return (
     <div>
-      <PageHeader title="Chữ Hán" back={{ to: '/', label: 'Trang chủ' }} />
+      <PageHeader title="Chữ Hán" back={{ to: '/', label: 'Trang chủ' }}>
+        <button
+          type="button"
+          onClick={() => searchUi.open({ draw: true })}
+          data-draw-kanji
+          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-line bg-surface px-4 font-semibold hover:border-ai"
+        >
+          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z" />
+            <path d="m13.5 6.5 4 4" />
+          </svg>
+          Vẽ chữ
+        </button>
+      </PageHeader>
       <div className="mb-5 flex flex-col gap-3">
         <Segmented
           label="Mục chữ Hán"

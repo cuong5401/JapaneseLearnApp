@@ -73,6 +73,7 @@ Tiến độ lưu trong localStorage của từng trình duyệt. Ở trang **Ti
 | Sổ tay: nút đánh dấu trên thẻ, dòng từ, chi tiết từ/chữ/bộ, ngữ pháp; lưu vào nhiều sổ, nhấn giữ để lưu nhanh; mỗi sổ chia bài, Flashcard, Quiz, thêm cả sổ vào lịch ôn | `/notebooks`, `/notebooks/:id` |
 | Ngữ pháp N5–N1 (N4 nhóm theo bài 26–50; N3, N5 lọc theo nhóm chủ đề `?nhom=`), chi tiết mẫu, "Đã hiểu" đưa vào lịch ôn; mẫu Kotonoha tự soạn có nhãn "chưa kiểm tra" đến khi bấm "Đã kiểm tra" | `/grammar/n3`, `/grammar/n3/:id` |
 | Tìm kiếm (phím `/`): chữ Nhật, kana, romaji, Hán Việt, nghĩa tiếng Việt không dấu | hộp tìm kiếm |
+| Vẽ tay để tìm chữ Hán (nút bút vẽ ở hộp tìm kiếm, "Vẽ chữ" ở trang Kanji): 10 ứng viên sau mỗi nét, chọn chữ để ghép vào ô tìm (日 rồi 本 → 日本), "Xem chữ" mở chi tiết; chữ ngoài danh sách có trang tối giản và lưu được vào sổ tay | hộp tìm kiếm, `/kanji` |
 | Ôn tập SRS cho từ vựng, chữ Hán, ngữ pháp | `/review` |
 | Thuật ngữ IT, điện tử, văn phòng | `/terms/it` |
 | Luyện kana: bảng 50 âm, âm đục, âm ghép (Hiragana/Katakana), chọn hàng để luyện, chữ yếu, ôn ngẫu nhiên; phiên có đầu có cuối (gõ romaji, trắc nghiệm, ngược lại, nghe, trộn), câu sai hỏi lại sau 3–5 câu; mức thuộc từng chữ | `/kana` |
@@ -88,6 +89,7 @@ Tiến độ lưu trong localStorage của từng trình duyệt. Ở trang **Ti
 - Tiến độ SRS lưu theo `id` trong localStorage; thẻ có ID không còn tồn tại được bỏ qua.
 - Thuật ngữ chuyên ngành nhỏ vẫn đóng gói sẵn trong `src/data/terms/`.
 - Chữ Hán thuộc từng bộ thủ: `src/data/radical-kanji.json`, sinh bằng `node scripts/build-radical-kanji.mjs <Unihan_IRGSources.txt>` từ trường `kRSUnicode` của [Unicode Unihan](https://www.unicode.org/charts/unihan.html) (© Unicode, Inc., [Unicode License](https://www.unicode.org/license.txt)). Mỗi chữ thuộc đúng một bộ chính.
+- Nhận dạng chữ viết tay: [KanjiCanvas](https://github.com/asdfjkl/kanjicanvas) (Copyright (c) 2019 Dominik Klein, Kanji Canvas, MIT) trong `src/vendor/kanjicanvas/`; mẫu nét đã rút gọn bằng `scripts/compact-ref-patterns.mjs` (xem README trong thư mục). Chạy trong Web Worker, chỉ tải khi mở bảng vẽ. Ứng viên có trong kanji.json được xếp trước (giữ thứ tự của thư viện trong từng nhóm), vì vài mẫu chữ hiếm như 曰 lấn các chữ dạng hộp như 日, 目.
 - Sổ tay chỉ lưu id mục (localStorage `jla:v1:notebooks`) và có trong Xuất / Nhập tiến độ.
 
 ## Kiểm tra

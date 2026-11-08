@@ -102,7 +102,8 @@ export default defineConfig(({ command, mode, isPreview }) => {
         workbox: {
           // Vỏ app được precache; dữ liệu học cache khi mở (runtime) để học offline bài đã xem.
           globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-          globIgnores: ['404.html', 'data/**'],
+          // Mẫu nét vẽ tay (~2 MB) không precache: chỉ tải khi mở bảng vẽ, rồi cache (xem runtimeCaching).
+          globIgnores: ['404.html', 'data/**', 'assets/ref-patterns-*.js'],
           navigateFallback: 'index.html',
           cleanupOutdatedCaches: true,
           runtimeCaching: [
@@ -128,6 +129,16 @@ export default defineConfig(({ command, mode, isPreview }) => {
               },
             },
             {
+              // Tên file có hash nên dùng bản đã lưu là an toàn; vẽ chữ dùng được offline sau lần mở đầu.
+              urlPattern: ({ url }) => /\/assets\/ref-patterns-[\w-]+\.js$/.test(url.pathname),
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'kotonoha-handwriting',
+                expiration: { maxEntries: 2 },
+                cacheableResponse: { statuses: [200] },
+              },
+            },
+            {
               urlPattern: ({ url }) => url.origin === 'https://fonts.googleapis.com',
               handler: 'StaleWhileRevalidate',
               options: { cacheName: 'google-fonts-css' },
@@ -146,6 +157,8 @@ export default defineConfig(({ command, mode, isPreview }) => {
       }),
       kotonohaDist(publicBuild),
     ],
+    // Worker nhận dạng chữ viết tay có dynamic import (mẫu nét tách chunk) nên cần định dạng ES module.
+    worker: { format: 'es' },
     test: {
       // Test đơn vị nằm cạnh mã nguồn; tests/ là Playwright.
       include: ['src/**/*.test.ts'],
