@@ -124,7 +124,7 @@ export function AskAi() {
   return (
     <div className="lg:grid lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-8">
       <aside className="hidden lg:block" aria-label="Lịch sử trò chuyện">
-        <div className="sticky top-8 max-h-[calc(100dvh-4rem)] overflow-y-auto pr-1">
+        <div className="sticky top-8 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain pr-1">
           <h2 className="mb-3 px-2 text-sm font-semibold text-muted">Lịch sử</h2>
           {history}
         </div>

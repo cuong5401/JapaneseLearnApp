@@ -2,7 +2,9 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useEntries, useKanjiIndex } from '../../hooks/useData'
 import { useCards } from '../../hooks/useProgress'
+import { aiWords, isAiWordId } from '../../lib/aiWords'
 import type { Frame } from '../../lib/detailStack'
+import { webWords } from '../../lib/webWords'
 import { progress } from '../../lib/progress'
 import { speechText } from '../../lib/speech'
 import { formatInterval } from '../../lib/srs'
@@ -95,6 +97,10 @@ export function KanjiBreakdown({ word, onPush }: { word: string; onPush: Push })
  */
 export function WordDetail({ item, onPush, inPanel = false }: { item: VocabItem; onPush: Push; inPanel?: boolean }) {
   const card = useCards()[item.id]
+  const keepWebWord = () => {
+    const w = isAiWordId(item.id) && !aiWords.get(item.id) ? webWords.get(item.id) : undefined
+    if (w) aiWords.save({ word: w.word, reading: w.reading, meaning: w.meaning, hanViet: w.hanViet })
+  }
   return (
     <div data-detail-word={item.id}>
       <article className={inPanel ? '' : 'rounded-2xl border border-line bg-surface p-6'}>
@@ -111,7 +117,10 @@ export function WordDetail({ item, onPush, inPanel = false }: { item: VocabItem;
             <HanViet text={item.hanViet} className="mt-1 text-sm" />
           </div>
           <span className="flex shrink-0 items-center gap-1">
-            <BookmarkButton itemRef={item.id} label={item.word} />
+            {/* Từ tra online chỉ sống trong phiên: chép sang kho từ AI trước khi lưu vào sổ tay (pha capture). */}
+            <span onPointerDownCapture={keepWebWord} onKeyDownCapture={keepWebWord} onContextMenuCapture={keepWebWord}>
+              <BookmarkButton itemRef={item.id} label={item.word} />
+            </span>
             <SpeakButton text={speechText(item)} />
           </span>
         </div>

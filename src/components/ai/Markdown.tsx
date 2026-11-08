@@ -51,7 +51,7 @@ const components: Components = {
     </a>
   ),
   table: ({ children }) => (
-    <div className="my-3 max-w-full overflow-x-auto">
+    <div className="my-3 max-w-full overflow-x-auto overscroll-x-contain">
       <table className="w-full border-collapse text-sm">{children}</table>
     </div>
   ),

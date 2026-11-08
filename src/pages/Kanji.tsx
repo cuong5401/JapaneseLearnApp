@@ -404,7 +404,7 @@ export function Kanji() {
       <div className={showPanel ? 'grid grid-cols-[minmax(0,1fr)_340px] items-start gap-8' : ''}>
         <div className="min-w-0">{body}</div>
         {showPanel && (
-          <aside className="sticky top-10 max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-2xl border border-line bg-surface p-5" aria-label="Chi tiết chữ Hán">
+          <aside className="sticky top-10 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain rounded-2xl border border-line bg-surface p-5" aria-label="Chi tiết chữ Hán">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div key={frames.length} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }}>
                 <DetailStackView frames={frames} onPush={stack.push} onBack={stack.back} />

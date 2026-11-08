@@ -21,7 +21,7 @@ function Row({ c, active, onOpen }: { c: Conversation; active: boolean; onOpen: 
           value={title}
           maxLength={80}
           onChange={(e) => setTitle(e.target.value)}
-          className="h-10 min-w-0 flex-1 rounded-lg border-2 border-line bg-paper px-2 text-sm outline-none focus:border-ai"
+          className="h-10 min-w-0 flex-1 rounded-lg border-2 border-line bg-paper px-2 text-sm outline-none focus:border-ai pointer-coarse:text-base"
         />
         <button type="submit" className="min-h-10 rounded-lg bg-ai px-3 text-sm font-semibold text-on-ai">
           Lưu

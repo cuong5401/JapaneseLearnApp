@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const PORT = 5180
+const MOBILE = /mobile\.spec\.ts$/
 
 export default defineConfig({
   testDir: './tests',
@@ -8,8 +9,13 @@ export default defineConfig({
   reporter: [['list']],
   use: {
     baseURL: `http://localhost:${PORT}`,
-    ...devices['Desktop Chrome'],
   },
+  projects: [
+    { name: 'desktop', testIgnore: MOBILE, use: { ...devices['Desktop Chrome'] } },
+    // Điện thoại: chống zoom khi nhập / chạm đúp và cuộn cao su (cần `npx playwright install webkit`).
+    { name: 'iphone', testMatch: MOBILE, use: { ...devices['iPhone 15'] } },
+    { name: 'android', testMatch: MOBILE, use: { ...devices['Pixel 7'] } },
+  ],
   webServer: {
     command: `npm run dev -- --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}`,

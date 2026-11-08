@@ -60,7 +60,7 @@ export default function HandwritingPanel({ onPick, onView, onClose, onAskAi }: P
             {pad.status === 'loading' ? 'Đang tải dữ liệu nhận dạng…' : pad.strokes.length ? 'Không nhận ra chữ, thử vẽ lại.' : 'Vẽ một chữ vào khung, ứng viên hiện ở đây.'}
           </p>
         ) : (
-          <ul aria-label="Chữ ứng viên" className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
+          <ul aria-label="Chữ ứng viên" className="-mx-1 flex gap-1.5 overflow-x-auto overscroll-x-contain px-1 pb-1">
             {pad.candidates.map((ch, i) => {
               const k = byChar.get(ch)
               return (

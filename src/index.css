@@ -93,6 +93,35 @@
   html,
   body {
     overflow-x: clip;
+    /* Không nảy "cao su" khi kéo quá đầu/cuối trang; vùng cuộn bên trong dùng overscroll-contain. */
+    overscroll-behavior: none;
+    /* Chạm đúp không phóng to (vẫn giữ zoom bằng hai ngón). */
+    touch-action: manipulation;
+  }
+  /* Utilities touch-none / touch-pan-y (tay nắm sheet, thẻ vuốt) và style của khung vẽ vẫn thắng vì ở layer cao hơn. */
+  a,
+  button,
+  label,
+  summary,
+  input,
+  select,
+  textarea,
+  [role="button"],
+  .flip {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /*
+   * iOS tự phóng to khi focus ô nhập có chữ < 16px. Màn cảm ứng: ô nhập kế thừa cỡ chữ thì dùng 16px;
+   * ô tự đặt cỡ nhỏ (text-sm) thêm pointer-coarse:text-base; ô chữ lớn (text-xl…) giữ nguyên.
+   * Không khóa zoom trong viewport: vẫn phóng to bằng hai ngón được.
+   */
+  @media (pointer: coarse) {
+    input,
+    textarea,
+    select {
+      font-size: max(1rem, 16px);
+    }
   }
   body {
     @apply bg-paper text-ink font-sans antialiased;

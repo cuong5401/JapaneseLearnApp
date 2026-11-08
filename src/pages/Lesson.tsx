@@ -72,7 +72,7 @@ function WordList({ items, start }: { items: VocabItem[]; start: number }) {
   const showHanViet = items.some((w) => w.hanViet)
   return (
     <>
-      <div className="hidden overflow-x-auto rounded-2xl border border-line bg-surface md:block">
+      <div className="hidden overflow-x-auto overscroll-x-contain rounded-2xl border border-line bg-surface md:block">
         <table className="w-full text-left">
           <thead className="border-b border-line text-sm text-muted">
             <tr>

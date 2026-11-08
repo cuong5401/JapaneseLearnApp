@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { GridCell } from '../components/GridCell'
@@ -6,11 +7,16 @@ import { LoadError, Skeleton } from '../components/LoadState'
 import { ButtonLink, CardLink } from '../components/Pressable'
 import { ProgressBar } from '../components/ProgressBar'
 import { SpeakButton } from '../components/SpeakButton'
+import { BookmarkButton } from '../components/notebook/BookmarkButton'
 import { Stagger, StaggerItem } from '../components/Stagger'
 import { DECK_ID_PREFIX, EXTRA_DECKS, LEVEL_DECKS, TERM_INFO, VOCAB_DECK_INFO, getTerms } from '../data'
 import { useEntries, useKanjiIndex, useManifest } from '../hooks/useData'
+import { useDetailStack } from '../hooks/useDetailStack'
 import { useCards, useDueIds, usePrefixStats } from '../hooks/useProgress'
+import { fetchKanjiWords } from '../lib/kanjiWordsApi'
+import { kanjiPool, pickRandom, pushRecent, readRecent } from '../lib/randomKanji'
 import { speechText } from '../lib/speech'
+import { webWords } from '../lib/webWords'
 import { PUBLIC_BUILD, PUBLIC_GRAMMAR_NOTE } from '../lib/edition'
 import { TERM_CATEGORIES, type DataManifest, type KanjiEntry, type TermCategory, type VocabDeckKey } from '../types'
 
@@ -18,20 +24,73 @@ const CARD = 'flex h-full rounded-2xl border border-line bg-surface p-4 transiti
 
 const fileCount = (m: DataManifest | undefined, path: string) => m?.files.find((f) => f.path === path)?.count
 
-/** Chữ Hán của ngày: cố định theo ngày, lấy từ các chữ xuất hiện ở N5–N3. */
-function useDayIndex() {
-  const [day] = useState(() => Math.floor((Date.now() - new Date().getTimezoneOffset() * 60_000) / 86_400_000))
-  return day
+/** Số từ đi kèm tối đa trên thẻ. */
+const MAX_WORDS = 5
+
+interface CardWord {
+  id: string
+  word: string
+  reading: string
+  meaning: string
+  speak: string
 }
 
-function KanjiOfDay({ kanji }: { kanji: KanjiEntry }) {
-  const words = useEntries(kanji.words.slice(0, 2))
-  const examples = kanji.words.slice(0, 2).flatMap((id) => {
-    const e = words.entries.get(id)
-    return e?.kind === 'word' ? [e.item] : []
-  })
+const isOnline = () => typeof navigator === 'undefined' || navigator.onLine !== false
+
+/**
+ * Từ đi kèm chữ: lấy từ dữ liệu có sẵn (cấp thấp trước); có mạng mà chưa đủ MAX_WORDS thì tra thêm
+ * qua Mazii. Mất mạng thì chỉ hiện từ có sẵn, không có từ nào thì không hiện danh sách.
+ */
+function useKanjiWords(kanji: KanjiEntry) {
+  const localIds = useMemo(() => kanji.words.slice(0, MAX_WORDS), [kanji.words])
+  const local = useEntries(localIds)
+  const localWords = useMemo<CardWord[]>(
+    () =>
+      localIds.flatMap((id) => {
+        const e = local.entries.get(id)
+        return e?.kind === 'word' ? [{ id, word: e.item.word, reading: e.item.reading, meaning: e.item.meaning, speak: speechText(e.item) }] : []
+      }),
+    [localIds, local.entries],
+  )
+  const localReady = local.status !== 'loading'
+  const need = localReady ? MAX_WORDS - localWords.length : 0
+  const [online, setOnline] = useState<{ ch: string; words: CardWord[] } | null>(null)
+
+  useEffect(() => {
+    if (need <= 0 || !isOnline()) return
+    const ctrl = new AbortController()
+    const known = new Set(localWords.map((w) => w.word))
+    fetchKanjiWords(kanji.kanji, ctrl.signal).then((found) => {
+      if (ctrl.signal.aborted) return
+      const extra = found.filter((w) => !known.has(w.word)).slice(0, need)
+      const ids = webWords.addAll(extra)
+      setOnline({ ch: kanji.kanji, words: extra.map((w, i) => ({ id: ids[i], word: w.word, reading: w.reading, meaning: w.meaning, speak: w.reading || w.word })) })
+    })
+    return () => ctrl.abort()
+  }, [kanji.kanji, need, localWords])
+
+  const extra = online?.ch === kanji.kanji ? online.words : []
+  const fetching = need > 0 && online?.ch !== kanji.kanji && isOnline()
+  return { words: [...localWords, ...extra], loading: !localReady || fetching, error: local.status === 'error' }
+}
+
+function DiceIcon() {
   return (
-    <>
+    <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="3.5" />
+      <circle cx="8.5" cy="8.5" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="15.5" cy="8.5" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="8.5" cy="15.5" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="15.5" cy="15.5" r="1.3" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function RandomKanji({ kanji, onOpenWord }: { kanji: KanjiEntry; onOpenWord: (id: string) => void }) {
+  const { words, loading } = useKanjiWords(kanji)
+  return (
+    <div data-random-kanji={kanji.kanji}>
       <div className="mt-4 flex items-center gap-[clamp(1rem,5cqw,1.75rem)]">
         <GridCell className="w-[clamp(6rem,32cqw,10rem)]">{kanji.kanji}</GridCell>
         <div className="min-w-0">
@@ -40,50 +99,119 @@ function KanjiOfDay({ kanji }: { kanji: KanjiEntry }) {
           <p className="mt-2 text-sm text-muted">
             {kanji.wordCount} từ chứa chữ này{kanji.firstLevel && `, xuất hiện từ ${kanji.firstLevel}`}
           </p>
-          <Link to={`/kanji?k=${encodeURIComponent(kanji.kanji)}`} className="mt-1 inline-block text-sm font-medium text-ai hover:underline">
-            Xem các từ
-          </Link>
+          <div className="mt-1 flex items-center gap-1">
+            <Link to={`/kanji?k=${encodeURIComponent(kanji.kanji)}`} className="mr-2 inline-block text-sm font-medium text-ai hover:underline">
+              Xem các từ
+            </Link>
+            <BookmarkButton itemRef={kanji.id} label={`chữ ${kanji.kanji}`} size="sm" />
+          </div>
         </div>
       </div>
-      <ul className="mt-5 min-h-12 space-y-2 border-t border-cell-line/60 pt-4 text-sm">
-        {examples.map((w) => (
-          <li key={w.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <Link to={`/word/${w.id}`} lang="ja" className="font-jp text-base hover:text-ai">
-              {w.word}
-              {w.reading && w.reading !== w.word && <span className="ml-1.5 text-sm text-muted">{w.reading}</span>}
-            </Link>
-            <span className="text-muted">{w.meaning}</span>
-            <span className="ml-auto">
-              <SpeakButton text={speechText(w)} size="sm" />
-            </span>
-          </li>
-        ))}
-      </ul>
-    </>
+      {(words.length > 0 || loading) && (
+        <ul className="mt-5 space-y-1 border-t border-cell-line/60 pt-3 text-sm" aria-label={`Từ có chữ ${kanji.kanji}`}>
+          {words.map((w) => (
+            <li key={w.id} data-kanji-word={w.id} className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onOpenWord(w.id)}
+                className="-mx-2 flex min-h-11 min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-0.5 rounded-lg px-2 py-1.5 text-left hover:bg-surface/60"
+              >
+                <span lang="ja" className="font-jp text-base font-semibold">
+                  {w.word}
+                </span>
+                {w.reading && w.reading !== w.word && (
+                  <span lang="ja" className="font-jp text-sm text-muted">
+                    {w.reading}
+                  </span>
+                )}
+                <span className="text-muted">{w.meaning}</span>
+              </button>
+              <SpeakButton text={w.speak} size="sm" label={`Nghe ${w.word}`} />
+            </li>
+          ))}
+          {loading &&
+            Array.from({ length: Math.max(1, Math.min(2, MAX_WORDS - words.length)) }, (_, i) => (
+              <li key={`s${i}`} role="status" aria-label="Đang tải từ đi kèm" className="py-2">
+                <Skeleton className="h-5 w-2/3 bg-surface/60" />
+              </li>
+            ))}
+        </ul>
+      )}
+    </div>
   )
 }
 
-function TodayCard() {
+/**
+ * Chữ Hán ngẫu nhiên: chọn mới mỗi lần vào trang chủ (component mount lại), khi app trở lại
+ * foreground, hoặc bấm "Chữ khác". Không lặp lại 5 chữ vừa hiện (lưu trong sessionStorage).
+ */
+function RandomKanjiCard() {
   const index = useKanjiIndex()
-  const day = useDayIndex()
-  const kanji = useMemo(() => {
-    const pool = (index.data ?? []).filter((k) => k.firstLevel === 'N5' || k.firstLevel === 'N4' || k.firstLevel === 'N3')
-    return pool.length ? pool[day % pool.length] : undefined
-  }, [index.data, day])
+  const stack = useDetailStack()
+  const pool = useMemo(() => kanjiPool(index.data ?? []), [index.data])
+  const [kanjiId, setKanjiId] = useState<string | null>(null)
+  const kanji = useMemo(() => (kanjiId ? pool.find((k) => k.id === kanjiId) : undefined), [pool, kanjiId])
+
+  const choose = useCallback(() => {
+    const k = pickRandom(pool, readRecent())
+    if (k) setKanjiId(k.id)
+  }, [pool])
+
+  // Mount mới (vào trang chủ, quay lại từ trang khác): chọn ngay khi dữ liệu có, không chờ effect.
+  if (!kanjiId && pool.length) {
+    const k = pickRandom(pool, readRecent())
+    if (k) setKanjiId(k.id)
+  }
+
+  // Ghi chữ đang hiện vào danh sách gần đây (sessionStorage) để lần chọn sau không lặp lại.
+  useEffect(() => {
+    if (kanjiId) pushRecent(kanjiId)
+  }, [kanjiId])
+
+  // Trở lại app (foreground): đổi chữ, trừ khi đang xem chi tiết một từ.
+  const detailOpen = useRef(false)
+  const hasDetail = stack.frames.length > 0
+  useEffect(() => {
+    detailOpen.current = hasDetail
+  }, [hasDetail])
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible' && !detailOpen.current) choose()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [choose])
 
   return (
-    <section aria-labelledby="today" className="@container min-w-0 rounded-2xl bg-ai-soft p-5 sm:p-7">
-      <h1 id="today" className="text-sm font-medium text-ai">
-        Chữ Hán hôm nay
-      </h1>
+    <section aria-labelledby="random-kanji" className="@container min-w-0 rounded-2xl bg-ai-soft p-5 sm:p-7">
+      <div className="flex items-center justify-between gap-3">
+        <h1 id="random-kanji" className="text-sm font-medium text-ai">
+          Chữ Hán ngẫu nhiên
+        </h1>
+        {kanji && (
+          <button
+            type="button"
+            onClick={choose}
+            data-next-kanji
+            className="-my-2 -mr-2 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-ai hover:bg-surface/60 active:scale-95"
+          >
+            <DiceIcon />
+            Chữ khác
+          </button>
+        )}
+      </div>
       {index.status === 'error' ? (
         <div className="mt-4">
           <LoadError error={index.error} onRetry={index.retry} />
         </div>
       ) : kanji ? (
-        <KanjiOfDay kanji={kanji} />
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div key={kanji.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.15 }}>
+            <RandomKanji kanji={kanji} onOpenWord={(id) => stack.push({ t: 'w', id })} />
+          </motion.div>
+        </AnimatePresence>
       ) : (
-        <div className="mt-4 flex items-center gap-6" role="status" aria-label="Đang tải chữ Hán hôm nay">
+        <div className="mt-4 flex items-center gap-6" role="status" aria-label="Đang tải chữ Hán ngẫu nhiên">
           <Skeleton className="size-28 shrink-0 bg-surface/60" />
           <div className="flex-1 space-y-3">
             <Skeleton className="h-8 w-32 bg-surface/60" />
@@ -216,7 +344,7 @@ export function Home() {
   return (
     <div className="space-y-10 lg:space-y-12">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-6">
-        <TodayCard />
+        <RandomKanjiCard />
         <DueCard />
       </div>
 

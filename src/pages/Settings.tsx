@@ -93,7 +93,7 @@ function AiSection() {
             autoComplete="off"
             spellCheck={false}
             placeholder={hasKey ? 'Đã có key, nhập để thay' : 'Dán key vào đây'}
-            className="h-11 min-w-0 flex-1 basis-56 rounded-lg border-2 border-line bg-paper px-3 font-mono text-sm outline-none focus:border-ai"
+            className="h-11 min-w-0 flex-1 basis-56 rounded-lg border-2 border-line bg-paper px-3 font-mono text-sm outline-none focus:border-ai pointer-coarse:text-base"
           />
           <button type="button" onClick={() => setShow((v) => !v)} aria-pressed={show} className="min-h-11 rounded-lg border border-line px-3 text-sm hover:bg-sunken">
             {show ? 'Ẩn' : 'Hiện'}
@@ -150,7 +150,7 @@ function AiSection() {
             defaultValue={custom ? model : ''}
             placeholder={info.defaultModel}
             onBlur={(e) => aiSettings.setModel(realProvider, e.target.value)}
-            className="mt-2 h-11 w-full max-w-md rounded-lg border-2 border-line bg-paper px-3 font-mono text-sm outline-none focus:border-ai"
+            className="mt-2 h-11 w-full max-w-md rounded-lg border-2 border-line bg-paper px-3 font-mono text-sm outline-none focus:border-ai pointer-coarse:text-base"
           />
         )}
       </div>

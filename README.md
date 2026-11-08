@@ -107,5 +107,8 @@ Trang `/ai`: chat bằng tiếng Việt ở 4 chế độ (Tra từ, Giải thí
 
 ```bash
 npm test          # Vitest: dataStore, chia bài, tìm kiếm, xuất/nhập tiến độ, phiên luyện kana
-npm run test:e2e  # Playwright: bố cục 390–1440px, chữ không tràn ô GridCell, luyện kana
+npm run test:e2e  # Playwright: bố cục 390–1440px, chữ không tràn ô GridCell, luyện kana, chữ Hán ngẫu nhiên,
+                  # điện thoại (iPhone/WebKit, Android): không zoom khi nhập/chạm đúp, không cuộn cao su
 ```
+
+Lần đầu chạy e2e: `npx playwright install chromium webkit`.

@@ -186,7 +186,7 @@ export function Kana() {
 
         {desktop && detail && (
           <aside
-            className="sticky top-10 max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-2xl border border-line bg-surface p-5"
+            className="sticky top-10 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain rounded-2xl border border-line bg-surface p-5"
             aria-label="Chi tiết chữ kana"
           >
             <AnimatePresence mode="wait" initial={false}>
