@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { GrammarUnavailable } from '../components/GrammarUnavailable'
+import { PUBLIC_BUILD } from '../lib/edition'
 import { Loaded, PageSkeleton } from '../components/LoadState'
 import { PageHeader } from '../components/PageHeader'
 import { Segmented } from '../components/Segmented'
@@ -95,6 +97,10 @@ function GrammarList({ items, level }: { items: GrammarEntry[]; level: Level }) 
 
 /** /grammar và /grammar/:level */
 export function Grammar() {
+  return PUBLIC_BUILD ? <GrammarUnavailable /> : <GrammarPage />
+}
+
+function GrammarPage() {
   const { level: param } = useParams()
   const manifest = useManifest()
   const level = parseLevel(param)

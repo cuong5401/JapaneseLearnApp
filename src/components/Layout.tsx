@@ -4,6 +4,8 @@ import { Link, NavLink, useLocation, useOutlet } from 'react-router-dom'
 import { useTheme, type ThemeChoice } from '../hooks/useTheme'
 import { useDueIds } from '../hooks/useProgress'
 import { isInteractiveTarget } from '../lib/keyboard'
+import { InstallApp } from './InstallApp'
+import { UpdatePrompt } from './UpdatePrompt'
 
 // Hộp tìm kiếm và chỉ mục của nó chỉ tải khi mở lần đầu.
 const SearchDialog = lazy(() => import('./SearchDialog'))
@@ -161,11 +163,14 @@ export function Layout() {
             ))}
           </ul>
         </nav>
+        <div className="mt-auto">
+          <InstallApp compact />
+        </div>
         <button
           type="button"
           onClick={cycle}
           aria-label={themeLabel}
-          className="mt-auto flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-muted transition-colors hover:bg-sunken hover:text-ink"
+          className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-muted transition-colors hover:bg-sunken hover:text-ink"
         >
           <ThemeIcon choice={choice} />
           <span className="flex flex-col items-start leading-tight">
@@ -270,6 +275,8 @@ export function Layout() {
           ))}
         </ul>
       </nav>
+
+      <UpdatePrompt />
 
       {searchOpen && (
         <Suspense fallback={null}>

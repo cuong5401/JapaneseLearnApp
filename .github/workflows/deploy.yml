@@ -1,0 +1,62 @@
+# Build bản public và đưa lên GitHub Pages mỗi khi push lên main.
+# Lint hoặc test lỗi thì dừng, không deploy.
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Chỉ một lần deploy chạy cùng lúc; lần mới hủy lần cũ đang chờ.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Bản public: không kèm ngữ pháp N4–N1 lấy từ sách (xem vite.config.ts).
+      VITE_PUBLIC_BUILD: 'true'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+      - name: Kiểm tra bản public không còn ngữ pháp N4–N1
+        run: |
+          for l in n4 n3 n2 n1; do
+            if [ -e "dist/data/grammar/$l.json" ]; then echo "::error::Còn dist/data/grammar/$l.json"; exit 1; fi
+          done
+          if grep -q 'grammar/n[1-4]' dist/data/manifest.json; then echo "::error::manifest.json còn ngữ pháp N1–N4"; exit 1; fi
+          test -f dist/404.html
+          test -f dist/sw.js
+          ls dist/data/grammar
+
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

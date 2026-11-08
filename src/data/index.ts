@@ -1,4 +1,5 @@
 import type { Deck, Level, TermCategory, VocabDeckKey, VocabItem } from '../types'
+import { PUBLIC_BUILD, isGrammarId } from '../lib/edition'
 
 import termsIt from './terms/it.json'
 import termsElectronics from './terms/electronics.json'
@@ -81,5 +82,6 @@ export function deckPath(deck: Deck): string {
 
 /** ID hợp lệ hiện nay: dữ liệu public/data hoặc thuật ngữ. ID của bộ mẫu cũ (n5-v-001…) bị bỏ qua. */
 export function isCurrentId(id: string): boolean {
+  if (PUBLIC_BUILD && isGrammarId(id)) return false
   return /^([a-z]+\d?)-[0-9a-f]{8}$/.test(id) || TERM_BY_ID.has(id)
 }

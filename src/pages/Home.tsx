@@ -11,6 +11,7 @@ import { DECK_ID_PREFIX, EXTRA_DECKS, LEVEL_DECKS, TERM_INFO, VOCAB_DECK_INFO, g
 import { useEntries, useKanjiIndex, useManifest } from '../hooks/useData'
 import { useCards, useDueIds, usePrefixStats } from '../hooks/useProgress'
 import { speechText } from '../lib/speech'
+import { PUBLIC_BUILD, PUBLIC_GRAMMAR_NOTE } from '../lib/edition'
 import { TERM_CATEGORIES, type DataManifest, type KanjiEntry, type TermCategory, type VocabDeckKey } from '../types'
 
 const CARD = 'flex h-full rounded-2xl border border-line bg-surface p-4 transition-colors hover:border-ai sm:p-5'
@@ -188,7 +189,7 @@ function StudyMore({ manifest }: { manifest?: DataManifest }) {
   const grammar = manifest?.files.filter((f) => f.kind === 'grammar').reduce((n, f) => n + f.count, 0)
   const items = [
     { to: '/kanji', glyph: '漢', title: 'Chữ Hán', detail: kanji !== undefined ? `${kanji} chữ, ${radicals} bộ thủ, quiz âm Hán Việt` : '' },
-    { to: '/grammar', glyph: '文', title: 'Ngữ pháp', detail: grammar !== undefined ? `${grammar} mẫu từ N4 đến N1` : '' },
+    { to: '/grammar', glyph: '文', title: 'Ngữ pháp', detail: PUBLIC_BUILD ? PUBLIC_GRAMMAR_NOTE : grammar !== undefined ? `${grammar} mẫu từ N4 đến N1` : '' },
     { to: '/kana', glyph: 'あ', title: 'Luyện kana', detail: 'Hiragana, katakana, gõ romaji' },
   ]
   return (

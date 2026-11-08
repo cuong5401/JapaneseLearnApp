@@ -4,11 +4,13 @@ import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { TERM_INFO, VOCAB_DECK_INFO, getTerms } from '../data'
 import { useFiles } from '../hooks/useData'
+import { PUBLIC_BUILD } from '../lib/edition'
 import { grammarDocs, kanjiDocs, search, vocabDocs, type SearchDoc, type SearchKind } from '../lib/search'
 import { LEVELS, TERM_CATEGORIES, VOCAB_DECKS, type GrammarEntry, type KanjiEntry, type VocabItem } from '../types'
 
 const VOCAB_PATHS = VOCAB_DECKS.map((k) => VOCAB_DECK_INFO[k].path)
-const GRAMMAR_PATHS = LEVELS.map((l) => `grammar/${l.toLowerCase()}.json`)
+// Bản public không có file ngữ pháp: không tải, không tìm.
+const GRAMMAR_PATHS = PUBLIC_BUILD ? [] : LEVELS.map((l) => `grammar/${l.toLowerCase()}.json`)
 const PATHS = [...VOCAB_PATHS, 'kanji/kanji.json', ...GRAMMAR_PATHS]
 
 /** Chỉ mục tìm kiếm dựng một lần cho mỗi file dữ liệu. */

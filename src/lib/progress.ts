@@ -46,6 +46,11 @@ export const progress = {
     commit(next)
   },
 
+  /** Thay toàn bộ thẻ (dùng sau khi gộp với file tiến độ nhập vào). */
+  importCards(next: Record<string, SrsCard>) {
+    commit({ ...next })
+  },
+
   reset() {
     commit({})
   },

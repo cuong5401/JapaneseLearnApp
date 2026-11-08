@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:public": "tsc -b && vite build --mode public",
     "lint": "oxlint",
     "preview": "vite preview",
+    "test": "vitest run",
     "test:e2e": "playwright test",
-    "test": "vitest run"
+    "icons": "node scripts/gen-icons.mjs"
   },
   "dependencies": {
     "motion": "^14.10.0",
@@ -29,6 +31,7 @@
     "tailwindcss": "^4.3.4",
     "typescript": "~7.0.2",
     "vite": "^8.3.6",
+    "vite-plugin-pwa": "^2.0.0",
     "vitest": "^5.1.0"
   }
 }

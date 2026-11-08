@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatedNumber } from '../components/AnimatedNumber'
+import { BackupPanel } from '../components/BackupPanel'
+import { InstallApp } from '../components/InstallApp'
 import { Skeleton } from '../components/LoadState'
 import { PageHeader } from '../components/PageHeader'
 import { ProgressBar } from '../components/ProgressBar'
@@ -8,6 +10,7 @@ import { Stagger, StaggerItem } from '../components/Stagger'
 import { DECK_ID_PREFIX, EXTRA_DECKS, LEVEL_DECKS, TERM_INFO, VOCAB_DECK_INFO, deckTitle, getTerms, isCurrentId } from '../data'
 import { useManifest } from '../hooks/useData'
 import { useCards, useDueIds, usePrefixStats } from '../hooks/useProgress'
+import { PUBLIC_BUILD, PUBLIC_GRAMMAR_NOTE } from '../lib/edition'
 import { progress } from '../lib/progress'
 import { MASTERED_INTERVAL, isMastered } from '../lib/srs'
 import { LEVELS, TERM_CATEGORIES, type DataManifest } from '../types'
@@ -57,6 +60,7 @@ export function Progress() {
   const all = Object.values(cards).filter((c) => isCurrentId(c.id))
   const mastered = all.filter(isMastered).length
   const [confirming, setConfirming] = useState(false)
+  const grammarLevels = PUBLIC_BUILD ? [] : LEVELS.filter((l) => count(m, `grammar/${l.toLowerCase()}.json`) > 0)
 
   const totals = [
     { label: 'Đã học', value: all.length },
@@ -107,11 +111,19 @@ export function Progress() {
               ))}
               <Row to="/kanji" title="Chữ Hán" prefix="kj" total={count(m, 'kanji/kanji.json')} />
             </Section>
-            <Section title="Ngữ pháp">
-              {LEVELS.filter((l) => count(m, `grammar/${l.toLowerCase()}.json`) > 0).map((l) => (
-                <Row key={l} to={`/grammar/${l.toLowerCase()}`} title={`Ngữ pháp ${l}`} prefix={`g${l.toLowerCase()}`} total={count(m, `grammar/${l.toLowerCase()}.json`)} />
-              ))}
-            </Section>
+            {grammarLevels.length > 0 && (
+              <Section title="Ngữ pháp">
+                {grammarLevels.map((l) => (
+                  <Row key={l} to={`/grammar/${l.toLowerCase()}`} title={`Ngữ pháp ${l}`} prefix={`g${l.toLowerCase()}`} total={count(m, `grammar/${l.toLowerCase()}.json`)} />
+                ))}
+              </Section>
+            )}
+            {PUBLIC_BUILD && (
+              <section>
+                <h2 className="text-lg font-bold">Ngữ pháp</h2>
+                <p className="mt-2 text-sm text-muted">{PUBLIC_GRAMMAR_NOTE}.</p>
+              </section>
+            )}
             <Section title="Thuật ngữ chuyên ngành">
               {TERM_CATEGORIES.map((c) => (
                 <Row key={c} to={`/terms/${c}`} title={TERM_INFO[c].name} prefix={TERM_INFO[c].prefix} total={getTerms(c).length} idPattern="\d{3}" />
@@ -121,7 +133,22 @@ export function Progress() {
         </div>
       )}
 
-      <section className="mt-12 rounded-xl border border-line p-4">
+      <div className="mt-12 grid gap-4 lg:grid-cols-2">
+        <section className="rounded-xl border border-line bg-surface p-4">
+          <h2 className="font-semibold">Chuyển tiến độ giữa các máy</h2>
+          <div className="mt-1">
+            <BackupPanel />
+          </div>
+        </section>
+        <section className="rounded-xl border border-line bg-surface p-4">
+          <h2 className="font-semibold">Cài app</h2>
+          <div className="mt-1">
+            <InstallApp />
+          </div>
+        </section>
+      </div>
+
+      <section className="mt-4 rounded-xl border border-line p-4">
         <h2 className="font-semibold">Xóa tiến độ</h2>
         <p className="mt-1 text-sm text-muted">Tiến độ đang lưu trên trình duyệt này. Xóa đi sẽ không khôi phục được.</p>
         {confirming ? (

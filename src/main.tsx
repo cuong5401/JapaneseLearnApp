@@ -5,6 +5,8 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import './index.css'
 import { Layout } from './components/Layout'
 import { LegacyLevel } from './components/LegacyLevel'
+// Bắt sự kiện beforeinstallprompt sớm, trước khi trang nào kịp render.
+import './lib/install'
 
 // Mỗi trang tách thành chunk riêng, tải khi điều hướng tới.
 const router = createBrowserRouter([
@@ -40,7 +42,7 @@ const router = createBrowserRouter([
       { path: '*', lazy: () => import('./pages/NotFound').then((m) => ({ Component: m.NotFound })) },
     ],
   },
-])
+], { basename: import.meta.env.BASE_URL })
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

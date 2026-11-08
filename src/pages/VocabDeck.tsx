@@ -14,6 +14,7 @@ import { useCards, useStats } from '../hooks/useProgress'
 import { LESSON_SIZES, continueLesson, lessonProgress, splitLessons, type LessonProgress, type LessonState } from '../lib/lessons'
 import { setLessonSize, useLessonSize } from '../lib/settings'
 import type { VocabDeckKey, VocabItem } from '../types'
+import { PUBLIC_BUILD } from '../lib/edition'
 import { NotFound } from './NotFound'
 
 const PER_PAGE = 40
@@ -130,9 +131,11 @@ function DeckBody({ deckKey, items }: { deckKey: VocabDeckKey; items: VocabItem[
             <Link to={`/kanji?level=${info.level}`} className="font-medium text-ai hover:underline">
               Chữ Hán xuất hiện từ {info.level}
             </Link>
-            <Link to={`/grammar/${deckKey}`} className="font-medium text-ai hover:underline">
-              Ngữ pháp {info.level}
-            </Link>
+            {!PUBLIC_BUILD && (
+              <Link to={`/grammar/${deckKey}`} className="font-medium text-ai hover:underline">
+                Ngữ pháp {info.level}
+              </Link>
+            )}
           </span>
         )}
       </div>

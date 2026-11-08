@@ -1,4 +1,5 @@
 import type { DataManifest } from '../types'
+import { PUBLIC_BUILD, isGrammarId } from './edition'
 
 /**
  * Kho dữ liệu học tải từ public/data.
@@ -115,7 +116,9 @@ const DATA_ID = /^([a-z]+\d?)-[0-9a-f]{8}$/
 /** File chứa mục có ID này, hoặc null nếu ID không thuộc public/data (thuật ngữ có sẵn, ID cũ…). */
 export function pathForId(id: string): string | null {
   const m = DATA_ID.exec(id)
-  return m ? (PREFIX_PATH[m[1]] ?? null) : null
+  // Bản public không có file ngữ pháp: coi ID ngữ pháp như không tồn tại (bỏ qua, không báo lỗi tải).
+  if (!m || (PUBLIC_BUILD && isGrammarId(id))) return null
+  return PREFIX_PATH[m[1]] ?? null
 }
 
 const indexes = new WeakMap<readonly { id: string }[], Map<string, { id: string }>>()

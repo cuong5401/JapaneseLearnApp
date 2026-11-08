@@ -1,6 +1,8 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { GrammarUnavailable } from '../components/GrammarUnavailable'
+import { PUBLIC_BUILD } from '../lib/edition'
 import { Loaded, PageSkeleton } from '../components/LoadState'
 import { PageHeader } from '../components/PageHeader'
 import { Button } from '../components/Pressable'
@@ -159,6 +161,10 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
 }
 
 export function GrammarDetail() {
+  return PUBLIC_BUILD ? <GrammarUnavailable /> : <GrammarDetailPage />
+}
+
+function GrammarDetailPage() {
   const { level: param, gid = '' } = useParams()
   const level = parseLevel(param)
   const data = useGrammar(level ?? 'N4')
