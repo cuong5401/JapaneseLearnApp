@@ -20,9 +20,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      # Bản public: không kèm ngữ pháp N4–N1 lấy từ sách (xem vite.config.ts).
-      VITE_PUBLIC_BUILD: 'true'
     steps:
       - uses: actions/checkout@v7
 
@@ -34,7 +31,12 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
-      - run: npm run build
+      - name: Build bản public
+        run: npm run build
+        env:
+          # Không kèm ngữ pháp N4–N1 lấy từ sách (xem vite.config.ts).
+          # Chỉ đặt ở bước build: test đơn vị chạy với bản đầy đủ.
+          VITE_PUBLIC_BUILD: 'true'
 
       - name: Kiểm tra bản public không còn ngữ pháp N4–N1
         run: |
