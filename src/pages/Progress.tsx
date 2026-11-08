@@ -11,7 +11,10 @@ import { DECK_ID_PREFIX, EXTRA_DECKS, LEVEL_DECKS, TERM_INFO, VOCAB_DECK_INFO, d
 import { useManifest } from '../hooks/useData'
 import { useCards, useDueIds, usePrefixStats } from '../hooks/useProgress'
 import { PUBLIC_BUILD, PUBLIC_GRAMMAR_NOTE } from '../lib/edition'
+import { kanaLevel, kanaProgress, useKanaStats } from '../lib/kanaProgress'
 import { progress } from '../lib/progress'
+import { kanaOf } from '../data/kana'
+import type { KanaScript } from '../types'
 import { MASTERED_INTERVAL, isMastered } from '../lib/srs'
 import { LEVELS, TERM_CATEGORIES, type DataManifest } from '../types'
 
@@ -32,6 +35,35 @@ function Row({ to, title, prefix, total, idPattern }: { to: string; title: strin
       </div>
       <p className="mt-1.5 text-sm text-muted">
         {s.mastered} đã thuộc{s.due > 0 && `, ${s.due} cần ôn`}
+      </p>
+    </StaggerItem>
+  )
+}
+
+/** Kana: "đã học" = đã luyện ít nhất một lần, "đã thuộc" = đúng ngay lần đầu 3 lần liên tiếp. */
+function KanaRow({ script, label, ja }: { script: KanaScript; label: string; ja: string }) {
+  const stats = useKanaStats()
+  const chars = kanaOf(script)
+  const learned = chars.filter((k) => stats[k.id]).length
+  const mastered = chars.filter((k) => kanaLevel(stats[k.id]) === 'mastered').length
+  return (
+    <StaggerItem as="li" className="py-3.5">
+      <div className="flex items-baseline justify-between gap-3">
+        <Link to="/kana" className="font-semibold hover:text-ai">
+          {label}{' '}
+          <span lang="ja" className="font-jp font-normal text-muted">
+            {ja}
+          </span>
+        </Link>
+        <span className="text-sm tabular-nums text-muted" data-kana-progress-row={script}>
+          {mastered}/{chars.length}
+        </span>
+      </div>
+      <div className="mt-2">
+        <ProgressBar total={chars.length} learned={learned} mastered={mastered} label={label} />
+      </div>
+      <p className="mt-1.5 text-sm text-muted">
+        {mastered} đã thuộc, {learned - mastered} đang học
       </p>
     </StaggerItem>
   )
@@ -105,6 +137,10 @@ export function Progress() {
             ))}
           </Section>
           <div className="space-y-10">
+            <Section title="Kana">
+              <KanaRow script="hiragana" label="Hiragana" ja="あ" />
+              <KanaRow script="katakana" label="Katakana" ja="ア" />
+            </Section>
             <Section title="Bộ từ khác">
               {EXTRA_DECKS.map((k) => (
                 <Row key={k} to={`/vocab/${k}`} title={VOCAB_DECK_INFO[k].name} prefix={DECK_ID_PREFIX[k]} total={count(m, VOCAB_DECK_INFO[k].path)} />
@@ -157,6 +193,7 @@ export function Progress() {
               type="button"
               onClick={() => {
                 progress.reset()
+                kanaProgress.reset()
                 setConfirming(false)
               }}
               className="min-h-11 rounded-lg bg-beni px-4 font-semibold text-on-ai"

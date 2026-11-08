@@ -1,23 +1,26 @@
 import { useRef, useState, type ChangeEvent } from 'react'
 import { useCards } from '../hooks/useProgress'
 import { backupFileName, createBackup, mergeCards, parseBackup, type Backup } from '../lib/backup'
+import { kanaProgress, mergeKanaStats, useKanaStats } from '../lib/kanaProgress'
 import { progress } from '../lib/progress'
 import { setLessonSize, useLessonSize } from '../lib/settings'
 
-type Pending = { name: string; backup: Backup; skipped: number; added: number; updated: number }
+type Pending = { name: string; backup: Backup; skipped: number; added: number; updated: number; kana: number }
 type Notice = { tone: 'ok' | 'error'; text: string }
 
 /** Xuất tiến độ ra file .json và nhập lại ở máy khác (gộp, không ghi đè thẻ mới hơn). */
 export function BackupPanel() {
   const cards = useCards()
   const lessonSize = useLessonSize()
+  const kanaStats = useKanaStats()
   const fileRef = useRef<HTMLInputElement>(null)
   const [pending, setPending] = useState<Pending | null>(null)
   const [notice, setNotice] = useState<Notice | null>(null)
   const total = Object.keys(cards).length
+  const kanaTotal = Object.keys(kanaStats).length
 
   const exportFile = () => {
-    const blob = new Blob([JSON.stringify(createBackup(cards, lessonSize), null, 1)], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify(createBackup(cards, lessonSize, kanaStats), null, 1)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -26,7 +29,7 @@ export function BackupPanel() {
     a.click()
     a.remove()
     setTimeout(() => URL.revokeObjectURL(url), 1000)
-    setNotice({ tone: 'ok', text: `Đã xuất ${total} thẻ. Mở file này ở máy kia bằng “Nhập tiến độ”.` })
+    setNotice({ tone: 'ok', text: `Đã xuất ${total} thẻ${kanaTotal ? ` và ${kanaTotal} chữ kana` : ''}. Mở file này ở máy kia bằng “Nhập tiến độ”.` })
   }
 
   const onFile = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -41,7 +44,8 @@ export function BackupPanel() {
       return
     }
     const m = mergeCards(cards, r.backup.cards)
-    setPending({ name: file.name, backup: r.backup, skipped: r.skipped, added: m.added, updated: m.updated })
+    const k = mergeKanaStats(kanaStats, r.backup.kana ?? {})
+    setPending({ name: file.name, backup: r.backup, skipped: r.skipped, added: m.added, updated: m.updated, kana: k.changed })
   }
 
   const confirmImport = () => {
@@ -49,9 +53,11 @@ export function BackupPanel() {
     // Gộp lại với tiến độ hiện tại ngay lúc xác nhận (có thể vừa học thêm).
     const m = mergeCards(progress.getSnapshot(), pending.backup.cards)
     progress.importCards(m.cards)
+    const k = mergeKanaStats(kanaProgress.getSnapshot(), pending.backup.kana ?? {})
+    if (k.changed) kanaProgress.replace(k.stats)
     if (pending.backup.lessonSize) setLessonSize(pending.backup.lessonSize)
     setPending(null)
-    setNotice({ tone: 'ok', text: `Đã nhập: ${m.added} thẻ mới, ${m.updated} thẻ được cập nhật.` })
+    setNotice({ tone: 'ok', text: `Đã nhập: ${m.added} thẻ mới, ${m.updated} thẻ được cập nhật${k.changed ? `, ${k.changed} chữ kana` : ''}.` })
   }
 
   return (
@@ -64,7 +70,7 @@ export function BackupPanel() {
         <button
           type="button"
           onClick={exportFile}
-          disabled={total === 0}
+          disabled={total + kanaTotal === 0}
           className="min-h-11 rounded-lg bg-ai px-4 font-semibold text-on-ai hover:opacity-90 disabled:opacity-40"
         >
           Xuất tiến độ
@@ -84,16 +90,17 @@ export function BackupPanel() {
           <p className="font-semibold break-all">{pending.name}</p>
           <p className="mt-1 text-sm">
             {Object.keys(pending.backup.cards).length} thẻ trong file: {pending.added} thẻ mới, {pending.updated} thẻ mới hơn bản trên máy này
-            {pending.skipped > 0 && `, ${pending.skipped} thẻ hỏng bị bỏ qua`}.
+            {pending.kana > 0 && `, ${pending.kana} chữ kana mới hơn`}
+            {pending.skipped > 0 && `, ${pending.skipped} mục hỏng bị bỏ qua`}.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
               onClick={confirmImport}
-              disabled={pending.added + pending.updated === 0}
+              disabled={pending.added + pending.updated + pending.kana === 0}
               className="min-h-11 rounded-lg bg-ai px-4 font-semibold text-on-ai hover:opacity-90 disabled:opacity-40"
             >
-              {pending.added + pending.updated === 0 ? 'Không có gì mới' : 'Nhập và gộp'}
+              {pending.added + pending.updated + pending.kana === 0 ? 'Không có gì mới' : 'Nhập và gộp'}
             </button>
             <button type="button" onClick={() => setPending(null)} className="min-h-11 rounded-lg border border-line bg-surface px-4">
               Hủy

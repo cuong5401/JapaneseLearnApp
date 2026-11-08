@@ -1,3 +1,5 @@
+import { useSyncExternalStore } from 'react'
+
 export const speechSupported = typeof window !== 'undefined' && 'speechSynthesis' in window
 
 function japaneseVoice(): SpeechSynthesisVoice | undefined {
@@ -34,3 +36,41 @@ export function speak(text: string, rate = 0.9): void {
 
 /** Văn bản dùng để đọc phát âm một từ: ưu tiên cách đọc, thiếu thì đọc theo chữ. */
 export const speechText = (item: { reading?: string; word: string }) => item.reading || item.word
+
+/*
+ * Trạng thái giọng tiếng Nhật cho React. Trình duyệt nạp danh sách giọng không đồng bộ
+ * (sự kiện voiceschanged); sau 2,5 giây vẫn chưa có thì coi như máy không có giọng.
+ */
+type VoiceState = boolean | null
+const voiceListeners = new Set<() => void>()
+let voiceTimedOut = false
+
+if (speechSupported) {
+  const notify = () => voiceListeners.forEach((l) => l())
+  window.speechSynthesis.addEventListener?.('voiceschanged', notify)
+  // Một số trình duyệt chỉ bắt đầu nạp giọng khi được hỏi lần đầu.
+  window.speechSynthesis.getVoices()
+  setTimeout(() => {
+    voiceTimedOut = true
+    notify()
+  }, 2500)
+}
+
+function voiceSnapshot(): VoiceState {
+  const v = hasJapaneseVoice()
+  return v === null && voiceTimedOut ? false : v
+}
+
+/** `true` có giọng ja-JP, `false` không có, `null` đang kiểm tra. */
+export function useJapaneseVoice(): VoiceState {
+  return useSyncExternalStore(
+    (l) => {
+      voiceListeners.add(l)
+      return () => {
+        voiceListeners.delete(l)
+      }
+    },
+    voiceSnapshot,
+    () => null,
+  )
+}

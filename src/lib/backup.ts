@@ -1,4 +1,5 @@
 import type { SrsCard } from '../types'
+import { isKanaStat, type KanaStat } from './kanaProgress'
 import { LESSON_SIZES, type LessonSize } from './lessons'
 
 /**
@@ -11,10 +12,17 @@ export interface Backup {
   exportedAt: string
   cards: Record<string, SrsCard>
   lessonSize?: LessonSize
+  /** Mức thuộc kana (từ bản có Luyện kana mới; file cũ không có) */
+  kana?: Record<string, KanaStat>
 }
 
-export function createBackup(cards: Record<string, SrsCard>, lessonSize: LessonSize, now = new Date()): Backup {
-  return { app: 'kotonoha', version: 1, exportedAt: now.toISOString(), cards, lessonSize }
+export function createBackup(
+  cards: Record<string, SrsCard>,
+  lessonSize: LessonSize,
+  kana: Record<string, KanaStat> = {},
+  now = new Date(),
+): Backup {
+  return { app: 'kotonoha', version: 1, exportedAt: now.toISOString(), cards, lessonSize, kana }
 }
 
 export function backupFileName(now = new Date()): string {
@@ -64,11 +72,18 @@ export function parseBackup(text: string): ParseResult {
     if (card) cards[id] = card
     else skipped++
   }
+  const kana: Record<string, KanaStat> = {}
+  if (b.kana && typeof b.kana === 'object' && !Array.isArray(b.kana)) {
+    for (const [id, v] of Object.entries(b.kana)) {
+      if (isKanaStat(v)) kana[id] = { right: v.right, wrong: v.wrong, streak: v.streak, last: v.last }
+      else skipped++
+    }
+  }
   const lessonSize = (LESSON_SIZES as readonly number[]).includes(b.lessonSize as number) ? b.lessonSize : undefined
   return {
     ok: true,
     skipped,
-    backup: { app: 'kotonoha', version: 1, exportedAt: String(b.exportedAt ?? ''), cards, lessonSize },
+    backup: { app: 'kotonoha', version: 1, exportedAt: String(b.exportedAt ?? ''), cards, lessonSize, kana },
   }
 }
 

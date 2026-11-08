@@ -72,7 +72,8 @@ Tiến độ lưu trong localStorage của từng trình duyệt. Ở trang **Ti
 | Tìm kiếm (phím `/`): chữ Nhật, kana, romaji, Hán Việt, nghĩa tiếng Việt không dấu | hộp tìm kiếm |
 | Ôn tập SRS cho từ vựng, chữ Hán, ngữ pháp | `/review` |
 | Thuật ngữ IT, điện tử, văn phòng | `/terms/it` |
-| Luyện kana, Tiến độ | `/kana`, `/progress` |
+| Luyện kana: bảng 50 âm, âm đục, âm ghép (Hiragana/Katakana), chọn hàng để luyện, chữ yếu, ôn ngẫu nhiên; phiên có đầu có cuối (gõ romaji, trắc nghiệm, ngược lại, nghe, trộn), câu sai hỏi lại sau 3–5 câu; mức thuộc từng chữ | `/kana` |
+| Tiến độ: từ vựng, kanji, ngữ pháp, kana; xuất/nhập tiến độ | `/progress` |
 
 ## Dữ liệu
 
@@ -85,6 +86,6 @@ Tiến độ lưu trong localStorage của từng trình duyệt. Ở trang **Ti
 ## Kiểm tra
 
 ```bash
-npm test          # Vitest: dataStore, chia bài, tìm kiếm, xuất/nhập tiến độ
-npm run test:e2e  # Playwright: bố cục 390–1440px, chữ không tràn ô GridCell
+npm test          # Vitest: dataStore, chia bài, tìm kiếm, xuất/nhập tiến độ, phiên luyện kana
+npm run test:e2e  # Playwright: bố cục 390–1440px, chữ không tràn ô GridCell, luyện kana
 ```

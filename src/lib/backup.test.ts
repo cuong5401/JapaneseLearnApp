@@ -14,12 +14,14 @@ const card = (id: string, lastReviewed: number, interval = 1): SrsCard => ({
 describe('backup', () => {
   it('xuất rồi đọc lại được đúng dữ liệu', () => {
     const cards = { 'n5-00000001': card('n5-00000001', 100), 'kj-00000002': card('kj-00000002', 200) }
-    const text = JSON.stringify(createBackup(cards, 30, new Date('2026-11-08T00:00:00Z')))
+    const kana = { 'h-ka': { right: 3, wrong: 1, streak: 2, last: 5 } }
+    const text = JSON.stringify(createBackup(cards, 30, kana, new Date('2026-11-08T00:00:00Z')))
     const r = parseBackup(text)
     expect(r.ok).toBe(true)
     if (!r.ok) return
     expect(r.backup.cards).toEqual(cards)
     expect(r.backup.lessonSize).toBe(30)
+    expect(r.backup.kana).toEqual(kana)
     expect(r.skipped).toBe(0)
   })
 
@@ -41,10 +43,12 @@ describe('backup', () => {
         version: 1,
         lessonSize: 25,
         cards: { a: card('a', 1), b: { id: 'b', ease: 'x' }, c: card('khác', 1) },
+        kana: { 'h-a': { right: 1, wrong: 0, streak: 1, last: 1 }, 'h-i': { right: -1 } },
       }),
     )
     expect(r.ok && Object.keys(r.backup.cards)).toEqual(['a'])
-    expect(r.ok && r.skipped).toBe(2)
+    expect(r.ok && r.skipped).toBe(3)
+    expect(r.ok && Object.keys(r.backup.kana ?? {})).toEqual(['h-a'])
     expect(r.ok && r.backup.lessonSize).toBeUndefined()
   })
 

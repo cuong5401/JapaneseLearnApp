@@ -29,10 +29,16 @@ export type KanaScript = 'hiragana' | 'katakana'
 export type KanaGroup = 'basic' | 'dakuten' | 'yoon'
 
 export interface KanaChar {
+  /** "h-ka", "k-shi", "h-ji-d" (ぢ): ổn định, dùng làm khóa lưu mức thuộc */
+  id: string
   kana: string
   romaji: string
   script: KanaScript
   group: KanaGroup
+  /** id hàng trong bảng ("h-basic-k") */
+  row: string
+  /** Cột (0 = a / ya) */
+  col: number
 }
 
 /** Một bộ học: bộ từ trong public/data hoặc nhóm thuật ngữ có sẵn. */

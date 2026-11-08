@@ -1,221 +1,208 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { GridCell } from '../components/GridCell'
-import { Button } from '../components/Pressable'
+import { AnimatePresence, motion } from 'motion/react'
+import { useCallback, useMemo, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { BottomSheet } from '../components/BottomSheet'
 import { PageHeader } from '../components/PageHeader'
-import { KANA, KANA_GROUP_LABELS } from '../data/kana'
-import { kanaMatches } from '../lib/answer'
+import { Button } from '../components/Pressable'
+import { Segmented } from '../components/Segmented'
+import { KanaChart, LevelLegend } from '../components/kana/KanaChart'
+import { KanaDetail } from '../components/kana/KanaDetail'
+import { KanaSession } from '../components/kana/KanaSession'
+import { KANA_ROWS, SCRIPT_LABELS, kanaOf, rowsOf, type KanaRow } from '../data/kana'
+import { DESKTOP, useMediaQuery } from '../hooks/useMediaQuery'
+import { kanaLevel, useKanaStats, weakest } from '../lib/kanaProgress'
+import { shuffleWith } from '../lib/kanaSession'
+import { speak } from '../lib/speech'
 import { readJSON, writeJSON } from '../lib/storage'
-import type { KanaChar, KanaGroup, KanaScript } from '../types'
+import type { KanaChar, KanaScript } from '../types'
 
-type ScriptChoice = KanaScript | 'both'
-interface Settings {
-  script: ScriptChoice
-  groups: KanaGroup[]
+/* Lựa chọn trên bảng (nhớ giữa các lần mở): bảng chữ đang xem và các hàng đã chọn. */
+interface ChartState {
+  script: KanaScript
+  rows: string[]
 }
 
-const SCRIPT_OPTIONS: { value: ScriptChoice; label: string; sample: string }[] = [
-  { value: 'hiragana', label: 'Hiragana', sample: 'あ' },
-  { value: 'katakana', label: 'Katakana', sample: 'ア' },
-  { value: 'both', label: 'Cả hai', sample: 'あア' },
-]
+const ROW_IDS = new Set(KANA_ROWS.map((r) => r.id))
 
-function pickNext(pool: KanaChar[], prev?: KanaChar): KanaChar {
-  if (pool.length === 1) return pool[0]
-  let next = prev
-  while (!next || next === prev) next = pool[Math.floor(Math.random() * pool.length)]
-  return next
+function loadChart(): ChartState {
+  const s = readJSON<Partial<ChartState>>('kana-chart', {})
+  return {
+    script: s.script === 'katakana' ? 'katakana' : 'hiragana',
+    rows: Array.isArray(s.rows) ? s.rows.filter((r) => ROW_IDS.has(r)) : ['h-basic-a', 'k-basic-a'],
+  }
 }
 
-const poolFor = (s: Settings) =>
-  KANA.filter((k) => (s.script === 'both' || k.script === s.script) && s.groups.includes(k.group))
+const charsOfRows = (rows: KanaRow[]) => rows.flatMap((r) => r.cells.filter((c): c is KanaChar => c !== null))
+
+interface Practice {
+  title: string
+  chars: KanaChar[]
+}
 
 export function Kana() {
-  const [settings, setSettingsState] = useState<Settings>(() =>
-    readJSON<Settings>('kana-settings', { script: 'hiragana', groups: ['basic'] }),
+  const [chart, setChartState] = useState(loadChart)
+  const [params, setParams] = useSearchParams()
+  const navigate = useNavigate()
+  const stats = useKanaStats()
+  const desktop = useMediaQuery(DESKTOP)
+  const [picked, setPicked] = useState<KanaChar | null>(null)
+  const [practice, setPractice] = useState<Practice | null>(null)
+
+  const setChart = (next: ChartState) => {
+    setChartState(next)
+    writeJSON('kana-chart', next)
+  }
+
+  const { script } = chart
+  const selected = useMemo(() => new Set(chart.rows), [chart.rows])
+  const scriptRows = rowsOf(script)
+  const selectedChars = charsOfRows(scriptRows.filter((r) => selected.has(r.id)))
+  const all = kanaOf(script)
+  const mastered = all.filter((k) => kanaLevel(stats[k.id]) === 'mastered').length
+  const weak = weakest(all, stats, 20)
+  const learned = all.filter((k) => stats[k.id])
+  const count = selectedChars.length
+
+  // Phiên luyện gắn với ?luyen=1 để nút Back của điện thoại quay về bảng chữ.
+  const practicing = practice !== null && params.has('luyen')
+
+  const startPractice = (p: Practice) => {
+    if (p.chars.length === 0) return
+    setPractice(p)
+    setParams({ luyen: '1' })
+    window.scrollTo(0, 0)
+  }
+  const exitPractice = useCallback(() => {
+    if (window.history.state?.idx > 0) navigate(-1)
+    else setParams({}, { replace: true })
+    setPractice(null)
+  }, [navigate, setParams])
+
+  const toggleRow = (row: KanaRow) => {
+    const rows = selected.has(row.id) ? chart.rows.filter((r) => r !== row.id) : [...chart.rows, row.id]
+    setChart({ ...chart, rows })
+  }
+  const selectAll = (on: boolean) => {
+    const other = chart.rows.filter((r) => !r.startsWith(script === 'hiragana' ? 'h-' : 'k-'))
+    setChart({ ...chart, rows: on ? [...other, ...scriptRows.map((r) => r.id)] : other })
+  }
+
+  // Chữ đang xem chi tiết: desktop luôn có (mặc định あ/ア), điện thoại mở bottom sheet khi chạm.
+  const detail = picked && picked.script === script ? picked : desktop ? all[0] : null
+  const pick = useCallback((k: KanaChar) => {
+    speak(k.kana)
+    setPicked(k)
+  }, [])
+  const pickFromDetail = useCallback(
+    (k: KanaChar) => {
+      if (k.script !== chart.script) {
+        setChartState((c) => {
+          const next = { ...c, script: k.script }
+          writeJSON('kana-chart', next)
+          return next
+        })
+      }
+      setPicked(k)
+    },
+    [chart.script],
   )
-  const pool = useMemo(() => poolFor(settings), [settings])
 
-  const [current, setCurrent] = useState<KanaChar>(() => pickNext(pool))
-  const [input, setInput] = useState('')
-  const [status, setStatus] = useState<'asking' | 'correct' | 'wrong'>('asking')
-  const [score, setScore] = useState({ right: 0, wrong: 0, streak: 0, best: 0 })
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => writeJSON('kana-settings', settings), [settings])
-
-  const next = useCallback(() => {
-    setCurrent((prev) => pickNext(pool, prev))
-    setInput('')
-    setStatus('asking')
-    inputRef.current?.focus()
-  }, [pool])
-
-  /** Đổi bộ chữ: lưu lại và đổi câu hỏi nếu chữ hiện tại không còn trong bộ. */
-  const setSettings = (update: (s: Settings) => Settings) => {
-    const nextSettings = update(settings)
-    const nextPool = poolFor(nextSettings)
-    setSettingsState(nextSettings)
-    if (!nextPool.includes(current)) {
-      setCurrent(pickNext(nextPool))
-      setInput('')
-      setStatus('asking')
-    }
-    inputRef.current?.focus()
+  if (practicing && practice) {
+    return <KanaSession key={practice.title + practice.chars.length} chars={practice.chars} title={practice.title} onExit={exitPractice} />
   }
-
-  // Đúng thì tự chuyển câu sau một nhịp ngắn.
-  useEffect(() => {
-    if (status !== 'correct') return
-    const t = setTimeout(next, 450)
-    return () => clearTimeout(t)
-  }, [status, next])
-
-  const onChange = (value: string) => {
-    if (status !== 'asking') return
-    setInput(value)
-    if (kanaMatches(value, current.kana)) {
-      setStatus('correct')
-      setScore((s) => {
-        const streak = s.streak + 1
-        return { ...s, right: s.right + 1, streak, best: Math.max(s.best, streak) }
-      })
-    }
-  }
-
-  const onSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    if (status === 'wrong') return next()
-    if (status !== 'asking' || !input.trim()) return
-    setStatus('wrong')
-    setScore((s) => ({ ...s, wrong: s.wrong + 1, streak: 0 }))
-  }
-
-  const reveal = () => {
-    if (status !== 'asking') return
-    setStatus('wrong')
-    setScore((s) => ({ ...s, wrong: s.wrong + 1, streak: 0 }))
-  }
-
-  const toggleGroup = (g: KanaGroup) =>
-    setSettings((s) => {
-      const groups = s.groups.includes(g) ? s.groups.filter((x) => x !== g) : [...s.groups, g]
-      return { ...s, groups: groups.length ? groups : s.groups }
-    })
 
   return (
-    <div className="@container mx-auto max-w-[640px]">
-      <PageHeader title="Luyện kana" back={{ to: '/', label: 'Trang chủ' }} />
-
-      <div className="space-y-3">
-        <div role="radiogroup" aria-label="Bảng chữ" className="grid grid-cols-3 gap-1 rounded-xl bg-sunken p-1">
-          {SCRIPT_OPTIONS.map((o) => (
-            <button
-              key={o.value}
-              type="button"
-              role="radio"
-              aria-checked={settings.script === o.value}
-              onClick={() => setSettings((s) => ({ ...s, script: o.value }))}
-              className={`min-h-11 rounded-lg text-sm font-medium transition-colors ${
-                settings.script === o.value ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink'
-              }`}
-            >
-              <span lang="ja" className="mr-1.5 font-jp">
-                {o.sample}
-              </span>
-              {o.label}
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {(Object.keys(KANA_GROUP_LABELS) as KanaGroup[]).map((g) => {
-            const on = settings.groups.includes(g)
-            return (
-              <button
-                key={g}
-                type="button"
-                aria-pressed={on}
-                onClick={() => toggleGroup(g)}
-                className={`min-h-10 rounded-full border px-4 text-sm transition-colors ${
-                  on ? 'border-ai bg-ai-soft font-medium text-ai' : 'border-line text-muted hover:text-ink'
-                }`}
-              >
-                {KANA_GROUP_LABELS[g]}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      <div className="mt-8 flex flex-col items-center">
-        <GridCell
-          key={current.kana + status}
-          tone={status === 'asking' ? 'default' : status}
-          className={`w-[clamp(10rem,46cqw,13rem)] ${status !== 'asking' ? 'animate-stamp' : ''}`}
-        >
-          {current.kana}
-        </GridCell>
-
-        <p aria-live="polite" className="mt-4 h-6 text-center font-medium">
-          {status === 'correct' && <span className="text-matsu">Đúng: {current.romaji}</span>}
-          {status === 'wrong' && (
-            <span className="text-beni">
-              Đáp án: <strong className="text-lg">{current.romaji}</strong>
-            </span>
-          )}
+    <div>
+      <PageHeader title="Luyện kana" back={{ to: '/', label: 'Trang chủ' }}>
+        <p className="text-sm text-muted" data-kana-mastered>
+          Đã thuộc{' '}
+          <strong className="text-lg text-ink tabular-nums">
+            {mastered}/{all.length}
+          </strong>{' '}
+          chữ {SCRIPT_LABELS[script]}
         </p>
+      </PageHeader>
 
-        <form onSubmit={onSubmit} className="mt-4 w-full max-w-xs">
-          <label htmlFor="kana-answer" className="sr-only">
-            Gõ romaji của chữ trên
-          </label>
-          <input
-            id="kana-answer"
-            ref={inputRef}
-            autoFocus
-            value={input}
-            onChange={(e) => onChange(e.target.value)}
-            readOnly={status !== 'asking'}
-            autoComplete="off"
-            autoCapitalize="off"
-            autoCorrect="off"
-            spellCheck={false}
-            enterKeyHint="go"
-            placeholder="Gõ romaji, ví dụ: ka"
-            className="h-14 w-full rounded-xl border-2 border-line bg-surface px-4 text-center text-xl tracking-wider outline-none placeholder:text-base placeholder:tracking-normal placeholder:text-muted/70 focus:border-ai"
-          />
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={reveal}
-              disabled={status !== 'asking'}
-              className="min-h-11 rounded-lg border border-line text-sm font-medium text-muted hover:text-ink disabled:opacity-40"
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start lg:gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Segmented<KanaScript>
+              label="Bảng chữ"
+              value={script}
+              onChange={(s) => setChart({ ...chart, script: s })}
+              options={[
+                { value: 'hiragana', label: 'Hiragana あ' },
+                { value: 'katakana', label: 'Katakana ア' },
+              ]}
+            />
+            <LevelLegend />
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <Button
+              onClick={() => startPractice({ title: `Chữ yếu (${SCRIPT_LABELS[script]})`, chars: weak })}
+              disabled={weak.length === 0}
+              title={weak.length === 0 ? 'Chưa có chữ nào trả lời sai' : undefined}
+              className="min-h-12 rounded-xl border border-line bg-surface px-3 text-sm font-semibold hover:border-ai disabled:opacity-45"
             >
-              Xem đáp án
-            </button>
-            <Button type="submit" className="min-h-11 rounded-lg bg-ai text-sm font-semibold text-on-ai hover:opacity-90">
-              {status === 'wrong' ? 'Chữ tiếp theo' : 'Kiểm tra'}
+              Luyện chữ yếu{weak.length > 0 && ` (${weak.length})`}
+            </Button>
+            <Button
+              onClick={() =>
+                startPractice({ title: `Ôn ngẫu nhiên (${SCRIPT_LABELS[script]})`, chars: shuffleWith(learned, Math.random).slice(0, 20) })
+              }
+              disabled={learned.length === 0}
+              title={learned.length === 0 ? 'Chưa luyện chữ nào' : undefined}
+              className="min-h-12 rounded-xl border border-line bg-surface px-3 text-sm font-semibold hover:border-ai disabled:opacity-45"
+            >
+              Ôn ngẫu nhiên 20 chữ đã học
             </Button>
           </div>
-        </form>
 
-        <dl className="mt-8 grid w-full max-w-xs grid-cols-3 text-center">
-          <div>
-            <dt className="text-xs text-muted">Đúng</dt>
-            <dd className="text-xl font-bold tabular-nums text-matsu">{score.right}</dd>
+          <p className="mt-6 text-sm text-muted">Chọn hàng muốn luyện bằng ô đầu hàng. Chạm vào chữ để nghe và xem chi tiết.</p>
+          <div className="mt-1 mb-3 flex items-center gap-1 text-sm">
+            <span className="mr-auto tabular-nums text-muted">Đã chọn {count} chữ</span>
+            <button type="button" onClick={() => selectAll(true)} className="min-h-11 rounded-lg px-3 font-medium text-ai hover:bg-ai-soft">
+              Chọn tất cả
+            </button>
+            <button type="button" onClick={() => selectAll(false)} className="min-h-11 rounded-lg px-3 font-medium text-muted hover:bg-sunken hover:text-ink">
+              Bỏ chọn
+            </button>
           </div>
-          <div>
-            <dt className="text-xs text-muted">Sai</dt>
-            <dd className="text-xl font-bold tabular-nums text-beni">{score.wrong}</dd>
+
+          <KanaChart script={script} stats={stats} selectedRows={selected} onToggleRow={toggleRow} active={detail ?? undefined} onPick={pick} />
+
+          {/* Nút luyện cố định ở đáy (trên thanh điều hướng điện thoại). */}
+          <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-10 mt-6 md:bottom-4">
+            <Button
+              onClick={() => startPractice({ title: `Luyện ${count} chữ ${SCRIPT_LABELS[script]}`, chars: selectedChars })}
+              disabled={count === 0}
+              className="min-h-14 w-full rounded-xl bg-ai text-lg font-semibold text-on-ai shadow-lg shadow-ink/15 hover:opacity-95 disabled:bg-sunken disabled:text-muted disabled:shadow-none"
+            >
+              {count === 0 ? 'Chọn ít nhất một hàng để luyện' : `Luyện ${count} chữ đã chọn`}
+            </Button>
           </div>
-          <div>
-            <dt className="text-xs text-muted">Chuỗi đúng</dt>
-            <dd className="text-xl font-bold tabular-nums">
-              {score.streak}
-              {score.best > 0 && <span className="ml-1 text-xs font-normal text-muted">/ {score.best}</span>}
-            </dd>
-          </div>
-        </dl>
+        </div>
+
+        {desktop && detail && (
+          <aside
+            className="sticky top-10 max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-2xl border border-line bg-surface p-5"
+            aria-label="Chi tiết chữ kana"
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div key={detail.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+                <KanaDetail k={detail} stat={stats[detail.id]} onPick={pickFromDetail} />
+              </motion.div>
+            </AnimatePresence>
+          </aside>
+        )}
       </div>
+
+      {!desktop && (
+        <BottomSheet open={Boolean(detail)} onClose={() => setPicked(null)} label={`Chi tiết chữ ${detail?.kana ?? ''}`}>
+          {detail && <KanaDetail k={detail} stat={stats[detail.id]} onPick={pickFromDetail} />}
+        </BottomSheet>
+      )}
     </div>
   )
 }
