@@ -7,10 +7,12 @@ import { Loaded, PageSkeleton } from '../components/LoadState'
 import { PageHeader } from '../components/PageHeader'
 import { Button } from '../components/Pressable'
 import { SpeakButton } from '../components/SpeakButton'
+import { AutoBadge } from '../components/grammar/AutoBadge'
 import { BookmarkButton } from '../components/notebook/BookmarkButton'
 import { useGrammar } from '../hooks/useData'
 import { useCards } from '../hooks/useProgress'
 import { parseLevel } from '../lib/levels'
+import { grammarChecked, useGrammarChecked } from '../lib/grammarChecked'
 import { progress } from '../lib/progress'
 import { hasJapanese } from '../lib/search'
 import type { GrammarEntry, Level } from '../types'
@@ -47,7 +49,13 @@ function Body({ lines }: { lines: string[] }) {
 
 function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; level: Level }) {
   const learned = Boolean(useCards()[g.id])
-  const parsedPoorly = !g.meaning || !g.examples?.length
+  const checked = g.id in useGrammarChecked()
+  const parsedPoorly = !g.auto && (!g.meaning || !g.examples?.length)
+  // Liên kết hai chiều: mẫu này trỏ tới + các mẫu khác trỏ về mẫu này (chương Excel thấy mẫu tự soạn liên quan).
+  const related = [
+    ...(g.related ?? []).map((id) => list.find((x) => x.id === id)).filter((x): x is GrammarEntry => Boolean(x)),
+    ...list.filter((x) => x.related?.includes(g.id) && !g.related?.includes(x.id)),
+  ]
   const [open, setOpen] = useState(parsedPoorly)
   const i = list.findIndex((x) => x.id === g.id)
   const prev = list[i - 1]
@@ -65,6 +73,12 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
           </h2>
           <BookmarkButton itemRef={g.id} label={`mẫu ${g.title}`} className="-mt-1 -mr-2" />
         </div>
+        {(g.group || g.auto) && (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {g.group && <span className="rounded-full bg-ai-soft px-2 py-0.5 text-xs font-medium text-ai">{g.group}</span>}
+            <AutoBadge g={g} />
+          </div>
+        )}
         {g.meaning && <p className="mt-3 text-lg">{g.meaning}</p>}
         {g.connection && (
           <div className="mt-4 rounded-xl bg-sunken px-4 py-3">
@@ -84,6 +98,22 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
           </Button>
           <span className="text-sm text-muted">{learned ? 'Mẫu này đang trong lịch ôn tập.' : 'Đánh dấu để đưa mẫu này vào lịch ôn tập.'}</span>
         </div>
+        {g.auto && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl bg-sunken px-4 py-3">
+            <p className="min-w-0 flex-1 basis-60 text-sm text-muted">
+              {checked
+                ? 'Bạn đã kiểm tra mẫu này.'
+                : 'Mẫu này do Kotonoha tự soạn (giải thích và câu ví dụ), chưa có người kiểm tra. Đọc kỹ rồi bấm "Đã kiểm tra" nếu thấy đúng.'}
+            </p>
+            <Button
+              onClick={() => grammarChecked.toggle(g.id)}
+              aria-pressed={checked}
+              className={`min-h-11 rounded-lg px-4 font-semibold ${checked ? 'border border-line bg-surface text-muted hover:text-ink' : 'border-2 border-matsu text-matsu hover:bg-matsu-soft'}`}
+            >
+              {checked ? 'Bỏ đánh dấu kiểm tra' : 'Đã kiểm tra'}
+            </Button>
+          </div>
+        )}
       </article>
 
       {g.examples && g.examples.length > 0 && (
@@ -106,6 +136,43 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
         </section>
       )}
 
+      {g.notes && g.notes.length > 0 && (
+        <section className="mt-8" aria-labelledby="grammar-notes">
+          <h3 id="grammar-notes" className="mb-3 font-semibold">
+            Lưu ý
+          </h3>
+          <ul className="space-y-2 rounded-xl border border-line bg-surface p-4">
+            {g.notes.map((n, i) => (
+              <li key={i} className="flex gap-2 leading-relaxed">
+                <span aria-hidden className="mt-2.5 size-1.5 shrink-0 rounded-full bg-kihada" />
+                <span className="min-w-0 break-words">{n}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {related.length > 0 && (
+        <section className="mt-8" aria-labelledby="grammar-related">
+          <h3 id="grammar-related" className="mb-3 font-semibold">
+            Xem thêm
+          </h3>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {related.map((r) => (
+              <li key={r.id}>
+                <Link to={`${base}/${r.id}`} data-related={r.id} className="block min-h-11 rounded-xl border border-line bg-surface px-4 py-2.5 hover:border-ai">
+                  <span lang="ja" className="block font-jp font-medium break-words">
+                    {r.title}
+                  </span>
+                  {r.meaning && <span className="line-clamp-1 block text-sm text-muted">{r.meaning}</span>}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {g.body.length > 0 && (
       <section className="mt-8">
         <button
           type="button"
@@ -139,6 +206,7 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
           )}
         </AnimatePresence>
       </section>
+      )}
 
       <nav aria-label="Mẫu trước và sau" className="mt-8 grid grid-cols-2 gap-3">
         {prev ? (

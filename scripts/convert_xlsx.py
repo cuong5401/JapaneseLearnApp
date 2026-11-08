@@ -346,6 +346,13 @@ def extract_fields(level, body):
                 meaning = (rest + (' ' + nxt if nxt and not JP_RE.search(nxt) and not nxt.startswith(('接続', '用例', '①')) else '')).strip()
         elif l.startswith('接続') and not connection:
             connection = l.replace('接続', '', 1).strip()
+        elif level == 'n3' and i < 12 and not meaning and re.match(r'^Ý nghĩa( \d)?:\s*\S', l):
+            meaning = re.sub(r'\s*Ví dụ:?$', '', re.sub(r'^Ý nghĩa( \d)?:\s*', '', l)).strip()
+        elif level == 'n3' and i < 12 and not connection and re.match(r'^(\d\. )?Cấu trúc( \d)?:', l):
+            rest = re.sub(r'^(\d\. )?Cấu trúc( \d)?:\s*', '', l).strip()
+            if not rest and nxt and not nxt.startswith(('Ý nghĩa', 'Ví dụ')) and nxt[:1] not in CIRCLED:
+                rest = nxt.strip(' ')
+            connection = rest
         elif l[:1] in CIRCLED:
             ja, vi = split_ja_vi(l[1:].strip())
             if not vi and nxt and not JP_RE.search(nxt[:6]) and nxt[:1] not in CIRCLED:
@@ -413,24 +420,223 @@ def parse_grammar_n4(ws):
     return items
 
 
-def parse_grammar_n3(ws):
+def parse_grammar_n3(ws, chapters_file=None):
     lines = sheet_lines(ws)
-    items, cur = [], None
+    chapters, cur = [], None
     for l in lines:
         m = re.match(r'^(\d+)\.\s*\[Ngữ pháp (N\d)\]\s*(.+)$', l)
         if m:
-            if cur:
-                items.append(make_grammar_item('n3', *cur))
             title = m.group(3).strip().lstrip(':： ')
             if m.group(2) != 'N3':
                 title = f'{title} (ôn {m.group(2)})'
             cur = [int(m.group(1)), title, []]
+            chapters.append(cur)
             continue
         if cur:
             cur[2].append(l)
-    if cur:
-        items.append(make_grammar_item('n3', *cur))
+    if chapters_file and chapters_file.exists():
+        chapters = split_chapters(chapters, json.loads(chapters_file.read_text(encoding='utf-8'))['chapters'])
+    return [make_grammar_item('n3', *c) for c in chapters]
+
+
+def split_chapters(chapters, splits):
+    """Cắt thân chương theo n3-chapters.json (tiêu đề bị mất trong Excel). Lỗi nếu không tìm thấy dòng cắt."""
+    norm = lambda s: re.sub(r'\s+', ' ', s).strip()
+    by_parent = defaultdict(list)
+    for s in splits:
+        by_parent[s['parent']].append(s)
+    out = []
+    for no, title, body in chapters:
+        pieces, start, pos = [], 0, 0
+        cur_no, cur_title = no, title
+        for s in by_parent.pop(no, []):
+            target = norm(s['match'])
+            hit = next((i for i in range(pos + 1, len(body))
+                        if (norm(body[i]) == target if s.get('exact') else norm(body[i]).startswith(target))), None)
+            if hit is None:
+                raise SystemExit(f'n3-chapters.json: không tìm thấy "{s["match"]}" trong chương {no} (cho chương {s["no"]})')
+            pieces.append([cur_no, cur_title, body[start:hit]])
+            start, pos, cur_no, cur_title = hit, hit, s['no'], s['title']
+        pieces.append([cur_no, cur_title, body[start:]])
+        out.extend(pieces)
+    if by_parent:
+        raise SystemExit(f'n3-chapters.json: không có chương cha {sorted(by_parent)}')
+    nos = [c[0] for c in out]
+    if nos != sorted(nos) or len(set(nos)) != len(nos):
+        raise SystemExit(f'n3-chapters.json: số chương không tăng dần: {nos}')
+    return out
+
+
+# ---------------------------------------------------------------- ngữ pháp tự soạn (data-source/grammar-extra)
+
+EXTRA_DIR = Path(__file__).resolve().parent.parent / 'data-source' / 'grammar-extra'
+GRAMMAR_GROUPS = {
+    'n3': ['Ôn tập N4', 'Thời điểm', 'Nguyên nhân – kết quả', 'Suy đoán – truyền đạt', 'Đối chiếu – tương phản',
+           'So sánh – mức độ', 'Nhấn mạnh – giới hạn', 'Liệt kê – bổ sung', 'Điều kiện – giả định', 'Quan điểm – đề tài',
+           'Ý chí – nghĩa vụ – cảm xúc', 'Động từ ghép – trợ động từ', 'Văn nói'],
+    'n5': ['Trợ từ', 'Câu cơ bản', 'Chỉ thị – nghi vấn', 'Tính từ', 'Động từ – thể ます', 'Thể て', 'Mong muốn – rủ rê',
+           'Xin phép – cấm – yêu cầu', 'So sánh', 'Thời gian – trình tự'],
+}
+EXTRA_KEYS = {'title', 'group', 'meaning', 'connection', 'examples', 'notes', 'related', 'source', 'auto'}
+LEVEL_RANK = {'N5': 1, 'N4': 2, 'N3': 3, 'N2': 4, 'N1': 5}
+
+
+def title_keys(title):
+    """Các cách viết của một tiêu đề, đã chuẩn hóa, để phát hiện trùng ('～ばかり / ～たばかり' → {ばかり, たばかり})."""
+    t = re.sub(r'\((?:[^)]*[A-Za-zÀ-ỹ][^)]*)\)', '', title)  # bỏ chú thích tiếng Việt trong ngoặc
+    keys = set()
+    for part in re.split(r'[/／、,]', t):
+        k = re.sub(r'[～〜\s・]', '', part).replace('（', '(').replace('）', ')')
+        if k:
+            keys.add(k)
+            keys.add(re.sub(r'\(.*?\)', '', k))
+    return {k for k in keys if k}
+
+
+def validate_extra(level, items, kanji_level=None):
+    """Kiểm tra file tự soạn. Trả về (lỗi, cảnh báo)."""
+    errors, warnings, seen = [], [], {}
+    groups = GRAMMAR_GROUPS[level]
+    max_rank = LEVEL_RANK['N3'] if level == 'n3' else LEVEL_RANK['N4']
+    for n, it in enumerate(items, 1):
+        where = f'{level}.json #{n} {it.get("title", "?")}'
+        unknown = set(it) - EXTRA_KEYS
+        if unknown:
+            errors.append(f'{where}: trường lạ {sorted(unknown)}')
+        for k in ('title', 'group', 'meaning', 'connection'):
+            if not isinstance(it.get(k), str) or not it[k].strip():
+                errors.append(f'{where}: thiếu {k}')
+        if it.get('group') not in groups:
+            errors.append(f'{where}: nhóm "{it.get("group")}" không có trong danh sách')
+        if it.get('source') != 'kotonoha' or it.get('auto') is not True:
+            errors.append(f'{where}: cần "source": "kotonoha" và "auto": true')
+        ex = it.get('examples')
+        if not isinstance(ex, list) or not 3 <= len(ex) <= 4:
+            errors.append(f'{where}: cần 3–4 ví dụ')
+        else:
+            for e in ex:
+                if not isinstance(e, dict) or set(e) != {'ja', 'vi'} or not e['ja'].strip() or not e['vi'].strip():
+                    errors.append(f'{where}: ví dụ phải có đủ ja và vi: {e}')
+                elif not JP_RE.search(e['ja']):
+                    errors.append(f'{where}: câu ví dụ không có chữ Nhật: {e["ja"]}')
+                elif kanji_level is not None:
+                    for ch in KANJI_RE.findall(e['ja']):
+                        lv = kanji_level.get(ch)
+                        if lv is None:
+                            warnings.append(f'{where}: chữ {ch} không có trong kanji.json ({e["ja"]})')
+                        elif LEVEL_RANK[lv] > max_rank:
+                            warnings.append(f'{where}: chữ {ch} xuất hiện từ {lv} ({e["ja"]})')
+        notes = it.get('notes')
+        if not isinstance(notes, list) or not notes or not all(isinstance(x, str) and x.strip() for x in notes):
+            errors.append(f'{where}: cần ít nhất một lưu ý (notes)')
+        rel = it.get('related', [])
+        if not isinstance(rel, list) or not all(isinstance(x, str) for x in rel):
+            errors.append(f'{where}: related phải là danh sách chuỗi')
+        # Trong cùng cấp: so cả tiêu đề (kể cả chú thích "(thời gian)"), bỏ ～ và khoảng trắng.
+        k = re.sub(r'[～〜\s]', '', it.get('title', ''))
+        if k in seen:
+            errors.append(f'{where}: trùng tiêu đề với mục #{seen[k]}')
+        seen[k] = n
+    return errors, warnings
+
+
+def load_extra(level):
+    p = EXTRA_DIR / f'{level}.json'
+    return json.loads(p.read_text(encoding='utf-8')) if p.exists() else []
+
+
+def merge_extra(level, excel_items, kanji_level):
+    """Mục Excel trước, mục tự soạn sau. Mẫu đã có trong Excel thì báo lỗi (dùng related "#số" để trỏ tới)."""
+    extra = load_extra(level)
+    errors, warnings = validate_extra(level, extra, kanji_level)
+    excel_keys = {}
+    for g in excel_items:
+        for k in title_keys(g['title']):
+            excel_keys[k] = g
+    for it in extra:
+        for k in title_keys(it['title']):
+            if k in excel_keys:
+                errors.append(f'{level}.json {it["title"]}: đã có trong Excel (chương {excel_keys[k]["no"]} {excel_keys[k]["title"]}), ghi related "#{excel_keys[k]["no"]}" thay vì tạo lại')
+    by_no = {g['no']: g for g in excel_items}
+    ids = {it['title']: make_id(f'g{level}', 'kotonoha', it['title']) for it in extra}
+    start = max((g['no'] for g in excel_items), default=0)
+    out = list(excel_items)
+    for n, it in enumerate(extra, 1):
+        related = []
+        for r in it.get('related', []):
+            if r.startswith('#'):
+                g = by_no.get(int(r[1:])) if r[1:].isdigit() else None
+                if not g:
+                    errors.append(f'{level}.json {it["title"]}: không có chương Excel {r}')
+                else:
+                    related.append(g['id'])
+            elif r in ids:
+                related.append(ids[r])
+            else:
+                errors.append(f'{level}.json {it["title"]}: related "{r}" không khớp mục nào')
+        item = OrderedDict()
+        item['id'] = ids[it['title']]
+        item['level'] = level.upper()
+        item['no'] = start + n
+        item['title'] = it['title']
+        item['meaning'] = it['meaning']
+        item['connection'] = it['connection']
+        item['examples'] = it['examples']
+        item['notes'] = it['notes']
+        item['group'] = it['group']
+        if related:
+            item['related'] = related
+        item['source'] = 'kotonoha'
+        item['auto'] = True
+        item['body'] = []
+        out.append(item)
+    if errors:
+        raise SystemExit('Lỗi ngữ pháp tự soạn:\n  ' + '\n  '.join(errors))
+    report[f'grammar-extra {level}'].extend(warnings)
+    return out
+
+
+def apply_excel_groups(level, items):
+    p = EXTRA_DIR / f'{level}-chapters.json'
+    if not p.exists():
+        return items
+    groups = json.loads(p.read_text(encoding='utf-8')).get('groups', {})
+    for g in items:
+        grp = groups.get(str(g['no']))
+        if grp:
+            if grp not in GRAMMAR_GROUPS[level]:
+                raise SystemExit(f'{p.name}: nhóm "{grp}" của chương {g["no"]} không có trong danh sách')
+            g['group'] = grp
+    missing = [g['no'] for g in items if 'group' not in g]
+    if groups and missing:
+        raise SystemExit(f'{p.name}: chưa gán nhóm cho chương {missing}')
     return items
+
+
+def check_extra(data_dir):
+    """Chỉ kiểm tra file tự soạn (không cần Excel): python scripts/convert_xlsx.py --check [public/data]"""
+    kanji = json.loads((Path(data_dir) / 'kanji/kanji.json').read_text(encoding='utf-8'))
+    kanji_level = {k['kanji']: k['firstLevel'] for k in kanji}
+    ok = True
+    for level in ('n3', 'n5'):
+        items = load_extra(level)
+        errors, warnings = validate_extra(level, items, kanji_level)
+        titles = {it.get('title') for it in items}
+        for it in items:
+            for r in it.get('related', []):
+                if not r.startswith('#') and r not in titles:
+                    warnings.append(f'{it.get("title")}: related "{r}" chưa có (lỗi khi chạy import nếu vẫn thiếu)')
+        counts = Counter(it.get('group') for it in items)
+        print(f'{level}: {len(items)} mẫu, {len(errors)} lỗi, {len(warnings)} cảnh báo')
+        for g in GRAMMAR_GROUPS[level]:
+            if counts[g]:
+                print(f'   {counts[g]:3}  {g}')
+        for e in errors:
+            print('  LỖI', e)
+        for w in warnings:
+            print('  cảnh báo', w)
+        ok = ok and not errors
+    return ok
 
 
 def parse_grammar_book(ws, level, head_re):
@@ -468,7 +674,7 @@ def write_json(path, data):
         body = '[\n' + ',\n'.join(json.dumps(x, ensure_ascii=False, separators=(',', ':')) for x in data) + '\n]\n'
     else:
         body = json.dumps(data, ensure_ascii=False, indent=2) + '\n'
-    path.write_text(body, encoding='utf-8')
+    path.write_text(body, encoding='utf-8', newline='\n')
     return body.encode('utf-8')
 
 
@@ -492,11 +698,21 @@ def main(xlsx, out_dir):
     radicals = read_radicals(S['bộ thủ'])
 
     grammar = OrderedDict()
-    grammar['n5'] = []  # sheet "ngữ pháp n5" đang trống
+    kanji_level = {k['kanji']: k['firstLevel'] for k in kanji}
+    grammar['n5'] = merge_extra('n5', [], kanji_level)  # sheet "ngữ pháp n5" trống: chỉ có mục tự soạn
     grammar['n4'] = parse_grammar_n4(S['ngữ pháp n4'])
-    grammar['n3'] = parse_grammar_n3(S['ngữ pháp n3'])
+    n3_excel = apply_excel_groups('n3', parse_grammar_n3(S['ngữ pháp n3'], EXTRA_DIR / 'n3-chapters.json'))
+    grammar['n3'] = merge_extra('n3', n3_excel, kanji_level)
     grammar['n2'] = parse_grammar_book(S['ngữ pháp n2'], 'n2', re.compile(r'^([0-9０-９]{1,3})\s+(\S.*)$'))
     grammar['n1'] = parse_grammar_book(S['ngữ pháp n1'], 'n1', re.compile(r'^([0-9０-９]{1,3})[.．]\s*(\S.*)$'))
+
+    # id cũ phải còn (tiến độ SRS gắn theo id)
+    for lv, items in grammar.items():
+        old = out / f'grammar/{lv}.json'
+        if old.exists():
+            gone = {g['id'] for g in json.loads(old.read_text(encoding='utf-8'))} - {g['id'] for g in items}
+            if gone:
+                raise SystemExit(f'grammar/{lv}.json: mất {len(gone)} id cũ ({sorted(gone)[:5]}…), dừng để không mất tiến độ')
 
     files = []
 
@@ -530,14 +746,18 @@ def main(xlsx, out_dir):
     lines = ['# Báo cáo chuyển đổi', '', f'Nguồn: `{Path(xlsx).name}`', '', '| File | Số mục | Dung lượng |', '|---|---:|---:|']
     for f in files:
         lines.append(f"| {f['path']} | {f['count']} | {f['bytes'] / 1024:.0f} KB |")
-    lines += ['', '- Sheet "ngữ pháp n5" trống nên grammar/n5.json rỗng.', '']
+    lines += ['', '- Sheet "ngữ pháp n5" trống: grammar/n5.json chỉ gồm mục tự soạn (data-source/grammar-extra/n5.json).',
+              '- Sheet "ngữ pháp n3" mất phần lớn tiêu đề chương: cắt lại theo data-source/grammar-extra/n3-chapters.json.', '']
     for sheet, msgs in report.items():
         lines += [f'## {sheet} ({len(msgs)})', ''] + [f'- {m}' for m in msgs] + ['']
-    (out / 'import-report.md').write_text('\n'.join(lines), encoding='utf-8')
+    (out / 'import-report.md').write_text('\n'.join(lines), encoding='utf-8', newline='\n')
     return files
 
 
 if __name__ == '__main__':
+    sys.stdout.reconfigure(encoding='utf-8')
+    if len(sys.argv) >= 2 and sys.argv[1] == '--check':
+        sys.exit(0 if check_extra(sys.argv[2] if len(sys.argv) > 2 else 'public/data') else 1)
     if len(sys.argv) != 3:
         print(__doc__)
         sys.exit(1)

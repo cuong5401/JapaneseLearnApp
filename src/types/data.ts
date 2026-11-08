@@ -95,6 +95,16 @@ export interface GrammarEntry {
   connection?: string
   /** Các câu ví dụ đánh số ①②… */
   examples?: GrammarExample[]
-  /** Toàn bộ nội dung đã làm sạch, mỗi phần tử một dòng: luôn hiển thị được kể cả khi tách trường thất bại */
+  /** Toàn bộ nội dung đã làm sạch, mỗi phần tử một dòng: luôn hiển thị được kể cả khi tách trường thất bại (mục tự soạn: rỗng) */
   body: string[]
+  /** Nhóm chủ đề (N3: thời điểm, nguyên nhân…; N5: trợ từ…) */
+  group?: string
+  /** Lưu ý, phân biệt với mẫu dễ nhầm (mục tự soạn) */
+  notes?: string[]
+  /** ID các mẫu liên quan cùng cấp */
+  related?: string[]
+  /** 'kotonoha' = Kotonoha tự soạn (data-source/grammar-extra), không lấy từ file Excel */
+  source?: 'kotonoha'
+  /** Soạn tự động, chưa có người kiểm tra (xem lib/grammarChecked) */
+  auto?: boolean
 }

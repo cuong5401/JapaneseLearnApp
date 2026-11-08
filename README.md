@@ -71,7 +71,7 @@ Tiến độ lưu trong localStorage của từng trình duyệt. Ở trang **Ti
 | Chữ Hán chia bài 20/30/50 (lọc theo cấp xuất hiện), mỗi bài: Danh sách, Flashcard (âm Hán Việt + từ tiêu biểu), Quiz âm Hán Việt; thẻ SRS kanji | `/kanji?level=N5&bai=2&mode=flashcards` |
 | Bộ thủ chia bài theo số bộ: Danh sách, Flashcard (tên, nghĩa, chữ thuộc bộ), Quiz chọn tên; thẻ SRS `rd-001…` | `/kanji?tab=radicals&bai=1` |
 | Sổ tay: nút đánh dấu trên thẻ, dòng từ, chi tiết từ/chữ/bộ, ngữ pháp; lưu vào nhiều sổ, nhấn giữ để lưu nhanh; mỗi sổ chia bài, Flashcard, Quiz, thêm cả sổ vào lịch ôn | `/notebooks`, `/notebooks/:id` |
-| Ngữ pháp N4–N1 (N4 nhóm theo bài 26–50), chi tiết mẫu, "Đã hiểu" đưa vào lịch ôn | `/grammar/n2`, `/grammar/n2/:id` |
+| Ngữ pháp N5–N1 (N4 nhóm theo bài 26–50; N3, N5 lọc theo nhóm chủ đề `?nhom=`), chi tiết mẫu, "Đã hiểu" đưa vào lịch ôn; mẫu Kotonoha tự soạn có nhãn "chưa kiểm tra" đến khi bấm "Đã kiểm tra" | `/grammar/n3`, `/grammar/n3/:id` |
 | Tìm kiếm (phím `/`): chữ Nhật, kana, romaji, Hán Việt, nghĩa tiếng Việt không dấu | hộp tìm kiếm |
 | Ôn tập SRS cho từ vựng, chữ Hán, ngữ pháp | `/review` |
 | Thuật ngữ IT, điện tử, văn phòng | `/terms/it` |
@@ -82,6 +82,8 @@ Tiến độ lưu trong localStorage của từng trình duyệt. Ở trang **Ti
 
 - Dữ liệu học nằm trong `public/data/` (xem [DATA-README.md](DATA-README.md)), sinh từ Excel bằng `scripts/convert_xlsx.py`. **Không sửa tay** các file này; file Excel nguồn (`data-source/*.xlsx`) không đưa lên git.
 - Dữ liệu được `fetch` khi cần (`src/lib/dataStore.ts`), cache theo đường dẫn + `hash` trong manifest, không đóng gói vào bundle.
+- Ngữ pháp tự soạn: `data-source/grammar-extra/n3.json`, `n5.json` (có trong git, cùng kiểu `GrammarEntry` thêm `group`, `notes`, `related`, `"source": "kotonoha"`, `"auto": true`). Giải thích và câu ví dụ do Kotonoha tự viết, chưa qua người kiểm tra. `scripts/convert_xlsx.py` gộp vào `public/data/grammar/`: mục từ Excel trước, mục tự soạn sau; mẫu đã có trong Excel thì báo lỗi (dùng `related: ["#số chương"]` để trỏ tới). Kiểm tra nhanh không cần Excel: `python scripts/convert_xlsx.py --check`.
+- Sheet N3 trong Excel mất tiêu đề phần lớn chương; `data-source/grammar-extra/n3-chapters.json` ghi điểm cắt, tiêu đề và nhóm chủ đề cho 55 chương. Script dừng nếu một id ngữ pháp cũ biến mất (để không mất tiến độ).
 - Hook: `useManifest`, `useVocab`, `useKanjiIndex`, `useRadicals`, `useGrammar`, `useEntries(ids)` (`src/hooks/useData.ts`).
 - Tiến độ SRS lưu theo `id` trong localStorage; thẻ có ID không còn tồn tại được bỏ qua.
 - Thuật ngữ chuyên ngành nhỏ vẫn đóng gói sẵn trong `src/data/terms/`.

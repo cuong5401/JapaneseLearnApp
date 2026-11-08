@@ -1,4 +1,5 @@
 import type { SrsCard } from '../types'
+import { sanitizeChecked, type CheckedMap } from './grammarChecked'
 import { isKanaStat, type KanaStat } from './kanaProgress'
 import { sanitizeState, type NotebookState } from './notebooks'
 import { LESSON_SIZES, type LessonSize } from './lessons'
@@ -17,6 +18,8 @@ export interface Backup {
   kana?: Record<string, KanaStat>
   /** Sổ tay (chỉ id mục, không chép dữ liệu) */
   notebooks?: NotebookState
+  /** Mẫu ngữ pháp tự soạn đã bấm "Đã kiểm tra" */
+  grammarChecked?: CheckedMap
 }
 
 export function createBackup(
@@ -25,8 +28,9 @@ export function createBackup(
   kana: Record<string, KanaStat> = {},
   now = new Date(),
   notebooks?: NotebookState,
+  grammarChecked?: CheckedMap,
 ): Backup {
-  return { app: 'kotonoha', version: 1, exportedAt: now.toISOString(), cards, lessonSize, kana, notebooks }
+  return { app: 'kotonoha', version: 1, exportedAt: now.toISOString(), cards, lessonSize, kana, notebooks, grammarChecked }
 }
 
 export function backupFileName(now = new Date()): string {
@@ -87,7 +91,9 @@ export function parseBackup(text: string): ParseResult {
   return {
     ok: true,
     skipped,
-    backup: { app: 'kotonoha', version: 1, exportedAt: String(b.exportedAt ?? ''), cards, lessonSize, kana, notebooks: sanitizeState(b.notebooks) ?? undefined },
+    backup: { app: 'kotonoha', version: 1, exportedAt: String(b.exportedAt ?? ''), cards, lessonSize, kana, notebooks: sanitizeState(b.notebooks) ?? undefined,
+      grammarChecked: sanitizeChecked(b.grammarChecked) ?? undefined,
+    },
   }
 }
 

@@ -1,7 +1,7 @@
 {
-  "version": "202611061320",
-  "source": "42de3902-1793970631376_TU-VUNG-NGU-PHAP-N5-1.xlsx",
-  "generatedAt": "2026-11-06T13:20:02+00:00",
+  "version": "202611081220",
+  "source": "TU-VUNG-NGU-PHAP-N5-1.xlsx",
+  "generatedAt": "2026-11-08T12:20:28+00:00",
   "pageSize": 20,
   "files": [
     {
@@ -94,9 +94,9 @@
       "kind": "grammar",
       "title": "Ngữ pháp N5",
       "level": "N5",
-      "count": 0,
-      "bytes": 5,
-      "hash": "f69593cfcc"
+      "count": 63,
+      "bytes": 49005,
+      "hash": "5c91201223"
     },
     {
       "path": "grammar/n4.json",
@@ -112,9 +112,9 @@
       "kind": "grammar",
       "title": "Ngữ pháp N3",
       "level": "N3",
-      "count": 12,
-      "bytes": 241818,
-      "hash": "e5aa9282be"
+      "count": 155,
+      "bytes": 355352,
+      "hash": "aa15dda809"
     },
     {
       "path": "grammar/n2.json",

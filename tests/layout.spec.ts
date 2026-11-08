@@ -24,6 +24,8 @@ const PAGES = [
   '/kanji?tab=radicals&bai=1',
   '/notebooks',
   '/grammar/n4',
+  '/grammar/n3',
+  '/grammar/n5?nhom=Trợ từ',
   '/grammar/n2/gn2-03d5e797',
   '/review',
   '/khong-co-trang-nay',

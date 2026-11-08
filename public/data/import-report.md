@@ -1,6 +1,6 @@
 # Báo cáo chuyển đổi
 
-Nguồn: `42de3902-1793970631376_TU-VUNG-NGU-PHAP-N5-1.xlsx`
+Nguồn: `TU-VUNG-NGU-PHAP-N5-1.xlsx`
 
 | File | Số mục | Dung lượng |
 |---|---:|---:|
@@ -14,13 +14,14 @@ Nguồn: `42de3902-1793970631376_TU-VUNG-NGU-PHAP-N5-1.xlsx`
 | vocab/adverbs.json | 189 | 18 KB |
 | kanji/kanji.json | 1489 | 259 KB |
 | kanji/radicals.json | 205 | 13 KB |
-| grammar/n5.json | 0 | 0 KB |
+| grammar/n5.json | 63 | 48 KB |
 | grammar/n4.json | 68 | 157 KB |
-| grammar/n3.json | 12 | 236 KB |
+| grammar/n3.json | 155 | 347 KB |
 | grammar/n2.json | 173 | 353 KB |
 | grammar/n1.json | 99 | 200 KB |
 
-- Sheet "ngữ pháp n5" trống nên grammar/n5.json rỗng.
+- Sheet "ngữ pháp n5" trống: grammar/n5.json chỉ gồm mục tự soạn (data-source/grammar-extra/n5.json).
+- Sheet "ngữ pháp n3" mất phần lớn tiêu đề chương: cắt lại theo data-source/grammar-extra/n3-chapters.json.
 
 ## N5 (31)
 
@@ -1462,3 +1463,51 @@ Nguồn: `42de3902-1793970631376_TU-VUNG-NGU-PHAP-N5-1.xlsx`
 ## kanji (1)
 
 - 89 từ không ghép được (số chữ Hán khác số âm Hán Việt)
+
+## grammar-extra n5 (10)
+
+- n5.json #4 ～に (thời gian): chữ 七 không có trong kanji.json (七時に起きます。)
+- n5.json #4 ～に (thời gian): chữ 八 không có trong kanji.json (八月に日本へ行きます。)
+- n5.json #12 ～から～まで: chữ 九 không có trong kanji.json (銀行は九時から三時までです。)
+- n5.json #12 ～から～まで: chữ 三 xuất hiện từ N3 (銀行は九時から三時までです。)
+- n5.json #17 ～があります / ～がいます: chữ 五 không có trong kanji.json (教室に学生が五人います。)
+- n5.json #33 ～ます / ～ません: chữ 六 không có trong kanji.json (毎日六時に起きます。)
+- n5.json #38 ～たり～たりします: chữ 京 không có trong kanji.json (京都でお寺を見たり、写真をとったりしました。)
+- n5.json #42 ～ています (trạng thái, thói quen): chữ 京 không có trong kanji.json (わたしは東京に住んでいます。)
+- n5.json #55 A は B より ～: chữ 京 không có trong kanji.json (東京は大阪より大きいです。)
+- n5.json #58 ～まえに: chữ 三 xuất hiện từ N3 (三年まえに日本へ来ました。)
+
+## grammar-extra n3 (32)
+
+- n3.json #3 ～次第: chữ 第 không có trong kanji.json (資料ができ次第、メールでお送りします。)
+- n3.json #3 ～次第: chữ 第 không có trong kanji.json (駅に着き次第、電話してください。)
+- n3.json #3 ～次第: chữ 第 không có trong kanji.json (準備が終わり次第、会議を始めます。)
+- n3.json #5 ～以来: chữ 去 xuất hiện từ N2 (去年の夏に足を痛めて以来、走るのをやめた。)
+- n3.json #6 ～たきり: chữ 去 xuất hiện từ N2 (彼女とは去年一度会ったきりです。)
+- n3.json #9 ～ついでに: chữ 京 không có trong kanji.json (東京へ出張したついでに、大学時代の友達に会った。)
+- n3.json #10 ～てはじめて: chữ 労 xuất hiện từ N2 (一人で暮らしてはじめて、母の苦労を知った。)
+- n3.json #18 ～ことで: chữ 章 xuất hiện từ N2 (毎日日記を書くことで、文章が上手になった。)
+- n3.json #29 ～にしては: chữ 四 không có trong kanji.json (四月にしては寒い日が続いている。)
+- n3.json #35 ～どころか: chữ 漢 không có trong kanji.json (漢字どころか、ひらがなもまだ読めない。)
+- n3.json #38 ～ほど～ない: chữ 去 xuất hiện từ N2 (今年の夏は去年ほど暑くない。)
+- n3.json #40 ～に比べて: chữ 去 xuất hiện từ N2 (去年に比べて、今年は雪が多い。)
+- n3.json #49 ～に限る: chữ 限 xuất hiện từ N2 (疲れたときは、早く寝るに限る。)
+- n3.json #49 ～に限る: chữ 限 xuất hiện từ N2 (夏はやっぱり冷たいビールに限る。)
+- n3.json #49 ～に限る: chữ 限 xuất hiện từ N2 (知らない人からのメールは、開けないに限る。)
+- n3.json #55 ～に限らず: chữ 限 xuất hiện từ N2 (この公園は子どもに限らず、大人にも人気がある。)
+- n3.json #55 ～に限らず: chữ 限 xuất hiện từ N2 (週末に限らず、平日も店は込んでいる。)
+- n3.json #55 ～に限らず: chữ 限 xuất hiện từ N2 (日本に限らず、多くの国でお年寄りが増えている。)
+- n3.json #61 ～限り: chữ 限 xuất hiện từ N2 (体が元気な限り、働き続けたい。)
+- n3.json #61 ～限り: chữ 限 xuất hiện từ N2 (私が知っている限り、彼はうそをつく人ではない。)
+- n3.json #61 ～限り: chữ 限 xuất hiện từ N2 (雨がやまない限り、試合は始まらない。)
+- n3.json #67 ～にとって: chữ 探 xuất hiện từ N2 (留学生にとって、アルバイトを探すのは大変だ。)
+- n3.json #69 ～をはじめ(として): chữ 京 không có trong kanji.json (京都をはじめとする古い町には、外国人の観光客が多い。)
+- n3.json #71 ～に沿って: chữ 沿 xuất hiện từ N2 (川に沿って、桜の木が並んでいる。)
+- n3.json #71 ～に沿って: chữ 沿 xuất hiện từ N2 (計画に沿って、仕事を進めてください。)
+- n3.json #71 ～に沿って: chữ 沿 xuất hiện từ N2 (お客様の希望に沿った部屋をご用意します。)
+- n3.json #72 ～にわたって: chữ 域 xuất hiện từ N2 (台風で、広い地域にわたって雨が降った。)
+- n3.json #72 ～にわたって: chữ 五 không có trong kanji.json (五回にわたる話し合いで、やっと決まった。)
+- n3.json #73 ～からすると / ～からすれば: chữ 況 xuất hiện từ N2 (今の状況からすれば、今日中に終わるのは無理だ。)
+- n3.json #95 ～じゃないか: chữ 緒 không có trong kanji.json (せっかくだから、一緒に行こうじゃないか。)
+- n3.json #96 ～ってば / ～ったら: chữ 眼 không có trong kanji.json (お父さんったら、また眼鏡をなくしたの？)
+- n3.json #98 ～てる / ～てく (nói tắt): chữ 九 không có trong kanji.json (まだ寝てるの？もう九時だよ。)

@@ -2,6 +2,7 @@ import { useRef, useState, type ChangeEvent } from 'react'
 import { useCards } from '../hooks/useProgress'
 import { backupFileName, createBackup, mergeCards, parseBackup, type Backup } from '../lib/backup'
 import { kanaProgress, mergeKanaStats, useKanaStats } from '../lib/kanaProgress'
+import { grammarChecked, mergeChecked } from '../lib/grammarChecked'
 import { mergeNotebooks, notebooks } from '../lib/notebooks'
 import { progress } from '../lib/progress'
 import { setLessonSize, useLessonSize } from '../lib/settings'
@@ -21,7 +22,7 @@ export function BackupPanel() {
   const kanaTotal = Object.keys(kanaStats).length
 
   const exportFile = () => {
-    const blob = new Blob([JSON.stringify(createBackup(cards, lessonSize, kanaStats, new Date(), notebooks.getSnapshot()), null, 1)], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify(createBackup(cards, lessonSize, kanaStats, new Date(), notebooks.getSnapshot(), grammarChecked.getSnapshot()), null, 1)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -47,7 +48,16 @@ export function BackupPanel() {
     const m = mergeCards(cards, r.backup.cards)
     const k = mergeKanaStats(kanaStats, r.backup.kana ?? {})
     const nb = r.backup.notebooks ? mergeNotebooks(notebooks.getSnapshot(), r.backup.notebooks) : null
-    setPending({ name: file.name, backup: r.backup, skipped: r.skipped, added: m.added, updated: m.updated, kana: k.changed, notes: nb ? nb.addedBooks + nb.addedItems : 0 })
+    const gc = mergeChecked(grammarChecked.getSnapshot(), r.backup.grammarChecked ?? {})
+    setPending({
+      name: file.name,
+      backup: r.backup,
+      skipped: r.skipped,
+      added: m.added,
+      updated: m.updated,
+      kana: k.changed,
+      notes: (nb ? nb.addedBooks + nb.addedItems : 0) + gc.added,
+    })
   }
 
   const confirmImport = () => {
@@ -59,9 +69,11 @@ export function BackupPanel() {
     if (k.changed) kanaProgress.replace(k.stats)
     const nb = pending.backup.notebooks ? mergeNotebooks(notebooks.getSnapshot(), pending.backup.notebooks) : null
     if (nb && nb.addedBooks + nb.addedItems > 0) notebooks.replace(nb.state)
+    const gc = mergeChecked(grammarChecked.getSnapshot(), pending.backup.grammarChecked ?? {})
+    if (gc.added) grammarChecked.replace(gc.map)
     if (pending.backup.lessonSize) setLessonSize(pending.backup.lessonSize)
     setPending(null)
-    setNotice({ tone: 'ok', text: `Đã nhập: ${m.added} thẻ mới, ${m.updated} thẻ được cập nhật${k.changed ? `, ${k.changed} chữ kana` : ''}${nb && nb.addedItems + nb.addedBooks ? `, ${nb.addedBooks} sổ tay mới, ${nb.addedItems} mục sổ tay` : ''}.` })
+    setNotice({ tone: 'ok', text: `Đã nhập: ${m.added} thẻ mới, ${m.updated} thẻ được cập nhật${k.changed ? `, ${k.changed} chữ kana` : ''}${nb && nb.addedItems + nb.addedBooks ? `, ${nb.addedBooks} sổ tay mới, ${nb.addedItems} mục sổ tay` : ''}${gc.added ? `, ${gc.added} mẫu ngữ pháp đã kiểm tra` : ''}.` })
   }
 
   return (
@@ -95,7 +107,7 @@ export function BackupPanel() {
           <p className="mt-1 text-sm">
             {Object.keys(pending.backup.cards).length} thẻ trong file: {pending.added} thẻ mới, {pending.updated} thẻ mới hơn bản trên máy này
             {pending.kana > 0 && `, ${pending.kana} chữ kana mới hơn`}
-            {pending.notes > 0 && `, ${pending.notes} sổ/mục sổ tay mới`}
+            {pending.notes > 0 && `, ${pending.notes} mục sổ tay / đánh dấu kiểm tra mới`}
             {pending.skipped > 0 && `, ${pending.skipped} mục hỏng bị bỏ qua`}.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">

@@ -23,7 +23,7 @@ src/types/data.ts
 | `vocab/adverbs.json` | Phó từ (sheet "Trợ từ") |
 | `kanji/kanji.json` | Chỉ mục chữ Hán: âm Hán Việt + các từ chứa chữ đó |
 | `kanji/radicals.json` | Bộ thủ |
-| `grammar/n4.json` … `n1.json` | Ngữ pháp (N4 theo bài 26–50) |
+| `grammar/n5.json` … `n1.json` | Ngữ pháp (N4 theo bài 26–50; N3 gồm 55 chương Excel + mẫu tự soạn; N5 chỉ có mẫu tự soạn) |
 | `import-report.md` | Dòng bị bỏ, trùng, thiếu cách đọc… để rà lại Excel |
 
 Kiểu dữ liệu chi tiết: `src/types/data.ts`.
@@ -47,4 +47,4 @@ ID tính từ chữ + cách đọc, nên chạy lại không làm mất tiến �
 - `kanji.json` → `firstLevel` là cấp từ vựng đầu tiên trong file của bạn có chữ đó, **không phải** cấp kanji JLPT chính thức.
 - N1 không có cột Hán Việt; 805 từ N1 thiếu cách đọc (thường là cụm từ). Xem `import-report.md`.
 - Ngữ pháp được tách tự động từ văn bản chép từ PDF: `title`, `meaning`, `examples` có thể sót; `body` luôn giữ toàn bộ nội dung để hiển thị.
-- Sheet "ngữ pháp n5" trống nên `grammar/n5.json` rỗng.
+- Sheet "ngữ pháp n5" trống: `grammar/n5.json` chỉ gồm mẫu tự soạn từ `data-source/grammar-extra/n5.json`. Mẫu tự soạn có `"source": "kotonoha"`, `"auto": true`, `body` rỗng, thêm `group`, `notes`, `related`.
