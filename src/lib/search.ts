@@ -63,7 +63,7 @@ export function kanjiDocs(items: readonly KanjiEntry[]): SearchDoc[] {
     reading: [k.hanViet, ...(k.hanVietAlt ?? [])].join(', '),
     subtitle: `${k.wordCount} từ chứa chữ này`,
     badge: k.firstLevel ? `từ ${k.firstLevel}` : 'Kanji',
-    href: `/kanji?c=${encodeURIComponent(k.kanji)}`,
+    href: `/kanji?k=${encodeURIComponent(k.kanji)}`,
     ja: [k.kanji],
     vi: [k.hanViet, ...(k.hanVietAlt ?? [])].map(normalizeVi),
   }))

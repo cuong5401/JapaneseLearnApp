@@ -7,6 +7,7 @@ import { Loaded, PageSkeleton } from '../components/LoadState'
 import { PageHeader } from '../components/PageHeader'
 import { Button } from '../components/Pressable'
 import { SpeakButton } from '../components/SpeakButton'
+import { BookmarkButton } from '../components/notebook/BookmarkButton'
 import { useGrammar } from '../hooks/useData'
 import { useCards } from '../hooks/useProgress'
 import { parseLevel } from '../lib/levels'
@@ -58,9 +59,12 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
       <PageHeader title={`${level}${g.lesson ? `, Bài ${g.lesson}` : ''}, mẫu ${g.no}`} back={{ to: base, label: `Ngữ pháp ${level}` }} />
 
       <article className="rounded-2xl border border-line bg-surface p-5 sm:p-7">
-        <h2 lang="ja" className="font-jp text-[clamp(1.5rem,5vw,2.25rem)] leading-snug font-bold break-words">
-          {g.title}
-        </h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 lang="ja" className="min-w-0 font-jp text-[clamp(1.5rem,5vw,2.25rem)] leading-snug font-bold break-words">
+            {g.title}
+          </h2>
+          <BookmarkButton itemRef={g.id} label={`mẫu ${g.title}`} className="-mt-1 -mr-2" />
+        </div>
         {g.meaning && <p className="mt-3 text-lg">{g.meaning}</p>}
         {g.connection && (
           <div className="mt-4 rounded-xl bg-sunken px-4 py-3">

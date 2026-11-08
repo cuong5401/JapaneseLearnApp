@@ -6,6 +6,9 @@ import { useDueIds } from '../hooks/useProgress'
 import { isInteractiveTarget } from '../lib/keyboard'
 import { InstallApp } from './InstallApp'
 import { UpdatePrompt } from './UpdatePrompt'
+import { Toaster } from './Toaster'
+import { SaveSheetHost } from './notebook/SaveSheet'
+import { GlobalDetail } from './detail/GlobalDetail'
 
 // Hộp tìm kiếm và chỉ mục của nó chỉ tải khi mở lần đầu.
 const SearchDialog = lazy(() => import('./SearchDialog'))
@@ -26,6 +29,7 @@ const NAV: NavItem[] = [
   { to: '/grammar', glyph: '文', label: 'Ngữ pháp', end: false },
   { to: '/kana', glyph: 'あ', label: 'Luyện kana', short: 'Kana', end: false, noBottom: true },
   { to: '/review', glyph: '復', label: 'Ôn tập', end: false },
+  { to: '/notebooks', glyph: '帳', label: 'Sổ tay', end: false },
   { to: '/progress', glyph: '進', label: 'Tiến độ', end: false },
 ]
 
@@ -185,13 +189,14 @@ export function Layout() {
         <div className="mx-auto flex h-14 max-w-[900px] items-center gap-4 px-4 md:px-6">
           <Logo />
           <nav className="ml-auto hidden items-center gap-0.5 md:flex" aria-label="Điều hướng chính">
-            {NAV.map((n) => (
+            {/* Tablet: logo đã dẫn về trang chủ, bỏ mục Trang chủ cho vừa 6 mục. */}
+            {NAV.filter((n) => n.to !== '/').map((n) => (
               <NavLink
                 key={n.to}
                 to={n.to}
                 end={n.end}
                 className={({ isActive }) =>
-                  `relative flex items-center rounded-lg px-2.5 py-2 text-sm font-medium whitespace-nowrap transition-colors ${isActive ? 'text-ai' : 'text-muted hover:text-ink'}`
+                  `relative flex items-center rounded-lg px-2 py-2 text-sm font-medium whitespace-nowrap transition-colors ${isActive ? 'text-ai' : 'text-muted hover:text-ink'}`
                 }
               >
                 {({ isActive }) => (
@@ -248,7 +253,7 @@ export function Layout() {
         aria-label="Điều hướng chính"
         className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       >
-        <ul className="mx-auto grid max-w-lg grid-cols-5">
+        <ul className="mx-auto grid max-w-lg grid-cols-6">
           {NAV.filter((n) => !n.noBottom).map((n) => (
             <li key={n.to}>
               <NavLink
@@ -277,6 +282,9 @@ export function Layout() {
       </nav>
 
       <UpdatePrompt />
+      <Toaster />
+      <GlobalDetail />
+      <SaveSheetHost />
 
       {searchOpen && (
         <Suspense fallback={null}>

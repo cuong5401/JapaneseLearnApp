@@ -36,6 +36,8 @@ const router = createBrowserRouter([
         lazy: () => import('./pages/DeckHub').then((m) => ({ Component: () => <m.TermStudy mode="quiz" /> })),
       },
       { path: '/review', lazy: () => import('./pages/Review').then((m) => ({ Component: m.Review })) },
+      { path: '/notebooks', lazy: () => import('./pages/Notebooks').then((m) => ({ Component: m.Notebooks })) },
+      { path: '/notebooks/:id', lazy: () => import('./pages/NotebookPage').then((m) => ({ Component: m.NotebookPage })) },
       { path: '/progress', lazy: () => import('./pages/Progress').then((m) => ({ Component: m.Progress })) },
       { path: '/level/:level/kanji', element: <LegacyLevel kanji /> },
       { path: '/level/:level/*', element: <LegacyLevel /> },

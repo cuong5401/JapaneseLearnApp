@@ -146,6 +146,7 @@ export function Progress() {
                 <Row key={k} to={`/vocab/${k}`} title={VOCAB_DECK_INFO[k].name} prefix={DECK_ID_PREFIX[k]} total={count(m, VOCAB_DECK_INFO[k].path)} />
               ))}
               <Row to="/kanji" title="Chữ Hán" prefix="kj" total={count(m, 'kanji/kanji.json')} />
+              <Row to="/kanji?tab=radicals" title="Bộ thủ" prefix="rd" total={count(m, 'kanji/radicals.json')} idPattern="\d{3}" />
             </Section>
             {grammarLevels.length > 0 && (
               <Section title="Ngữ pháp">

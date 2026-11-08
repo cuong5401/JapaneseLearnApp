@@ -5,6 +5,7 @@ import { PageHeader } from '../components/PageHeader'
 import { ButtonLink } from '../components/Pressable'
 import { Segmented } from '../components/Segmented'
 import { SpeakButton } from '../components/SpeakButton'
+import { BookmarkButton } from '../components/notebook/BookmarkButton'
 import { Stagger, StaggerItem } from '../components/Stagger'
 import { HanViet } from '../components/VocabBits'
 import { FlashcardSession, type SessionLink } from '../components/study/FlashcardSession'
@@ -92,8 +93,8 @@ function WordList({ items, start }: { items: VocabItem[]; start: number }) {
               <th scope="col" className="py-3 pr-4 font-medium">
                 Nghĩa
               </th>
-              <th scope="col" className="w-14 py-3 pr-4">
-                <span className="sr-only">Nghe</span>
+              <th scope="col" className="w-24 py-3 pr-4">
+                <span className="sr-only">Lưu, nghe</span>
               </th>
             </tr>
           </thead>
@@ -124,7 +125,10 @@ function WordList({ items, start }: { items: VocabItem[]; start: number }) {
                   <Extras item={w} />
                 </td>
                 <td className="py-2 pr-4">
-                  <SpeakButton text={speechText(w)} size="sm" />
+                  <span className="flex items-center justify-end gap-1">
+                    <BookmarkButton itemRef={w.id} label={w.word} size="sm" />
+                    <SpeakButton text={speechText(w)} size="sm" />
+                  </span>
                 </td>
               </tr>
             ))}
@@ -152,7 +156,10 @@ function WordList({ items, start }: { items: VocabItem[]; start: number }) {
               <span className="mt-1 block">{w.meaning}</span>
               <Extras item={w} />
             </span>
-            <SpeakButton text={speechText(w)} size="sm" />
+            <span className="flex shrink-0 flex-col items-center gap-1">
+              <SpeakButton text={speechText(w)} size="sm" />
+              <BookmarkButton itemRef={w.id} label={w.word} size="sm" />
+            </span>
           </StaggerItem>
         ))}
       </Stagger>

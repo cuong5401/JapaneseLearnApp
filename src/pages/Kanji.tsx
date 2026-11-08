@@ -1,29 +1,48 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { BottomSheet } from '../components/BottomSheet'
 import { GridCell } from '../components/GridCell'
-import { LoadError, Loaded, PageSkeleton, Skeleton } from '../components/LoadState'
+import { LessonGrid } from '../components/LessonGrid'
+import { LoadError, PageSkeleton } from '../components/LoadState'
 import { PageHeader } from '../components/PageHeader'
-import { Button, ButtonLink } from '../components/Pressable'
+import { Button } from '../components/Pressable'
 import { Segmented } from '../components/Segmented'
 import { Stagger, StaggerItem } from '../components/Stagger'
+import { DetailStackView } from '../components/detail/DetailStack'
+import { BookmarkButton, BookmarkIcon } from '../components/notebook/BookmarkButton'
+import { ChoiceQuiz, type ChoiceQuizConfig } from '../components/study/ChoiceQuiz'
+import { FlashcardSession, type SessionLink } from '../components/study/FlashcardSession'
 import { KanjiQuiz } from '../components/study/KanjiQuiz'
+import { kanjiFaces, radicalFaces, sampleWordIds } from '../components/study/faces'
+import { STUDY_PAGE } from '../components/StudyLayout'
+import { kanjiOfRadical } from '../data/radicalKanji'
 import { useEntries, useKanjiIndex, useRadicals } from '../hooks/useData'
+import { useDetailStack } from '../hooks/useDetailStack'
 import { WIDE_PANEL, useMediaQuery } from '../hooks/useMediaQuery'
 import { useCards } from '../hooks/useProgress'
-import { progress } from '../lib/progress'
+import { useScrollMemory } from '../hooks/useScrollMemory'
+import type { Frame } from '../lib/detailStack'
+import { splitLessons } from '../lib/lessons'
+import { isSaved, useNotebooks } from '../lib/notebooks'
 import { normalizeVi } from '../lib/search'
-import { LEVELS, type KanjiEntry, type RadicalEntry } from '../types'
+import { useLessonSize } from '../lib/settings'
+import { LEVELS, type KanjiEntry, type RadicalItem } from '../types'
 
-type Tab = 'chars' | 'radicals' | 'quiz'
+type Section = 'chars' | 'radicals'
+type Mode = 'list' | 'flashcards' | 'quiz'
 type LevelFilter = 'all' | (typeof LEVELS)[number] | 'none'
-const PAGE = 60
 
 const LEVEL_OPTIONS: { value: LevelFilter; label: string }[] = [
   { value: 'all', label: 'Tất cả' },
   ...LEVELS.map((l) => ({ value: l, label: `Từ ${l}` })),
   { value: 'none', label: 'Chỉ trong từ ghép' },
+]
+
+const MODES: { value: Mode; label: string }[] = [
+  { value: 'list', label: 'Danh sách' },
+  { value: 'flashcards', label: 'Flashcard' },
+  { value: 'quiz', label: 'Quiz' },
 ]
 
 /** Âm Hán Việt dài thì khít chữ lại để luôn nằm trên 1 dòng. */
@@ -35,223 +54,169 @@ function hanVietSpacing(text: string): string {
   return '0.02em'
 }
 
-function levelNote(k: KanjiEntry) {
-  return k.firstLevel ? `Xuất hiện từ ${k.firstLevel} trong bộ từ vựng của bạn` : 'Chỉ xuất hiện trong từ ghép'
+/** Đường dẫn trang Kanji giữ các tham số hiện tại, ghi đè một số. */
+function kanjiHref(params: URLSearchParams, set: Record<string, string | null>): string {
+  const p = new URLSearchParams(params)
+  for (const key of ['k', 'c', 'xem']) p.delete(key)
+  for (const [k, v] of Object.entries(set)) {
+    if (v === null) p.delete(k)
+    else p.set(k, v)
+  }
+  const s = p.toString()
+  return s ? `/kanji?${s}` : '/kanji'
 }
 
-function KanjiWords({ item }: { item: KanjiEntry }) {
-  const { status, entries, error, retry } = useEntries(item.words)
-  if (status === 'error') return <LoadError error={error} onRetry={retry} />
-  if (status !== 'ready')
-    return (
-      <div className="space-y-2">
-        {Array.from({ length: 4 }, (_, i) => (
-          <Skeleton key={i} className="h-11" />
-        ))}
-      </div>
-    )
-  const words = item.words.map((id) => entries.get(id)).filter((e) => e?.kind === 'word')
+function filterByLevel(list: KanjiEntry[], level: LevelFilter) {
+  const out = level === 'all' ? list : list.filter((k) => (level === 'none' ? k.firstLevel === null : k.firstLevel === level))
+  return [...out].sort((a, b) => b.wordCount - a.wordCount)
+}
+
+/* ───────────── Lưới chữ của một bài ───────────── */
+
+function CharGrid({ chars, active, onPick }: { chars: KanjiEntry[]; active?: string; onPick: (k: KanjiEntry) => void }) {
+  const cards = useCards()
+  const books = useNotebooks()
   return (
-    <ul className="divide-y divide-line">
-      {words.map(
-        (e) =>
-          e?.kind === 'word' && (
-            <li key={e.item.id}>
-              <Link to={`/word/${e.item.id}`} className="-mx-2 flex items-baseline gap-x-3 rounded-lg px-2 py-2.5 hover:bg-sunken">
-                <span lang="ja" className="shrink-0 font-jp text-lg font-medium">
-                  {e.item.word}
+    <Stagger as="ul" step={0.012} className="grid grid-cols-[repeat(auto-fill,minmax(88px,1fr))] gap-2.5 sm:gap-3">
+      {chars.map((k) => {
+        const on = active === k.kanji
+        return (
+          <StaggerItem as="li" key={k.id} className="min-w-0">
+            <Button
+              onClick={() => onPick(k)}
+              whileHover={{ y: -3 }}
+              aria-label={`${k.kanji}, ${k.hanViet}${cards[k.id] ? ', đã học' : ''}`}
+              aria-pressed={on}
+              data-kanji-cell={k.kanji}
+              className={`@container relative flex w-full flex-col items-center gap-1.5 rounded-xl border p-2 transition-colors sm:p-2.5 ${
+                on ? 'border-ai bg-ai-soft' : 'border-line bg-surface hover:border-ai'
+              }`}
+            >
+              <GridCell className="w-full max-w-28">{k.kanji}</GridCell>
+              <span
+                className="block max-w-full overflow-hidden text-[clamp(11px,14cqw,15px)] font-semibold text-ellipsis whitespace-nowrap"
+                style={{ letterSpacing: hanVietSpacing(k.hanViet) }}
+              >
+                {k.hanViet}
+              </span>
+              {cards[k.id] && <span className="absolute top-2 right-2 size-2.5 rounded-full bg-matsu" aria-hidden />}
+              {isSaved(books, k.id) && (
+                <span className="absolute top-1.5 left-1.5 text-kihada" aria-hidden>
+                  <BookmarkIcon filled className="size-3.5" />
                 </span>
-                <span lang="ja" className="min-w-0 truncate font-jp text-sm text-muted">
-                  {e.item.reading !== e.item.word && e.item.reading}
-                </span>
-                <span className="ml-auto max-w-[55%] text-right text-sm">{e.item.meaning}</span>
-              </Link>
-            </li>
-          ),
-      )}
+              )}
+            </Button>
+          </StaggerItem>
+        )
+      })}
+    </Stagger>
+  )
+}
+
+/* ───────────── Bộ thủ ───────────── */
+
+function RadicalCard({ r, onOpen }: { r: RadicalItem; onOpen: (r: RadicalItem) => void }) {
+  const count = kanjiOfRadical(r.no).length
+  const learned = Boolean(useCards()[r.id])
+  return (
+    <div className="relative flex items-center gap-3 rounded-xl border border-line bg-surface p-2.5 pr-11 transition-colors hover:border-ai" data-radical-card={r.no}>
+      <button type="button" onClick={() => onOpen(r)} aria-label={`Bộ ${r.radical}, ${r.name}`} className="absolute inset-0 rounded-xl" />
+      <GridCell className="size-14">{r.radical}</GridCell>
+      <span className="pointer-events-none min-w-0">
+        <span className="block text-xs tabular-nums text-muted">
+          Bộ {r.no}
+          {count > 0 && ` · ${count} chữ`}
+        </span>
+        <span className="block truncate font-semibold capitalize">{r.name}</span>
+        <span className="block text-sm leading-snug text-muted">{r.meaning}</span>
+      </span>
+      {learned && <span className="absolute right-2 bottom-2 size-2.5 rounded-full bg-matsu" aria-hidden />}
+      <span className="absolute top-1 right-1">
+        <BookmarkButton itemRef={r.id} label={`bộ ${r.name}`} size="sm" />
+      </span>
+    </div>
+  )
+}
+
+function RadicalList({ items, onOpen }: { items: RadicalItem[]; onOpen: (r: RadicalItem) => void }) {
+  return (
+    <ul className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-2.5">
+      {items.map((r) => (
+        <li key={r.no}>
+          <RadicalCard r={r} onOpen={onOpen} />
+        </li>
+      ))}
     </ul>
   )
 }
 
-function Detail({ item }: { item: KanjiEntry }) {
-  const learned = Boolean(useCards()[item.id])
-  return (
-    <article aria-label={`Chi tiết chữ ${item.kanji}`}>
-      <div className="flex gap-5">
-        <GridCell className="size-28 sm:size-32">{item.kanji}</GridCell>
-        <div className="min-w-0 flex-1">
-          <p className="text-2xl font-bold tracking-wide">{item.hanViet}</p>
-          {item.hanVietAlt?.length ? <p className="mt-0.5 text-sm text-muted">Âm khác: {item.hanVietAlt.join(', ')}</p> : null}
-          <p className="mt-2 text-sm text-muted">{levelNote(item)}</p>
-          <p className="text-sm text-muted">{item.wordCount} từ chứa chữ này</p>
-        </div>
-      </div>
-      <div className="mt-5 grid grid-cols-2 gap-2">
-        <ButtonLink
-          to={`/kanji/${item.id}/learn`}
-          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-ai px-3 text-center font-semibold text-on-ai hover:opacity-90"
-        >
-          Học các từ này
-        </ButtonLink>
-        <Button
-          onClick={() => (learned ? progress.forget(item.id) : progress.markLearned(item.id))}
-          className={`min-h-11 rounded-lg px-3 font-semibold ${learned ? 'border border-matsu bg-matsu-soft text-matsu' : 'border border-line hover:bg-sunken'}`}
-        >
-          {learned ? 'Đã học chữ này' : 'Đánh dấu đã học'}
-        </Button>
-      </div>
-      <h3 className="mt-6 mb-1 text-sm font-semibold text-muted">
-        Từ chứa chữ {item.kanji}
-        {item.wordCount > item.words.length && ` (${item.words.length}/${item.wordCount} từ đầu tiên)`}
-      </h3>
-      <KanjiWords item={item} />
-    </article>
-  )
+const RADICAL_QUIZ: ChoiceQuizConfig<RadicalItem> = {
+  title: 'Quiz bộ thủ',
+  prompt: () => 'Bộ này tên là gì?',
+  question: (r) => <GridCell className="w-[clamp(7rem,40cqw,10rem)]">{r.radical}</GridCell>,
+  answer: (r) => r.name,
+  note: (r) => `(${r.meaning})`,
+  shortcut: 'Chọn tên bộ',
 }
 
-function CharsTab({ list, level }: { list: KanjiEntry[]; level: LevelFilter }) {
-  const [params, setParams] = useSearchParams()
-  const wide = useMediaQuery(WIDE_PANEL)
-  const cards = useCards()
-  const [shown, setShown] = useState(PAGE)
-  const filtered = useMemo(() => {
-    const out = level === 'all' ? list : list.filter((k) => (level === 'none' ? k.firstLevel === null : k.firstLevel === level))
-    return [...out].sort((a, b) => b.wordCount - a.wordCount)
-  }, [list, level])
-  const selectedChar = params.get('c')
-  const selected = (selectedChar && list.find((k) => k.kanji === selectedChar)) || (wide ? filtered[0] : undefined)
-  const closeSheet = useCallback(() => {
-    setParams(
-      (p) => {
-        p.delete('c')
-        return p
-      },
-      { replace: true },
-    )
-  }, [setParams])
+function RadicalFlashcards({ items, back, next }: { items: RadicalItem[]; back: SessionLink; next?: SessionLink }) {
+  const index = useKanjiIndex()
+  const byChar = useMemo(() => new Map((index.data ?? []).map((k) => [k.kanji, k])), [index.data])
+  const faces = useMemo(() => radicalFaces(byChar), [byChar])
+  if (index.status === 'error') return <LoadError error={index.error} onRetry={index.retry} />
+  if (!index.data) return <PageSkeleton rows={4} />
+  return <FlashcardSession items={items} faces={faces} label={(r) => `bộ ${r.radical} ${r.name}`} back={back} next={next} />
+}
 
-  const choose = (k: KanjiEntry) =>
-    setParams(
-      (p) => {
-        p.set('c', k.kanji)
-        return p
-      },
-      { replace: true },
-    )
+/* ───────────── Bài học (chữ Hán / bộ thủ) ───────────── */
 
+function LessonHeader({ title, subtitle, backHref, mode, onMode }: { title: string; subtitle: string; backHref: string; mode: Mode; onMode: (m: Mode) => void }) {
   return (
-    <div className="min-[1180px]:grid min-[1180px]:grid-cols-[minmax(0,1fr)_340px] min-[1180px]:items-start min-[1180px]:gap-8">
-      <div className="min-w-0">
-        <p className="mb-3 text-sm text-muted">
-          {filtered.length} chữ, sắp theo số từ chứa chữ đó. "Từ N5" nghĩa là chữ xuất hiện lần đầu trong từ vựng N5 của bạn, không phải cấp kanji JLPT chính thức.
-        </p>
-        <Stagger key={level} as="ul" step={0.012} className="grid grid-cols-[repeat(auto-fill,minmax(88px,1fr))] gap-2.5 sm:gap-3">
-          {filtered.slice(0, shown).map((k) => {
-            const active = wide && selected?.id === k.id
-            return (
-              <StaggerItem as="li" key={k.id} className="min-w-0">
-                <Button
-                  onClick={() => choose(k)}
-                  whileHover={{ y: -3 }}
-                  aria-label={`${k.kanji}, ${k.hanViet}${cards[k.id] ? ', đã học' : ''}`}
-                  aria-pressed={wide ? active : undefined}
-                  className={`@container relative flex w-full flex-col items-center gap-1.5 rounded-xl border p-2 transition-colors sm:p-2.5 ${
-                    active ? 'border-ai bg-ai-soft' : 'border-line bg-surface hover:border-ai'
-                  }`}
-                >
-                  <GridCell className="w-full max-w-28">{k.kanji}</GridCell>
-                  <span
-                    className="block max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[clamp(11px,14cqw,15px)] font-semibold"
-                    style={{ letterSpacing: hanVietSpacing(k.hanViet) }}
-                  >
-                    {k.hanViet}
-                  </span>
-                  {cards[k.id] && <span className="absolute right-2 top-2 size-2.5 rounded-full bg-matsu" aria-hidden />}
-                </Button>
-              </StaggerItem>
-            )
-          })}
-        </Stagger>
-        {shown < filtered.length && (
-          <Button
-            onClick={() => setShown((n) => n + PAGE)}
-            className="mt-5 min-h-11 w-full rounded-lg border border-line font-medium hover:bg-sunken"
-          >
-            Xem thêm {Math.min(PAGE, filtered.length - shown)} chữ (còn {filtered.length - shown})
-          </Button>
-        )}
+    <div className="mb-6">
+      <Link to={backHref} className="-ml-2 mb-1 inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-sm text-muted hover:text-ink">
+        <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+        Các bài
+      </Link>
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
+        <span className="text-sm text-muted">{subtitle}</span>
       </div>
-
-      {wide && selected && (
-        <aside className="sticky top-10 max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-2xl border border-line bg-surface p-5" aria-label="Chi tiết chữ Hán">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div key={selected.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-              <Detail item={selected} />
-            </motion.div>
-          </AnimatePresence>
-        </aside>
-      )}
-      {!wide && (
-        <BottomSheet open={Boolean(selectedChar && selected)} onClose={closeSheet} label={`Chi tiết chữ ${selected?.kanji ?? ''}`}>
-          {selected && <Detail item={selected} />}
-        </BottomSheet>
-      )}
+      <div className="mt-4">
+        <Segmented label="Chế độ học" value={mode} onChange={onMode} options={MODES} />
+      </div>
     </div>
   )
 }
 
-function RadicalsTab({ list }: { list: RadicalEntry[] }) {
-  const [query, setQuery] = useState('')
-  const [shown, setShown] = useState(PAGE)
-  const filtered = useMemo(() => {
-    const q = normalizeVi(query)
-    if (!q) return list
-    return list.filter((r) => r.radical.includes(query.trim()) || normalizeVi(`${r.name} ${r.meaning}`).includes(q) || String(r.no) === q)
-  }, [list, query])
-
-  return (
-    <div>
-      <label className="block max-w-sm">
-        <span className="sr-only">Lọc bộ thủ</span>
-        <input
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value)
-            setShown(PAGE)
-          }}
-          placeholder="Lọc theo tên, nghĩa hoặc số thứ tự"
-          className="h-11 w-full rounded-xl border-2 border-line bg-surface px-4 outline-none focus:border-ai"
-        />
-      </label>
-      <p className="mt-3 mb-3 text-sm text-muted">{filtered.length} bộ thủ</p>
-      <ul className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2.5">
-        {filtered.slice(0, shown).map((r) => (
-          <li key={r.no} className="@container flex items-center gap-3 rounded-xl border border-line bg-surface p-2.5">
-            <GridCell className="size-14">{r.radical}</GridCell>
-            <span className="min-w-0">
-              <span className="block text-xs tabular-nums text-muted">Bộ {r.no}</span>
-              <span className="block truncate font-semibold capitalize">{r.name}</span>
-              <span className="block text-sm leading-snug text-muted">{r.meaning}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
-      {shown < filtered.length && (
-        <Button onClick={() => setShown((n) => n + PAGE)} className="mt-5 min-h-11 w-full rounded-lg border border-line font-medium hover:bg-sunken">
-          Xem thêm (còn {filtered.length - shown})
-        </Button>
-      )}
-    </div>
-  )
+function KanjiFlashcards({ chars, back, next }: { chars: KanjiEntry[]; back: SessionLink; next?: SessionLink }) {
+  const ids = useMemo(() => sampleWordIds(chars), [chars])
+  const words = useEntries(ids)
+  const faces = useMemo(() => kanjiFaces(words.entries), [words.entries])
+  if (words.status === 'error') return <LoadError error={words.error} onRetry={words.retry} />
+  if (words.status !== 'ready') return <PageSkeleton rows={4} />
+  return <FlashcardSession items={chars} faces={faces} label={(k) => `chữ ${k.kanji}`} back={back} next={next} />
 }
+
+/* ───────────── Trang ───────────── */
 
 export function Kanji() {
   const [params, setParams] = useSearchParams()
-  const tab = (['chars', 'radicals', 'quiz'].includes(params.get('tab') ?? '') ? params.get('tab') : 'chars') as Tab
+  const section: Section = params.get('tab') === 'radicals' ? 'radicals' : 'chars'
   const level = (LEVEL_OPTIONS.some((o) => o.value === params.get('level')) ? params.get('level') : 'all') as LevelFilter
+  const bai = Number(params.get('bai'))
+  const lessonIndex = Number.isInteger(bai) && bai >= 1 ? bai - 1 : null
+  const mode = (MODES.some((m) => m.value === params.get('mode')) ? params.get('mode') : 'list') as Mode
+  const [query, setQuery] = useState('')
+
   const index = useKanjiIndex()
   const radicals = useRadicals()
-  // Chỉ hiện các cấp thật sự có chữ (ví dụ dữ liệu hiện tại không có chữ nào xuất hiện lần đầu ở N1).
+  const size = useLessonSize()
+  const wide = useMediaQuery(WIDE_PANEL)
+  const stack = useDetailStack('k')
+  useScrollMemory(section === 'chars' ? Boolean(index.data) : Boolean(radicals.data))
+
   const levelOptions = useMemo(
     () =>
       index.data
@@ -259,17 +224,150 @@ export function Kanji() {
         : LEVEL_OPTIONS,
     [index.data],
   )
+  const filtered = useMemo(() => (index.data ? filterByLevel(index.data, level) : []), [index.data, level])
+  const charLessons = useMemo(() => splitLessons(filtered, size), [filtered, size])
+  const radicalLessons = useMemo(() => splitLessons(radicals.data ?? [], size), [radicals.data, size])
 
-  const update = (key: string, value: string | null) =>
+  const setParam = (set: Record<string, string | null>, replace = true) =>
     setParams(
       (p) => {
-        if (value === null) p.delete(key)
-        else p.set(key, value)
-        p.delete('c')
+        for (const [k, v] of Object.entries(set)) {
+          if (v === null) p.delete(k)
+          else p.set(k, v)
+        }
         return p
       },
-      { replace: true },
+      { replace },
     )
+
+  // Chọn chữ: desktop thay chữ trong panel (replace), điện thoại mở sheet (push để Back đóng sheet).
+  const pickChar = (k: KanjiEntry) => stack.setRoot(k.kanji, wide ? 'replace' : 'push')
+  const openRadical = (r: RadicalItem) => stack.push({ t: 'r', no: r.no })
+
+  const levelLabel = LEVEL_OPTIONS.find((o) => o.value === level)?.label ?? ''
+  const gridHref = kanjiHref(params, { bai: null, mode: null })
+  const lessonHref = (i: number, keepMode = false) => kanjiHref(params, { bai: String(i + 1), mode: keepMode && mode !== 'list' ? mode : null })
+
+  let body: ReactNode
+  let defaultFrame: Frame | undefined
+
+  if (section === 'chars') {
+    if (index.status === 'error') body = <LoadError error={index.error} onRetry={index.retry} />
+    else if (!index.data) body = <PageSkeleton grid rows={12} />
+    else if (lessonIndex === null) {
+      body = (
+        <LessonGrid
+          items={filtered}
+          unit="chữ"
+          title={`Chữ Hán ${levelLabel.toLowerCase()}`}
+          href={(i) => lessonHref(i)}
+          preview={(l) => l.slice(0, 6).map((k) => k.kanji).join('')}
+          links={<span className="text-sm text-muted">"Từ N5" = chữ xuất hiện lần đầu trong từ vựng N5 của bạn, không phải cấp kanji JLPT.</span>}
+        />
+      )
+    } else {
+      const chars = charLessons[lessonIndex]
+      if (!chars) body = <p className="text-muted">Không có bài này. <Link to={gridHref} className="font-medium text-ai">Về các bài</Link></p>
+      else {
+        const back: SessionLink = { to: gridHref, label: 'Về các bài' }
+        const next: SessionLink | undefined =
+          lessonIndex + 1 < charLessons.length ? { to: lessonHref(lessonIndex + 1, true), label: `Bài tiếp theo: Bài ${lessonIndex + 2}` } : undefined
+        if (mode === 'list' && wide) defaultFrame = { t: 'k', ch: chars[0].kanji }
+        body = (
+          <>
+            <LessonHeader
+              title={`Bài ${lessonIndex + 1}`}
+              subtitle={`Chữ Hán · ${levelLabel} · ${chars.length} chữ`}
+              backHref={gridHref}
+              mode={mode}
+              onMode={(m) => setParam({ mode: m === 'list' ? null : m, xem: null })}
+            />
+            {mode === 'list' && <CharGrid chars={chars} active={stack.root?.t === 'k' ? stack.root.ch : defaultFrame?.t === 'k' ? defaultFrame.ch : undefined} onPick={pickChar} />}
+            {mode === 'flashcards' && (
+              <div className={STUDY_PAGE}>
+                <KanjiFlashcards key={`${lessonIndex}-${size}-${level}`} chars={chars} back={back} next={next} />
+              </div>
+            )}
+            {mode === 'quiz' && (
+              <div className={STUDY_PAGE}>
+                <KanjiQuiz key={`${lessonIndex}-${size}-${level}`} pool={chars} distractors={filtered} />
+              </div>
+            )}
+          </>
+        )
+      }
+    }
+  } else {
+    if (radicals.status === 'error') body = <LoadError error={radicals.error} onRetry={radicals.retry} />
+    else if (!radicals.data) body = <PageSkeleton grid rows={12} />
+    else if (lessonIndex === null) {
+      const q = normalizeVi(query)
+      const matches = q
+        ? radicals.data.filter((r) => r.radical.includes(query.trim()) || normalizeVi(`${r.name} ${r.meaning}`).includes(q) || String(r.no) === q)
+        : null
+      body = (
+        <>
+          <label className="mb-4 block max-w-sm">
+            <span className="sr-only">Lọc bộ thủ</span>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Tìm bộ theo tên, nghĩa hoặc số"
+              className="h-11 w-full rounded-xl border-2 border-line bg-surface px-4 outline-none focus:border-ai"
+            />
+          </label>
+          {matches ? (
+            <>
+              <p className="mb-3 text-sm text-muted">{matches.length} bộ thủ khớp</p>
+              <RadicalList items={matches} onOpen={openRadical} />
+            </>
+          ) : (
+            <LessonGrid
+              items={radicals.data}
+              unit="bộ"
+              title="Bộ thủ"
+              href={(i) => lessonHref(i)}
+              preview={(l) => l.slice(0, 6).map((r) => r.radical).join('')}
+            />
+          )}
+        </>
+      )
+    } else {
+      const items = radicalLessons[lessonIndex]
+      if (!items) body = <p className="text-muted">Không có bài này. <Link to={gridHref} className="font-medium text-ai">Về các bài</Link></p>
+      else {
+        const back: SessionLink = { to: gridHref, label: 'Về các bài' }
+        const next: SessionLink | undefined =
+          lessonIndex + 1 < radicalLessons.length ? { to: lessonHref(lessonIndex + 1, true), label: `Bài tiếp theo: Bài ${lessonIndex + 2}` } : undefined
+        body = (
+          <>
+            <LessonHeader
+              title={`Bài ${lessonIndex + 1}`}
+              subtitle={`Bộ thủ ${items[0].no}–${items[items.length - 1].no}`}
+              backHref={gridHref}
+              mode={mode}
+              onMode={(m) => setParam({ mode: m === 'list' ? null : m, xem: null })}
+            />
+            {mode === 'list' && <RadicalList items={items} onOpen={openRadical} />}
+            {mode === 'flashcards' && (
+              <div className={STUDY_PAGE}>
+                <RadicalFlashcards key={`${lessonIndex}-${size}`} items={items} back={back} next={next} />
+              </div>
+            )}
+            {mode === 'quiz' && (
+              <div className={STUDY_PAGE}>
+                <ChoiceQuiz key={`${lessonIndex}-${size}`} items={items} pool={radicals.data} config={RADICAL_QUIZ} />
+              </div>
+            )}
+          </>
+        )
+      }
+    }
+  }
+
+  // Ngăn xếp chi tiết: ?k= (chữ gốc) + ?xem=; desktop có chữ mặc định để panel không trống.
+  const frames = stack.frames.length ? stack.frames : defaultFrame ? [defaultFrame] : []
+  const showPanel = wide && frames.length > 0 && mode === 'list'
 
   return (
     <div>
@@ -277,35 +375,35 @@ export function Kanji() {
       <div className="mb-5 flex flex-col gap-3">
         <Segmented
           label="Mục chữ Hán"
-          value={tab}
-          onChange={(t) => update('tab', t === 'chars' ? null : t)}
+          value={section}
+          onChange={(s) => setParams(s === 'radicals' ? { tab: 'radicals' } : level !== 'all' ? { level } : {}, { replace: true })}
           options={[
             { value: 'chars', label: 'Chữ Hán' },
             { value: 'radicals', label: 'Bộ thủ' },
-            { value: 'quiz', label: 'Quiz Hán Việt' },
           ]}
         />
-        {tab !== 'radicals' && (
-          <Segmented size="sm" label="Lọc theo cấp xuất hiện" value={level} onChange={(l) => update('level', l === 'all' ? null : l)} options={levelOptions} />
+        {section === 'chars' && lessonIndex === null && (
+          <Segmented size="sm" label="Lọc theo cấp xuất hiện" value={level} onChange={(l) => setParam({ level: l === 'all' ? null : l, bai: null })} options={levelOptions} />
         )}
       </div>
 
-      {tab === 'radicals' ? (
-        <Loaded state={radicals} skeleton={<PageSkeleton grid rows={12} />}>
-          {(list) => <RadicalsTab list={list} />}
-        </Loaded>
-      ) : (
-        <Loaded state={index} skeleton={<PageSkeleton grid rows={18} />}>
-          {(list) =>
-            tab === 'quiz' ? (
-              <div className="mx-auto max-w-[560px] lg:max-w-[880px]">
-                <KanjiQuiz key={level} pool={level === 'all' ? list : list.filter((k) => (level === 'none' ? k.firstLevel === null : k.firstLevel === level))} />
-              </div>
-            ) : (
-              <CharsTab list={list} level={level} />
-            )
-          }
-        </Loaded>
+      <div className={showPanel ? 'grid grid-cols-[minmax(0,1fr)_340px] items-start gap-8' : ''}>
+        <div className="min-w-0">{body}</div>
+        {showPanel && (
+          <aside className="sticky top-10 max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-2xl border border-line bg-surface p-5" aria-label="Chi tiết chữ Hán">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div key={frames.length} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }}>
+                <DetailStackView frames={frames} onPush={stack.push} onBack={stack.back} />
+              </motion.div>
+            </AnimatePresence>
+          </aside>
+        )}
+      </div>
+
+      {!showPanel && (
+        <BottomSheet open={stack.frames.length > 0} onClose={() => stack.close(true)} label="Chi tiết">
+          <DetailStackView frames={stack.frames} onPush={stack.push} onBack={stack.back} />
+        </BottomSheet>
       )}
     </div>
   )

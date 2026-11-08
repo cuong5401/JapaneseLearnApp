@@ -19,6 +19,10 @@ const PAGES = [
   '/word/n1-be312b26',
   '/kanji',
   '/kanji?tab=radicals',
+  '/kanji?level=N5&bai=1',
+  '/kanji?bai=2&mode=flashcards',
+  '/kanji?tab=radicals&bai=1',
+  '/notebooks',
   '/grammar/n4',
   '/grammar/n2/gn2-03d5e797',
   '/review',
@@ -98,11 +102,11 @@ for (const theme of THEMES) {
       }
 
       test('Kanji: nhãn Hán Việt 1 dòng, panel/bottom sheet đúng mốc', async ({ page }) => {
-        await page.goto('/kanji?level=N5')
+        await page.goto('/kanji?level=N5&bai=1')
         await settle(page)
 
         const labels = await page.evaluate(() =>
-          [...document.querySelectorAll<HTMLElement>('main ul button > span:not([data-gridcell])')]
+          [...document.querySelectorAll<HTMLElement>('[data-kanji-cell] > span:not([data-gridcell])')]
             .filter((s) => s.textContent?.trim())
             .map((s) => {
               const r = s.getBoundingClientRect()
@@ -123,7 +127,7 @@ for (const theme of THEMES) {
           await expect(panel).toBeVisible()
         } else {
           await expect(panel).toHaveCount(0)
-          await page.locator('main ul button').nth(4).click()
+          await page.locator('[data-kanji-cell]').nth(4).click()
           const sheet = page.getByRole('dialog')
           await expect(sheet).toBeVisible()
           await page.waitForTimeout(500)

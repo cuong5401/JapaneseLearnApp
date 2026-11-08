@@ -1,4 +1,4 @@
-import type { GrammarEntry, KanjiEntry, VocabEntry } from './data'
+import type { GrammarEntry, KanjiEntry, RadicalEntry, VocabEntry } from './data'
 
 export type { DataFile, DataManifest, GrammarEntry, GrammarExample, KanjiEntry, RadicalEntry, VocabEntry } from './data'
 
@@ -45,9 +45,13 @@ export interface KanaChar {
 export type Deck = { kind: 'vocab'; key: VocabDeckKey } | { kind: 'terms'; category: TermCategory }
 
 /** Một mục bất kỳ tra được theo ID (dùng cho Ôn tập, tìm kiếm). */
+/** Bộ thủ kèm id `rd-001` (radicals.json không có id). */
+export type RadicalItem = RadicalEntry & { id: string }
+
 export type StudyEntry =
   | { kind: 'word'; item: VocabItem; deck: Deck }
   | { kind: 'kanji'; item: KanjiEntry }
+  | { kind: 'radical'; item: RadicalItem }
   | { kind: 'grammar'; item: GrammarEntry }
 
 /** Thẻ ôn tập ngắt quãng (SM-2 rút gọn). */

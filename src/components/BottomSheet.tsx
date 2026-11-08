@@ -9,6 +9,9 @@ interface Props {
   children: ReactNode
 }
 
+/** Các sheet đang mở, mới nhất ở cuối: Esc chỉ đóng sheet trên cùng (sheet lồng nhau). */
+const openSheets: object[] = []
+
 /** Bảng trượt từ dưới lên (điện thoại/tablet). Kéo tay cầm xuống, chạm nền mờ hoặc Esc để đóng. */
 export function BottomSheet({ open, onClose, label, children }: Props) {
   const controls = useDragControls()
@@ -16,14 +19,19 @@ export function BottomSheet({ open, onClose, label, children }: Props) {
 
   useEffect(() => {
     if (!open) return
+    const token = {}
+    openSheets.push(token)
     const previous = document.activeElement as HTMLElement | null
     const overflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     sheetRef.current?.focus()
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && openSheets[openSheets.length - 1] === token) onClose()
+    }
     window.addEventListener('keydown', onKey)
     return () => {
       window.removeEventListener('keydown', onKey)
+      openSheets.splice(openSheets.indexOf(token), 1)
       document.body.style.overflow = overflow
       previous?.focus()
     }

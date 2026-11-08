@@ -1,5 +1,6 @@
 import type { SrsCard } from '../types'
 import { isKanaStat, type KanaStat } from './kanaProgress'
+import { sanitizeState, type NotebookState } from './notebooks'
 import { LESSON_SIZES, type LessonSize } from './lessons'
 
 /**
@@ -14,6 +15,8 @@ export interface Backup {
   lessonSize?: LessonSize
   /** Mức thuộc kana (từ bản có Luyện kana mới; file cũ không có) */
   kana?: Record<string, KanaStat>
+  /** Sổ tay (chỉ id mục, không chép dữ liệu) */
+  notebooks?: NotebookState
 }
 
 export function createBackup(
@@ -21,8 +24,9 @@ export function createBackup(
   lessonSize: LessonSize,
   kana: Record<string, KanaStat> = {},
   now = new Date(),
+  notebooks?: NotebookState,
 ): Backup {
-  return { app: 'kotonoha', version: 1, exportedAt: now.toISOString(), cards, lessonSize, kana }
+  return { app: 'kotonoha', version: 1, exportedAt: now.toISOString(), cards, lessonSize, kana, notebooks }
 }
 
 export function backupFileName(now = new Date()): string {
@@ -83,7 +87,7 @@ export function parseBackup(text: string): ParseResult {
   return {
     ok: true,
     skipped,
-    backup: { app: 'kotonoha', version: 1, exportedAt: String(b.exportedAt ?? ''), cards, lessonSize, kana },
+    backup: { app: 'kotonoha', version: 1, exportedAt: String(b.exportedAt ?? ''), cards, lessonSize, kana, notebooks: sanitizeState(b.notebooks) ?? undefined },
   }
 }
 

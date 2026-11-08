@@ -6,6 +6,7 @@ import { Loaded, PageSkeleton } from '../components/LoadState'
 import { PageHeader } from '../components/PageHeader'
 import { Segmented } from '../components/Segmented'
 import { Stagger, StaggerItem } from '../components/Stagger'
+import { BookmarkButton } from '../components/notebook/BookmarkButton'
 import { useGrammar, useManifest } from '../hooks/useData'
 import { useCards } from '../hooks/useProgress'
 import { parseLevel } from '../lib/levels'
@@ -16,9 +17,10 @@ import { NotFound } from './NotFound'
 function GrammarRow({ g, level }: { g: GrammarEntry; level: Level }) {
   const learned = Boolean(useCards()[g.id])
   return (
+    <div className="relative">
     <Link
       to={`/grammar/${level.toLowerCase()}/${g.id}`}
-      className="flex items-start gap-3 rounded-xl border border-line bg-surface px-4 py-3 transition-colors hover:border-ai"
+      className="flex items-start gap-3 rounded-xl border border-line bg-surface py-3 pr-12 pl-4 transition-colors hover:border-ai"
     >
       <span className="w-8 shrink-0 pt-0.5 text-sm tabular-nums text-muted">{g.no}</span>
       <span className="min-w-0 flex-1">
@@ -31,6 +33,10 @@ function GrammarRow({ g, level }: { g: GrammarEntry; level: Level }) {
         <span className="shrink-0 rounded-full bg-matsu-soft px-2 py-0.5 text-xs font-medium text-matsu">Đã hiểu</span>
       )}
     </Link>
+    <span className="absolute top-1.5 right-1.5">
+      <BookmarkButton itemRef={g.id} label={`mẫu ${g.title}`} size="sm" />
+    </span>
+    </div>
   )
 }
 

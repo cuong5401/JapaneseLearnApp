@@ -16,6 +16,7 @@ import { isInteractiveTarget } from '../lib/keyboard'
 import { progress } from '../lib/progress'
 import { formatInterval, review } from '../lib/srs'
 import { useCards, useDueIds } from '../hooks/useProgress'
+import { kanjiOfRadical } from '../data/radicalKanji'
 import type { Quality, StudyEntry } from '../types'
 
 const GRADES: { q: Quality; label: string; cls: string }[] = [
@@ -35,6 +36,7 @@ const gradeItem = {
 } as const
 
 function Front({ entry }: { entry: StudyEntry }) {
+  if (entry.kind === 'radical') return <GridCell className="w-[clamp(7rem,34cqw,9.5rem)]">{entry.item.radical}</GridCell>
   if (entry.kind === 'kanji') return <GridCell className="w-[clamp(7rem,34cqw,9.5rem)]">{entry.item.kanji}</GridCell>
   if (entry.kind === 'grammar')
     return (
@@ -50,6 +52,21 @@ function Front({ entry }: { entry: StudyEntry }) {
 }
 
 function Back({ entry }: { entry: StudyEntry }) {
+  if (entry.kind === 'radical') {
+    const r = entry.item
+    const chars = kanjiOfRadical(r.no).slice(0, 8)
+    return (
+      <div className="text-center">
+        <p className="text-2xl font-bold capitalize">Bộ {r.name}</p>
+        <p className="text-muted">{r.meaning}</p>
+        {chars.length > 0 && (
+          <p lang="ja" className="mt-3 font-jp text-xl tracking-widest">
+            {chars.join('')}
+          </p>
+        )}
+      </div>
+    )
+  }
   if (entry.kind === 'kanji') {
     const k = entry.item
     return (
@@ -110,11 +127,12 @@ function Back({ entry }: { entry: StudyEntry }) {
   )
 }
 
-const KIND_LABEL = { word: 'Từ vựng', kanji: 'Chữ Hán', grammar: 'Ngữ pháp' } as const
+const KIND_LABEL = { word: 'Từ vựng', kanji: 'Chữ Hán', grammar: 'Ngữ pháp', radical: 'Bộ thủ' } as const
 
 function entryLabel(entry: StudyEntry) {
   if (entry.kind === 'word') return `${KIND_LABEL.word}, ${deckTitle(entry.deck)}`
   if (entry.kind === 'grammar') return `${KIND_LABEL.grammar} ${entry.item.level}`
+  if (entry.kind === 'radical') return `${KIND_LABEL.radical} số ${entry.item.no}`
   return entry.item.firstLevel ? `${KIND_LABEL.kanji}, xuất hiện từ ${entry.item.firstLevel}` : KIND_LABEL.kanji
 }
 

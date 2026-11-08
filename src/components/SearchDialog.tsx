@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { TERM_INFO, VOCAB_DECK_INFO, getTerms } from '../data'
 import { useFiles } from '../hooks/useData'
+import { useDetailStack } from '../hooks/useDetailStack'
 import { PUBLIC_BUILD } from '../lib/edition'
 import { grammarDocs, kanjiDocs, search, vocabDocs, type SearchDoc, type SearchKind } from '../lib/search'
 import { LEVELS, TERM_CATEGORIES, VOCAB_DECKS, type GrammarEntry, type KanjiEntry, type VocabItem } from '../types'
@@ -41,6 +42,7 @@ const GROUPS: { kind: SearchKind; title: string }[] = [
 
 export default function SearchDialog({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate()
+  const stack = useDetailStack()
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const [query, setQuery] = useState('')
@@ -72,7 +74,9 @@ export default function SearchDialog({ onClose }: { onClose: () => void }) {
 
   const open = (doc: SearchDoc) => {
     onClose()
-    navigate(doc.href)
+    // Từ vựng mở chi tiết ngay trên trang đang xem (ngăn xếp chi tiết); chữ Hán, ngữ pháp mở trang riêng.
+    if (doc.kind === 'word') stack.push({ t: 'w', id: doc.id })
+    else navigate(doc.href)
   }
 
   const onKeyDown = (e: KeyboardEvent) => {

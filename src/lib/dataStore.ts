@@ -115,6 +115,8 @@ const DATA_ID = /^([a-z]+\d?)-[0-9a-f]{8}$/
 
 /** File chứa mục có ID này, hoặc null nếu ID không thuộc public/data (thuật ngữ có sẵn, ID cũ…). */
 export function pathForId(id: string): string | null {
+  // Bộ thủ: rd-001 … rd-214 (radicals.json không có id, xem lib/radicals.ts).
+  if (/^rd-\d{3}$/.test(id)) return 'kanji/radicals.json'
   const m = DATA_ID.exec(id)
   // Bản public không có file ngữ pháp: coi ID ngữ pháp như không tồn tại (bỏ qua, không báo lỗi tải).
   if (!m || (PUBLIC_BUILD && isGrammarId(id))) return null

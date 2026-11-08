@@ -40,7 +40,7 @@ function KanjiOfDay({ kanji }: { kanji: KanjiEntry }) {
           <p className="mt-2 text-sm text-muted">
             {kanji.wordCount} từ chứa chữ này{kanji.firstLevel && `, xuất hiện từ ${kanji.firstLevel}`}
           </p>
-          <Link to={`/kanji?c=${encodeURIComponent(kanji.kanji)}`} className="mt-1 inline-block text-sm font-medium text-ai hover:underline">
+          <Link to={`/kanji?k=${encodeURIComponent(kanji.kanji)}`} className="mt-1 inline-block text-sm font-medium text-ai hover:underline">
             Xem các từ
           </Link>
         </div>

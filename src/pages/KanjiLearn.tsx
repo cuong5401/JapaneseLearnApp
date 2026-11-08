@@ -19,7 +19,7 @@ export function KanjiLearn() {
   if (kanji.status !== 'ready') return <PageSkeleton header rows={4} />
   if (!entry || entry.kind !== 'kanji') return <NotFound />
 
-  const back = { to: `/kanji?c=${encodeURIComponent(entry.item.kanji)}`, label: `Về chữ ${entry.item.kanji}` }
+  const back = { to: `/kanji?k=${encodeURIComponent(entry.item.kanji)}`, label: `Về chữ ${entry.item.kanji}` }
   const items = wordIds
     .map((id) => words.entries.get(id))
     .flatMap((e) => (e?.kind === 'word' ? [e.item as VocabItem] : []))

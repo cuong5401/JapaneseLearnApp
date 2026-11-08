@@ -24,6 +24,15 @@
   --matsu-soft: #dcf0e5;
   --cell-line: #9fb0d6;
   --cell-guide: #c4cfe7;
+  /* Màu sổ tay */
+  --nb-kihada: #d9a21b;
+  --nb-beni: #c23b47;
+  --nb-ai: #2f4f9e;
+  --nb-matsu: #2f805a;
+  --nb-fuji: #7a5bb5;
+  --nb-sakura: #d6698c;
+  --nb-sora: #2e8bb8;
+  --nb-sumi: #4a5068;
 }
 
 .dark {
@@ -44,6 +53,14 @@
   --matsu-soft: #183a35;
   --cell-line: #3e4d85;
   --cell-guide: #2c3a6c;
+  --nb-kihada: #f0c45a;
+  --nb-beni: #f2808e;
+  --nb-ai: #93abeb;
+  --nb-matsu: #74d0a2;
+  --nb-fuji: #b9a0ec;
+  --nb-sakura: #f4a6c0;
+  --nb-sora: #7cc6ea;
+  --nb-sumi: #a3a9c2;
 }
 
 @theme inline {

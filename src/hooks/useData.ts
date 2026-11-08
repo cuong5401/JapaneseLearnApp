@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useSyncExternalStore } from 'react'
 import { TERM_BY_ID, VOCAB_DECK_INFO, deckKeyForId, getTerms } from '../data'
 import { MANIFEST, dataStore, indexById, pathForId, request, type LoadStatus } from '../lib/dataStore'
+import { withRadicalIds } from '../lib/radicals'
 import type {
   DataManifest,
   Deck,
@@ -8,6 +9,7 @@ import type {
   KanjiEntry,
   Level,
   RadicalEntry,
+  RadicalItem,
   StudyEntry,
   VocabItem,
 } from '../types'
@@ -49,7 +51,11 @@ function useFile<T>(path: string | null): Loadable<T> {
 
 export const useManifest = () => useFile<DataManifest>(MANIFEST)
 export const useKanjiIndex = () => useFile<KanjiEntry[]>('kanji/kanji.json')
-export const useRadicals = () => useFile<RadicalEntry[]>('kanji/radicals.json')
+/** Bộ thủ kèm id rd-001… (gắn một lần cho mỗi mảng dữ liệu). */
+export function useRadicals(): Loadable<RadicalItem[]> {
+  const r = useFile<RadicalEntry[]>('kanji/radicals.json')
+  return { ...r, data: r.data ? withRadicalIds(r.data) : undefined }
+}
 export const useGrammar = (level: Level) => useFile<GrammarEntry[]>(`grammar/${level.toLowerCase()}.json`)
 
 /** Từ vựng của một bộ: bộ public/data được tải về, nhóm thuật ngữ có sẵn thì trả ngay. */
@@ -94,10 +100,12 @@ export function useEntries(ids: readonly string[]): EntriesResult {
         continue
       }
       const path = pathForId(id)
-      const list = path ? byPath.get(path) : undefined
+      const raw = path ? byPath.get(path) : undefined
+      const list = path === 'kanji/radicals.json' && raw ? withRadicalIds(raw as unknown as RadicalEntry[]) : raw
       const item = list ? indexById(list).get(id) : undefined
       if (!item || !path) continue
-      if (path.startsWith('kanji/')) map.set(id, { kind: 'kanji', item: item as KanjiEntry })
+      if (path === 'kanji/radicals.json') map.set(id, { kind: 'radical', item: item as RadicalItem })
+      else if (path.startsWith('kanji/')) map.set(id, { kind: 'kanji', item: item as KanjiEntry })
       else if (path.startsWith('grammar/')) map.set(id, { kind: 'grammar', item: item as GrammarEntry })
       else {
         const key = deckKeyForId(id)

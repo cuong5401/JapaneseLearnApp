@@ -11,12 +11,11 @@ import { AnimatedNumber } from '../AnimatedNumber'
 import { Celebration } from '../Celebration'
 import { Button, ButtonLink } from '../Pressable'
 import { SessionPanel, StudyLayout } from '../StudyLayout'
-import { SpeakButton } from '../SpeakButton'
-import { WordHead, WordMeta } from '../VocabBits'
+import { vocabFaces, type FacesRenderer } from './faces'
+import { BookmarkButton } from '../notebook/BookmarkButton'
 import { shuffle } from '../../lib/answer'
 import { isInteractiveTarget } from '../../lib/keyboard'
 import { progress } from '../../lib/progress'
-import { speechText } from '../../lib/speech'
 import { readJSON, writeJSON } from '../../lib/storage'
 import type { SrsCard, VocabItem } from '../../types'
 
@@ -35,42 +34,12 @@ const SWIPE_DISTANCE = 100
 const SWIPE_VELOCITY = 500
 const STACK_SPRING = { type: 'spring', stiffness: 420, damping: 34 } as const
 
-function CardFaces({ item, flipped }: { item: VocabItem; flipped: boolean }) {
-  return (
-    <div className="flip h-full">
-      <div className={`flip-inner grid h-full ${flipped ? 'is-flipped' : ''}`}>
-        <div className="@container flip-face col-start-1 row-start-1 flex flex-col items-center justify-center rounded-2xl border border-line bg-surface p-6">
-          <WordHead item={item} showHanViet={false} className="text-[clamp(2rem,13cqw,3.75rem)]" />
-          <p className="mt-8 text-sm text-muted">Chạm để lật thẻ</p>
-        </div>
-        <div className="flip-face flip-back col-start-1 row-start-1 flex flex-col overflow-y-auto overscroll-contain rounded-2xl border border-ai bg-surface p-6">
-          <div className="flex items-start justify-between gap-4">
-            <WordHead item={item} className="text-3xl" align="left" />
-            <SpeakButton text={speechText(item)} />
-          </div>
-          <p className="mt-4 text-2xl font-semibold">{item.meaning}</p>
-          <div className="mt-3">
-            <WordMeta item={item} compact />
-          </div>
-          {item.example && (
-            <div className="mt-auto border-t border-line pt-4">
-              <div className="flex items-start gap-3">
-                <p lang="ja" className="min-w-0 flex-1 font-jp text-lg leading-relaxed">
-                  {item.example.ja}
-                </p>
-                <SpeakButton text={item.example.ja} label="Nghe câu ví dụ" size="sm" />
-              </div>
-              <p className="mt-1 text-muted">{item.example.vi}</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
+const vocabLabel = (item: VocabItem) => item.word
 
-interface StackCardProps {
-  item: VocabItem
+interface StackCardProps<T> {
+  item: T
+  faces: FacesRenderer<T>
+  label: (item: T) => string
   depth: number
   flipped: boolean
   onFlip: () => void
@@ -82,7 +51,7 @@ interface StackCardProps {
  * Một thẻ trong ngăn xếp. Thẻ trên cùng (depth 0) kéo được; các thẻ sau nhỏ dần và lệch xuống.
  * Cùng một component cho mọi vị trí nên khi thẻ trên bay đi, thẻ kế tiếp trồi lên mượt.
  */
-function StackCard({ item, depth, flipped, onFlip, onCommit, ref }: StackCardProps) {
+function StackCard<T extends { id: string }>({ item, faces, label, depth, flipped, onFlip, onCommit, ref }: StackCardProps<T>) {
   const reduce = useReducedMotion()
   const x = useMotionValue(0)
   const rotate = useTransform(x, [-240, 240], [-12, 12])
@@ -133,10 +102,16 @@ function StackCard({ item, depth, flipped, onFlip, onCommit, ref }: StackCardPro
       role={top ? 'button' : undefined}
       tabIndex={top ? 0 : -1}
       aria-hidden={!top}
-      aria-label={top ? (flipped ? `${item.word}, mặt sau. Chạm để lật lại` : `${item.word}. Chạm để lật thẻ`) : undefined}
+      aria-label={top ? (flipped ? `${label(item)}, mặt sau. Chạm để lật lại` : `${label(item)}. Chạm để lật thẻ`) : undefined}
     >
       {top ? (
-        <CardFaces item={item} flipped={flipped} />
+        <>
+          {faces(item, flipped)}
+          {/* Nút đánh dấu ở góc thẻ: không lật thẻ, không kéo thẻ. */}
+          <div className="absolute top-2 right-2 z-10">
+            <BookmarkButton itemRef={item.id} label={label(item)} size="sm" />
+          </div>
+        </>
       ) : (
         <div className="h-full rounded-2xl border border-line bg-surface" />
       )}
@@ -246,8 +221,22 @@ const SHORTCUTS = [
  * Phiên flashcard vuốt để chấm cho một danh sách từ bất kỳ (bài học, thuật ngữ, từ của một chữ Hán…).
  * Trang bọc ngoài lo tiêu đề; `key` nên đổi khi danh sách đổi để bắt đầu phiên mới.
  */
-export function FlashcardSession({ items: source, back, next }: { items: VocabItem[]; back: SessionLink; next?: SessionLink }) {
-  const [queue, setQueue] = useState<VocabItem[]>(source)
+export function FlashcardSession<T extends { id: string } = VocabItem>({
+  items: source,
+  back,
+  next,
+  faces = vocabFaces as unknown as FacesRenderer<T>,
+  label = vocabLabel as unknown as (item: T) => string,
+}: {
+  items: T[]
+  back: SessionLink
+  next?: SessionLink
+  /** Mặt thẻ (mặc định: từ vựng) */
+  faces?: FacesRenderer<T>
+  /** Tên ngắn của mục cho trình đọc màn hình */
+  label?: (item: T) => string
+}) {
+  const [queue, setQueue] = useState<T[]>(source)
   const [pos, setPos] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [results, setResults] = useState<Record<string, Verdict>>({})
@@ -291,7 +280,7 @@ export function FlashcardSession({ items: source, back, next }: { items: VocabIt
     setPos((p) => Math.max(0, p - 1))
   }, [history])
 
-  const startSession = (items: VocabItem[]) => {
+  const startSession = (items: T[]) => {
     setQueue(items)
     setPos(0)
     setResults({})
@@ -365,6 +354,8 @@ export function FlashcardSession({ items: source, back, next }: { items: VocabIt
                     key={item.id}
                     ref={depth === 0 ? topRef : undefined}
                     item={item}
+                    faces={faces}
+                    label={label}
                     depth={depth}
                     flipped={depth === 0 && flipped}
                     onFlip={() => setFlipped((f) => !f)}
