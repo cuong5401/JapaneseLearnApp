@@ -2,37 +2,12 @@ import { motion } from 'motion/react'
 import { Suspense, lazy, useDeferredValue, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
-import { TERM_INFO, VOCAB_DECK_INFO, getTerms } from '../data'
-import { useFiles } from '../hooks/useData'
 import { useDetailStack } from '../hooks/useDetailStack'
-import { PUBLIC_BUILD } from '../lib/edition'
-import { grammarDocs, kanjiDocs, search, vocabDocs, type SearchDoc, type SearchKind } from '../lib/search'
-import { LEVELS, TERM_CATEGORIES, VOCAB_DECKS, type GrammarEntry, type KanjiEntry, type VocabItem } from '../types'
-
-const VOCAB_PATHS = VOCAB_DECKS.map((k) => VOCAB_DECK_INFO[k].path)
-// Bản public không có file ngữ pháp: không tải, không tìm.
-const GRAMMAR_PATHS = PUBLIC_BUILD ? [] : LEVELS.map((l) => `grammar/${l.toLowerCase()}.json`)
-const PATHS = [...VOCAB_PATHS, 'kanji/kanji.json', ...GRAMMAR_PATHS]
-
-/** Chỉ mục tìm kiếm dựng một lần cho mỗi file dữ liệu. */
-const docCache = new WeakMap<object, SearchDoc[]>()
-function docsFor(data: unknown, path: string): SearchDoc[] {
-  if (!Array.isArray(data)) return []
-  let docs = docCache.get(data)
-  if (!docs) {
-    if (path.startsWith('vocab/')) {
-      const info = VOCAB_DECKS.map((k) => VOCAB_DECK_INFO[k]).find((d) => d.path === path)!
-      docs = vocabDocs(data as VocabItem[], info.level ?? info.name)
-    } else if (path.startsWith('kanji/')) docs = kanjiDocs(data as KanjiEntry[])
-    else docs = grammarDocs(data as GrammarEntry[], path.slice(8, 10).toUpperCase() as (typeof LEVELS)[number])
-    docCache.set(data, docs)
-  }
-  return docs
-}
-
-const termDocs: SearchDoc[] = TERM_CATEGORIES.flatMap((c) =>
-  vocabDocs(getTerms(c), TERM_INFO[c].name),
-)
+import { useSearchDocs } from '../hooks/useSearchDocs'
+import { setHandoff } from '../lib/ai/handoff'
+import { modelSupportsImages } from '../lib/ai/providers'
+import { aiSettings, useAiSettings } from '../lib/ai/settings'
+import { search, type SearchDoc, type SearchKind } from '../lib/search'
 
 const GROUPS: { kind: SearchKind; title: string }[] = [
   { kind: 'word', title: 'Từ vựng' },
@@ -52,14 +27,7 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
   const deferred = useDeferredValue(query)
   const [active, setActive] = useState(0)
   const [drawing, setDrawing] = useState(initialDraw)
-  const files = useFiles(PATHS)
-
-  const loaded = files.data.filter(Boolean).length
-  const docs = useMemo(
-    () => [...files.data.flatMap((d, i) => docsFor(d, PATHS[i])), ...termDocs],
-    // files.data là mảng mới mỗi lần render; số file đã tải là đủ để biết khi nào dựng lại.
-    [loaded], // eslint-disable-line react-hooks/exhaustive-deps
-  )
+  const { docs, files, loaded, total } = useSearchDocs()
   const results = useMemo(() => search(docs, deferred), [docs, deferred])
   const flat = useMemo(() => GROUPS.flatMap((g) => results[g.kind]), [results])
 
@@ -89,6 +57,15 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
     setQuery((q) => q + ch)
     setActive(0)
   }
+  // "Nhờ AI đoán": chỉ khi đã có key và model nhận ảnh. Ảnh chuyển qua sessionStorage, không qua URL.
+  const ai = useAiSettings()
+  const canAskAi = ai.hasKey && modelSupportsImages(ai.provider, aiSettings.model())
+  const askAiDrawn = (png: string) => {
+    if (!png) return
+    setHandoff({ mode: 'lookup', text: 'Đây là chữ Hán tôi vẽ tay. Đó là chữ gì?', image: { mime: 'image/png', data: png } })
+    onClose()
+    navigate('/ai')
+  }
   const viewDrawn = (ch: string) => {
     onClose()
     navigate(`/kanji?k=${encodeURIComponent(ch)}`)
@@ -114,7 +91,7 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
 
   // Vị trí bắt đầu của từng nhóm trong danh sách phẳng (dùng cho phím mũi tên).
   const offsets = GROUPS.map((_, gi) => GROUPS.slice(0, gi).reduce((n, g) => n + results[g.kind].length, 0))
-  const pending = loaded < PATHS.length
+  const pending = loaded < total
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-start justify-center sm:p-6 sm:pt-[10vh]" onKeyDown={onKeyDown}>
@@ -180,7 +157,7 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
           >
             <div aria-hidden className="mx-auto -mt-1.5 mb-3 h-1.5 w-10 rounded-full bg-line sm:hidden" />
             <Suspense fallback={<p className="py-10 text-center text-sm text-muted">Đang mở bảng vẽ…</p>}>
-              <HandwritingPanel onPick={pickDrawn} onView={viewDrawn} onClose={() => setDrawing(false)} />
+              <HandwritingPanel onPick={pickDrawn} onView={viewDrawn} onClose={() => setDrawing(false)} onAskAi={canAskAi ? askAiDrawn : undefined} />
             </Suspense>
           </motion.div>
         )}
@@ -196,10 +173,10 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
           )}
           {!deferred.trim() ? (
             <p className="px-3 py-6 text-sm text-muted">
-              Ví dụ: 参加, さんか, sanka, tham gia, THAM.{pending && ` Đang tải dữ liệu (${loaded}/${PATHS.length})…`}
+              Ví dụ: 参加, さんか, sanka, tham gia, THAM.{pending && ` Đang tải dữ liệu (${loaded}/${total})…`}
             </p>
           ) : flat.length === 0 ? (
-            <p className="px-3 py-6 text-sm text-muted">{pending ? `Đang tải dữ liệu (${loaded}/${PATHS.length})…` : `Không tìm thấy "${deferred}". Thử bỏ dấu hoặc gõ ngắn hơn.`}</p>
+            <p className="px-3 py-6 text-sm text-muted">{pending ? `Đang tải dữ liệu (${loaded}/${total})…` : `Không tìm thấy "${deferred}". Thử bỏ dấu hoặc gõ ngắn hơn.`}</p>
           ) : (
             <>
               {GROUPS.map((g, gi) =>
@@ -240,7 +217,7 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
                   </section>
                 ) : null,
               )}
-              {pending && <p className="px-3 py-2 text-xs text-muted">Đang tải thêm dữ liệu ({loaded}/{PATHS.length}), kết quả có thể thay đổi.</p>}
+              {pending && <p className="px-3 py-2 text-xs text-muted">Đang tải thêm dữ liệu ({loaded}/{total}), kết quả có thể thay đổi.</p>}
             </>
           )}
         </div>

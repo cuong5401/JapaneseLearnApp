@@ -37,6 +37,9 @@ jobs:
           # Bản đầy đủ (có ngữ pháp N4–N1). Mã mở khóa 4 số lấy từ secret; không có secret thì không hỏi mã.
           VITE_UNLOCK_CODE: ${{ secrets.VITE_UNLOCK_CODE }}
 
+      - name: Không có chuỗi giống API key trong repo và dist
+        run: npm run check:secrets
+
       - name: Kiểm tra dist
         run: |
           for l in n4 n3 n2 n1; do test -f "dist/data/grammar/$l.json" || { echo "::error::Thiếu dist/data/grammar/$l.json"; exit 1; }; done

@@ -8,6 +8,7 @@ import type { KanjiEntry } from '../../types'
 import { GridCell } from '../GridCell'
 import { LoadError, Skeleton } from '../LoadState'
 import { Button, ButtonLink } from '../Pressable'
+import { AskAiLink } from '../ai/AskAiLink'
 import { BookmarkButton } from '../notebook/BookmarkButton'
 
 type Push = (f: Frame) => void
@@ -108,6 +109,7 @@ export function KanjiDetail({ item, onPush }: { item: KanjiEntry; onPush: Push }
         >
           {learned ? 'Đã học chữ này' : 'Đánh dấu đã học'}
         </Button>
+        <AskAiLink mode="lookup" q={`Giải thích chữ Hán ${item.kanji} (${item.hanViet}): ý nghĩa, cách đọc thường gặp và các từ hay dùng`} className="col-span-2" />
       </div>
       <h3 className="mt-6 mb-1 text-sm font-semibold text-muted">
         Từ chứa chữ {item.kanji}

@@ -70,6 +70,8 @@ export function useKanjiCanvas(prefer: readonly string[] | undefined) {
     status,
     /** Kích thước khung vẽ (px CSS), để co tọa độ về khung 256 của thư viện (hàm ổn định). */
     setSize,
+    /** Kích thước khung hiện tại (px CSS). */
+    getSize: () => size.current,
     addStroke: (s: Stroke) => {
       const next = [...latest.current, s]
       setStrokes(next)

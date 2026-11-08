@@ -12,6 +12,7 @@ import { LoadError, PageSkeleton } from '../LoadState'
 import { Button } from '../Pressable'
 import { SpeakButton } from '../SpeakButton'
 import { HanViet, WordMeta } from '../VocabBits'
+import { AskAiLink } from '../ai/AskAiLink'
 import { BookmarkButton } from '../notebook/BookmarkButton'
 
 type Push = (f: Frame) => void
@@ -135,6 +136,7 @@ export function WordDetail({ item, onPush, inPanel = false }: { item: VocabItem;
             {card ? 'Đã học, bỏ đánh dấu' : 'Đánh dấu đã học'}
           </Button>
           {card && <span className="text-sm text-muted">Giãn cách ôn: {formatInterval(card.interval)}</span>}
+          <AskAiLink mode="lookup" q={`Giải thích cách dùng ${item.word} (${[item.reading !== item.word ? item.reading : '', item.meaning].filter(Boolean).join(', ')}) và phân biệt với từ dễ nhầm`} />
           {inPanel && (
             <Link to={`/word/${item.id}`} className="ml-auto inline-flex min-h-11 items-center text-sm font-medium text-ai hover:underline">
               Mở trang đầy đủ

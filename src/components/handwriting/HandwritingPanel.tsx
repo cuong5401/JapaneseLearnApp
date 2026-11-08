@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useKanjiIndex } from '../../hooks/useData'
 import { useKanjiCanvas } from '../../hooks/useKanjiCanvas'
+import { strokesToPng } from '../../lib/handwriting/png'
 import { DrawPad } from './DrawPad'
 
 interface Props {
@@ -9,12 +10,14 @@ interface Props {
   /** "Xem chữ này": mở chi tiết chữ Hán. */
   onView: (ch: string) => void
   onClose: () => void
+  /** Có thì hiện "Nhờ AI đoán" (đã có key và model nhận ảnh): nhận ảnh PNG base64 của khung vẽ. */
+  onAskAi?: (png: string) => void
 }
 
 const btn = 'min-h-11 rounded-lg border border-line px-3 text-sm font-medium hover:bg-sunken disabled:opacity-40 disabled:hover:bg-transparent'
 
 /** Bảng vẽ chữ Hán: khung vẽ, 10 ứng viên cập nhật sau mỗi nét, Hoàn tác nét | Xóa | Đóng. */
-export default function HandwritingPanel({ onPick, onView, onClose }: Props) {
+export default function HandwritingPanel({ onPick, onView, onClose, onAskAi }: Props) {
   const index = useKanjiIndex()
   const byChar = useMemo(() => new Map(index.data?.map((k) => [k.kanji, k]) ?? []), [index.data])
   const prefer = useMemo(() => index.data?.map((k) => k.kanji), [index.data])
@@ -91,7 +94,13 @@ export default function HandwritingPanel({ onPick, onView, onClose }: Props) {
         <button type="button" onClick={() => viewTarget && onView(viewTarget)} disabled={!viewTarget} className={`${btn} border-ai text-ai`}>
           Xem chữ {viewTarget ? <span lang="ja" className="font-jp">{viewTarget}</span> : 'này'}
         </button>
+        {onAskAi && pad.strokes.length > 0 && (
+          <button type="button" onClick={() => onAskAi(strokesToPng(pad.strokes, pad.getSize()))} className={btn} data-ask-ai-draw>
+            Nhờ AI đoán
+          </button>
+        )}
       </div>
+      {onAskAi && pad.strokes.length > 0 && pad.candidates.length > 0 && <p className="-mt-1 text-xs text-muted">Không thấy chữ đúng? Bấm "Nhờ AI đoán" để gửi ảnh khung vẽ cho AI.</p>}
     </section>
   )
 }

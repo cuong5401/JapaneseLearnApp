@@ -39,6 +39,8 @@ const router = createBrowserRouter([
       { path: '/notebooks', lazy: () => import('./pages/Notebooks').then((m) => ({ Component: m.Notebooks })) },
       { path: '/notebooks/:id', lazy: () => import('./pages/NotebookPage').then((m) => ({ Component: m.NotebookPage })) },
       { path: '/progress', lazy: () => import('./pages/Progress').then((m) => ({ Component: m.Progress })) },
+      { path: '/ai', lazy: () => import('./pages/AskAi').then((m) => ({ Component: m.AskAi })) },
+      { path: '/settings', lazy: () => import('./pages/Settings').then((m) => ({ Component: m.Settings })) },
       { path: '/level/:level/kanji', element: <LegacyLevel kanji /> },
       { path: '/level/:level/*', element: <LegacyLevel /> },
       { path: '/level/:level', element: <LegacyLevel /> },

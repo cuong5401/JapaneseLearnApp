@@ -103,7 +103,8 @@ export default defineConfig(({ command, mode, isPreview }) => {
           // Vỏ app được precache; dữ liệu học cache khi mở (runtime) để học offline bài đã xem.
           globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
           // Mẫu nét vẽ tay (~2 MB) không precache: chỉ tải khi mở bảng vẽ, rồi cache (xem runtimeCaching).
-          globIgnores: ['404.html', 'data/**', 'assets/ref-patterns-*.js'],
+          // SDK Claude (~380 KB) chỉ cần khi chọn Claude trong Cài đặt AI: cũng không precache.
+          globIgnores: ['404.html', 'data/**', 'assets/ref-patterns-*.js', 'assets/sdk-*.js'],
           navigateFallback: 'index.html',
           cleanupOutdatedCaches: true,
           runtimeCaching: [
@@ -129,12 +130,13 @@ export default defineConfig(({ command, mode, isPreview }) => {
               },
             },
             {
-              // Tên file có hash nên dùng bản đã lưu là an toàn; vẽ chữ dùng được offline sau lần mở đầu.
-              urlPattern: ({ url }) => /\/assets\/ref-patterns-[\w-]+\.js$/.test(url.pathname),
+              // Mẫu nét vẽ tay và SDK Claude: tên file có hash nên dùng bản đã lưu là an toàn;
+              // dùng được offline sau lần mở đầu (Hỏi AI thì vẫn cần mạng để gọi API).
+              urlPattern: ({ url }) => /\/assets\/(ref-patterns|sdk)-[\w-]+\.js$/.test(url.pathname),
               handler: 'CacheFirst',
               options: {
-                cacheName: 'kotonoha-handwriting',
-                expiration: { maxEntries: 2 },
+                cacheName: 'kotonoha-lazy-assets',
+                expiration: { maxEntries: 6 },
                 cacheableResponse: { statuses: [200] },
               },
             },

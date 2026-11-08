@@ -42,7 +42,8 @@ export interface KanaChar {
 }
 
 /** Một bộ học: bộ từ trong public/data hoặc nhóm thuật ngữ có sẵn. */
-export type Deck = { kind: 'vocab'; key: VocabDeckKey } | { kind: 'terms'; category: TermCategory }
+/** `ai`: từ do "Hỏi AI" gợi ý, lưu riêng (lib/aiWords) khi người dùng bấm lưu vào sổ tay. */
+export type Deck = { kind: 'vocab'; key: VocabDeckKey } | { kind: 'terms'; category: TermCategory } | { kind: 'ai' }
 
 /** Một mục bất kỳ tra được theo ID (dùng cho Ôn tập, tìm kiếm). */
 /** Bộ thủ kèm id `rd-001` (radicals.json không có id). */

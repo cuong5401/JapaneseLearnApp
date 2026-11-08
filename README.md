@@ -73,11 +73,22 @@ Tiến độ lưu trong localStorage của từng trình duyệt. Ở trang **Ti
 | Sổ tay: nút đánh dấu trên thẻ, dòng từ, chi tiết từ/chữ/bộ, ngữ pháp; lưu vào nhiều sổ, nhấn giữ để lưu nhanh; mỗi sổ chia bài, Flashcard, Quiz, thêm cả sổ vào lịch ôn | `/notebooks`, `/notebooks/:id` |
 | Ngữ pháp N5–N1 (N4 nhóm theo bài 26–50; N3, N5 lọc theo nhóm chủ đề `?nhom=`), chi tiết mẫu, "Đã hiểu" đưa vào lịch ôn; mẫu Kotonoha tự soạn có nhãn "chưa kiểm tra" đến khi bấm "Đã kiểm tra" | `/grammar/n3`, `/grammar/n3/:id` |
 | Tìm kiếm (phím `/`): chữ Nhật, kana, romaji, Hán Việt, nghĩa tiếng Việt không dấu | hộp tìm kiếm |
+| Hỏi AI: tra từ, giải thích ngữ pháp, luyện hội thoại, sửa câu (Gemini hoặc Claude, key của bạn); Cài đặt AI và trình độ | `/ai`, `/settings` |
 | Vẽ tay để tìm chữ Hán (nút bút vẽ ở hộp tìm kiếm, "Vẽ chữ" ở trang Kanji): 10 ứng viên sau mỗi nét, chọn chữ để ghép vào ô tìm (日 rồi 本 → 日本), "Xem chữ" mở chi tiết; chữ ngoài danh sách có trang tối giản và lưu được vào sổ tay | hộp tìm kiếm, `/kanji` |
 | Ôn tập SRS cho từ vựng, chữ Hán, ngữ pháp | `/review` |
 | Thuật ngữ IT, điện tử, văn phòng | `/terms/it` |
 | Luyện kana: bảng 50 âm, âm đục, âm ghép (Hiragana/Katakana), chọn hàng để luyện, chữ yếu, ôn ngẫu nhiên; phiên có đầu có cuối (gõ romaji, trắc nghiệm, ngược lại, nghe, trộn), câu sai hỏi lại sau 3–5 câu; mức thuộc từng chữ | `/kana` |
 | Tiến độ: từ vựng, kanji, ngữ pháp, kana; xuất/nhập tiến độ | `/progress` |
+
+## Hỏi AI (Gemini | Claude)
+
+Trang `/ai`: chat bằng tiếng Việt ở 4 chế độ (Tra từ, Giải thích ngữ pháp, Luyện hội thoại, Sửa câu tiếng Nhật), câu trả lời hiện dần, có furigana (`<ruby>`) và thẻ từ (nghe, lưu vào sổ tay). Nút "Hỏi AI" ở chi tiết từ, chữ Hán, mẫu ngữ pháp; "Nhờ AI đoán" trong bảng vẽ chữ.
+
+- **Không có server**: trình duyệt gọi thẳng API bằng key của chính bạn. Nhập key ở **Cài đặt → AI** (`/settings`): Gemini (key miễn phí ở [Google AI Studio](https://aistudio.google.com/apikey)) hoặc Claude ([Anthropic Console](https://console.anthropic.com/settings/keys)).
+- **Key chỉ nằm trong localStorage của máy đó** (`jla:ai-key:<nhà cung cấp>`): không có trong code, repo, file Xuất tiến độ hay log. Ai dùng được trình duyệt của bạn thì cũng đọc được key, nên đừng nhập trên máy dùng chung. `npm run check:secrets` (CI chạy sau build) quét repo và `dist/` tìm chuỗi giống API key.
+- Gemini: `streamGenerateContent?alt=sse` với header `x-goog-api-key`, mặc định `gemini-3.8-flash`. Claude: SDK chính thức `@anthropic-ai/sdk` với `dangerouslyAllowBrowser` (header `anthropic-dangerous-direct-browser-access`), mặc định `claude-haiku-5-5`, effort thấp. Lớp chung ở `src/lib/ai/`; SDK Claude chỉ tải khi chọn Claude, không precache.
+- Lịch sử: tối đa 10 cuộc trên máy (cuộc thứ 11 xóa cuộc cũ nhất chưa ghim); mỗi lượt gửi tối đa 20 tin gần nhất. Từ AI gợi ý mà Kotonoha chưa có được lưu riêng (`aw-…`) khi bấm lưu sổ tay, và có trong Xuất / Nhập.
+- Test dùng nhà cung cấp giả (`src/lib/ai/mock.ts`, chỉ có ở bản dev), không dùng key thật.
 
 ## Dữ liệu
 

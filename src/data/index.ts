@@ -73,11 +73,13 @@ export function deckKeyForId(id: string): VocabDeckKey | null {
 
 export function deckTitle(deck: Deck): string {
   if (deck.kind === 'terms') return TERM_INFO[deck.category].name
+  if (deck.kind === 'ai') return 'Từ AI gợi ý'
   const info = VOCAB_DECK_INFO[deck.key]
   return info.level ? `${info.level} ${info.name}` : info.name
 }
 
 export function deckPath(deck: Deck): string {
+  if (deck.kind === 'ai') return '/ai'
   return deck.kind === 'vocab' ? `/vocab/${deck.key}` : `/terms/${deck.category}`
 }
 

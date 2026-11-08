@@ -2,6 +2,7 @@ import { useRef, useState, type ChangeEvent } from 'react'
 import { useCards } from '../hooks/useProgress'
 import { backupFileName, createBackup, mergeCards, parseBackup, type Backup } from '../lib/backup'
 import { kanaProgress, mergeKanaStats, useKanaStats } from '../lib/kanaProgress'
+import { aiWords, mergeAiWords } from '../lib/aiWords'
 import { grammarChecked, mergeChecked } from '../lib/grammarChecked'
 import { mergeNotebooks, notebooks } from '../lib/notebooks'
 import { progress } from '../lib/progress'
@@ -22,7 +23,7 @@ export function BackupPanel() {
   const kanaTotal = Object.keys(kanaStats).length
 
   const exportFile = () => {
-    const blob = new Blob([JSON.stringify(createBackup(cards, lessonSize, kanaStats, new Date(), notebooks.getSnapshot(), grammarChecked.getSnapshot()), null, 1)], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify(createBackup(cards, lessonSize, kanaStats, new Date(), notebooks.getSnapshot(), grammarChecked.getSnapshot(), aiWords.getSnapshot()), null, 1)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -56,7 +57,7 @@ export function BackupPanel() {
       added: m.added,
       updated: m.updated,
       kana: k.changed,
-      notes: (nb ? nb.addedBooks + nb.addedItems : 0) + gc.added,
+      notes: (nb ? nb.addedBooks + nb.addedItems : 0) + gc.added + mergeAiWords(aiWords.getSnapshot(), r.backup.aiWords ?? {}).added,
     })
   }
 
@@ -71,6 +72,8 @@ export function BackupPanel() {
     if (nb && nb.addedBooks + nb.addedItems > 0) notebooks.replace(nb.state)
     const gc = mergeChecked(grammarChecked.getSnapshot(), pending.backup.grammarChecked ?? {})
     if (gc.added) grammarChecked.replace(gc.map)
+    const aw = mergeAiWords(aiWords.getSnapshot(), pending.backup.aiWords ?? {})
+    if (aw.added) aiWords.replace(aw.map)
     if (pending.backup.lessonSize) setLessonSize(pending.backup.lessonSize)
     setPending(null)
     setNotice({ tone: 'ok', text: `Đã nhập: ${m.added} thẻ mới, ${m.updated} thẻ được cập nhật${k.changed ? `, ${k.changed} chữ kana` : ''}${nb && nb.addedItems + nb.addedBooks ? `, ${nb.addedBooks} sổ tay mới, ${nb.addedItems} mục sổ tay` : ''}${gc.added ? `, ${gc.added} mẫu ngữ pháp đã kiểm tra` : ''}.` })

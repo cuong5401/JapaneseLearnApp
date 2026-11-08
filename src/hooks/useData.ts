@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useSyncExternalStore } from 'react'
 import { TERM_BY_ID, VOCAB_DECK_INFO, deckKeyForId, getTerms } from '../data'
 import { MANIFEST, dataStore, indexById, pathForId, request, type LoadStatus } from '../lib/dataStore'
+import { aiWordToVocab, aiWords, isAiWordId, useAiWords } from '../lib/aiWords'
 import { charOfRef } from '../lib/chars'
 import { withRadicalIds } from '../lib/radicals'
 import type {
@@ -87,6 +88,8 @@ export function useEntries(ids: readonly string[]): EntriesResult {
   }, [idsKey])
   const files = useFiles(paths)
   const version = useStoreVersion()
+  // Từ AI gợi ý (aw-…) đổi khi người dùng lưu thêm từ.
+  const savedAiWords = useAiWords()
   const ready = files.status === 'ready'
   const dataKey = files.data
 
@@ -98,6 +101,11 @@ export function useEntries(ids: readonly string[]): EntriesResult {
       const term = TERM_BY_ID.get(id)
       if (term) {
         map.set(id, { kind: 'word', item: term.item, deck: { kind: 'terms', category: term.category } })
+        continue
+      }
+      const aw = isAiWordId(id) ? aiWords.get(id) : undefined
+      if (aw) {
+        map.set(id, { kind: 'word', item: aiWordToVocab(aw), deck: { kind: 'ai' } })
         continue
       }
       const ch = charOfRef(id)
@@ -120,7 +128,7 @@ export function useEntries(ids: readonly string[]): EntriesResult {
     }
     return map
     // `dataKey` là mảng mới mỗi lần render; `version` đổi đúng khi dữ liệu trong kho đổi.
-  }, [ready, idsKey, paths, version]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ready, idsKey, paths, version, savedAiWords]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return { status: files.status, error: files.error, retry: files.retry, entries }
 }

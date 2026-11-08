@@ -8,6 +8,7 @@ import { PageHeader } from '../components/PageHeader'
 import { Button } from '../components/Pressable'
 import { SpeakButton } from '../components/SpeakButton'
 import { AutoBadge } from '../components/grammar/AutoBadge'
+import { AskAiLink } from '../components/ai/AskAiLink'
 import { BookmarkButton } from '../components/notebook/BookmarkButton'
 import { useGrammar } from '../hooks/useData'
 import { useCards } from '../hooks/useProgress'
@@ -97,6 +98,7 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
             {learned ? 'Đã hiểu, bỏ đánh dấu' : 'Đã hiểu'}
           </Button>
           <span className="text-sm text-muted">{learned ? 'Mẫu này đang trong lịch ôn tập.' : 'Đánh dấu để đưa mẫu này vào lịch ôn tập.'}</span>
+          <AskAiLink mode="grammar" q={`Giải thích mẫu ngữ pháp ${g.title}${g.meaning ? ` (${g.meaning.slice(0, 80)})` : ''} và phân biệt với mẫu dễ nhầm`} className="ml-auto" />
         </div>
         {g.auto && (
           <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl bg-sunken px-4 py-3">

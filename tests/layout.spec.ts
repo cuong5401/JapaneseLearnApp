@@ -23,6 +23,8 @@ const PAGES = [
   '/kanji?bai=2&mode=flashcards',
   '/kanji?tab=radicals&bai=1',
   '/notebooks',
+  '/ai',
+  '/settings',
   '/grammar/n4',
   '/grammar/n3',
   '/grammar/n5?nhom=Trợ từ',

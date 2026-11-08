@@ -11,13 +11,17 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "icons": "node scripts/gen-icons.mjs"
+    "icons": "node scripts/gen-icons.mjs",
+    "check:secrets": "node scripts/check-secrets.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.6.0",
     "motion": "^14.10.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.18.5",
+    "remark-gfm": "^4.0.1",
     "wanakana": "^5.3.1"
   },
   "devDependencies": {

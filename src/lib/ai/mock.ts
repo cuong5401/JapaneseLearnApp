@@ -1,0 +1,47 @@
+import { AiError, type AiProvider, type AiRequest } from './types'
+
+/**
+ * Nhà cung cấp giả để test (Vitest, Playwright): không gọi mạng, trả lời dần theo kịch bản.
+ * Chỉ được đăng ký ở bản dev (xem ./index.ts), không có trong bản build.
+ *  - "#401" trong câu hỏi → lỗi key; "#429" → hết hạn mức; "#offline" → mất mạng.
+ */
+export const MOCK_REPLY = [
+  'Từ **',
+  '日本語{にほんご}',
+  '** nghĩa là ',
+  'tiếng Nhật.\n\n',
+  '- Ví dụ: ',
+  '日本語{にほんご}を',
+  '勉強{べんきょう}しています。',
+  '\n- Dịch: Tôi đang học tiếng Nhật.\n\n',
+  '```kotonoha-words\n',
+  '[{"word":"日本語","reading":"にほんご","meaning":"tiếng Nhật","hanViet":"NHẬT BẢN NGỮ"},',
+  '{"word":"勉強","reading":"べんきょう","meaning":"học tập","hanViet":"MIỄN CƯỜNG"}]\n',
+  '```',
+]
+
+const wait = (ms: number, signal?: AbortSignal) =>
+  new Promise<void>((resolve, reject) => {
+    const t = setTimeout(resolve, ms)
+    signal?.addEventListener('abort', () => {
+      clearTimeout(t)
+      reject(new AiError('aborted'))
+    })
+  })
+
+export const mock: AiProvider & { delay: number } = {
+  id: 'mock',
+  delay: 120,
+  async *stream(req: AiRequest) {
+    const last = req.messages[req.messages.length - 1]?.text ?? ''
+    await wait(mock.delay, req.signal)
+    if (last.includes('#401')) throw new AiError('auth', 'mock', 401)
+    if (last.includes('#429')) throw new AiError('quota', 'mock', 429)
+    if (last.includes('#offline')) throw new AiError('network')
+    for (const part of MOCK_REPLY) {
+      if (req.signal?.aborted) throw new AiError('aborted')
+      yield part
+      await wait(mock.delay, req.signal)
+    }
+  },
+}

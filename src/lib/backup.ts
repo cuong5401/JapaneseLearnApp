@@ -1,4 +1,5 @@
 import type { SrsCard } from '../types'
+import { sanitizeAiWords, type AiWordItem } from './aiWords'
 import { sanitizeChecked, type CheckedMap } from './grammarChecked'
 import { isKanaStat, type KanaStat } from './kanaProgress'
 import { sanitizeState, type NotebookState } from './notebooks'
@@ -20,6 +21,8 @@ export interface Backup {
   notebooks?: NotebookState
   /** Mẫu ngữ pháp tự soạn đã bấm "Đã kiểm tra" */
   grammarChecked?: CheckedMap
+  /** Từ "Hỏi AI" gợi ý đã lưu (để mục sổ tay aw-… còn dữ liệu ở máy khác). Không bao giờ chứa API key. */
+  aiWords?: Record<string, AiWordItem>
 }
 
 export function createBackup(
@@ -29,8 +32,9 @@ export function createBackup(
   now = new Date(),
   notebooks?: NotebookState,
   grammarChecked?: CheckedMap,
+  aiWords?: Record<string, AiWordItem>,
 ): Backup {
-  return { app: 'kotonoha', version: 1, exportedAt: now.toISOString(), cards, lessonSize, kana, notebooks, grammarChecked }
+  return { app: 'kotonoha', version: 1, exportedAt: now.toISOString(), cards, lessonSize, kana, notebooks, grammarChecked, aiWords }
 }
 
 export function backupFileName(now = new Date()): string {
@@ -93,6 +97,7 @@ export function parseBackup(text: string): ParseResult {
     skipped,
     backup: { app: 'kotonoha', version: 1, exportedAt: String(b.exportedAt ?? ''), cards, lessonSize, kana, notebooks: sanitizeState(b.notebooks) ?? undefined,
       grammarChecked: sanitizeChecked(b.grammarChecked) ?? undefined,
+      aiWords: sanitizeAiWords(b.aiWords) ?? undefined,
     },
   }
 }

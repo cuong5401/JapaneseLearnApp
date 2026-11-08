@@ -31,8 +31,19 @@ const NAV: NavItem[] = [
   { to: '/kana', glyph: 'あ', label: 'Luyện kana', short: 'Kana', end: false, noBottom: true },
   { to: '/review', glyph: '復', label: 'Ôn tập', end: false },
   { to: '/notebooks', glyph: '帳', label: 'Sổ tay', end: false },
-  { to: '/progress', glyph: '進', label: 'Tiến độ', end: false },
+  { to: '/ai', glyph: '問', label: 'Hỏi AI', end: false },
+  // Thanh đáy điện thoại có 6 chỗ: Tiến độ nhường chỗ cho Hỏi AI (vẫn có trong sidebar, nav trên, Cài đặt).
+  { to: '/progress', glyph: '進', label: 'Tiến độ', end: false, noBottom: true },
 ]
+
+function GearIcon({ className = 'size-5' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+    </svg>
+  )
+}
 
 /** Bút vẽ: mở bảng vẽ chữ Hán trong hộp tìm kiếm. */
 function PenIcon({ className = 'size-5' }: { className?: string }) {
@@ -192,6 +203,15 @@ export function Layout() {
         <div className="mt-auto">
           <InstallApp compact />
         </div>
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            `flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm transition-colors ${isActive ? 'bg-ai-soft text-ai' : 'text-muted hover:bg-sunken hover:text-ink'}`
+          }
+        >
+          <GearIcon className="size-5" />
+          <span className="font-medium">Cài đặt</span>
+        </NavLink>
         <button
           type="button"
           onClick={cycle}
@@ -258,6 +278,9 @@ export function Layout() {
           >
             <ThemeIcon choice={choice} />
           </button>
+          <Link to="/settings" aria-label="Cài đặt" title="Cài đặt" className="grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink">
+            <GearIcon />
+          </Link>
         </div>
       </header>
 
