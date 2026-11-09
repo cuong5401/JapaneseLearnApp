@@ -28,6 +28,9 @@ async function expectPage(page: Page, expected: string | RegExp) {
   await expect(page.getByRole('heading', { name: 'Không tìm thấy trang này' })).toHaveCount(0)
 }
 
+/** Thẻ bộ N5 trong mục "Từ vựng JLPT" của trang chủ (không phải nút "Học từ N5" của thẻ cần ôn). */
+const n5Deck = (page: Page) => page.locator('section[aria-labelledby="levels"] a[href$="/vocab/n5"]')
+
 const dockState = (page: Page) => page.locator('[data-ai-dock]').getAttribute('data-ai-dock')
 
 async function openDock(page: Page) {
@@ -58,18 +61,20 @@ test('khung AI mở: chuyển qua Chữ Hán, Ngữ pháp, bài từ vựng, S�
   }
 
   await go(/Chữ Hán/, `${BASE}kanji`)
-  await go(/Ngữ pháp/, /^\/JapaneseLearnApp\/grammar(\/n5)?$/)
+  // /grammar tự chuyển (replace) sang /grammar/n5: chờ chuyển xong rồi mới bấm tiếp, nếu không lệnh chuyển
+  // chạy muộn kéo URL về lại /grammar/n5 sau khi đã bấm Trang chủ.
+  await go(/Ngữ pháp/, `${BASE}grammar/n5`)
   if (phone) {
     // Điện thoại: sheet che nội dung trang, đi tới bài từ vựng qua Trang chủ → thẻ N5 khi khung đã thu gọn.
     await go(/Trang chủ/, BASE, false)
-    await page.getByRole('link', { name: /Từ vựng N5|N5/ }).first().click()
+    await n5Deck(page).click()
     await expectPage(page, `${BASE}vocab/n5`)
     await page.getByRole('link', { name: /^Bài 1,/ }).first().click()
     await expectPage(page, `${BASE}vocab/n5/1`)
     await openDock(page)
   } else {
     await go(/Trang chủ/, BASE)
-    await page.getByRole('link', { name: /N5/ }).first().click()
+    await n5Deck(page).click()
     await expectPage(page, `${BASE}vocab/n5`)
     await page.getByRole('link', { name: /^Bài 1,/ }).first().click()
     await expectPage(page, `${BASE}vocab/n5/1`)
