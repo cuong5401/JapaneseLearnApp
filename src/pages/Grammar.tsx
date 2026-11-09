@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { GrammarUnavailable } from '../components/GrammarUnavailable'
 import { PUBLIC_BUILD } from '../lib/edition'
 import { Loaded, PageSkeleton } from '../components/LoadState'
@@ -183,11 +183,8 @@ function GrammarPage() {
   const { level: param } = useParams()
   const manifest = useManifest()
   const level = parseLevel(param)
-  if (!param) {
-    // Mặc định mở cấp có dữ liệu thấp nhất.
-    const first = manifest.data?.files.find((f) => f.kind === 'grammar' && f.count > 0)?.level ?? 'N4'
-    return manifest.status === 'loading' ? <PageSkeleton header /> : <Navigate to={`/grammar/${first.toLowerCase()}`} replace />
-  }
+  // /grammar (không có cấp) đã được loader trong main.tsx chuyển sang cấp có dữ liệu thấp nhất.
+  if (!param) return <PageSkeleton header />
   if (!level) return <NotFound />
   return <GrammarLevel level={level} counts={manifest.data?.files} />
 }

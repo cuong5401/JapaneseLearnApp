@@ -107,6 +107,8 @@ function Player({ strokes, char, size, autoPlay }: { strokes: Stroke[]; char: st
   const [speed, setSpeed] = useState(1)
   const [numbers, setNumbersState] = useState(() => readJSON('stroke-numbers', true))
   const [ghost, setGhost] = useState(true)
+  // tạm dừng giữa chừng một nét (nét đó vẫn là nét "hiện tại", vẽ dở)
+  const [midStroke, setMidStroke] = useState(false)
   const svg = useRef<SVGSVGElement>(null)
   const paths = useRef<(SVGPathElement | null)[]>([])
   const lengths = useRef<number[]>([])
@@ -141,52 +143,56 @@ function Player({ strokes, char, size, autoPlay }: { strokes: Stroke[]; char: st
   useLayoutEffect(paint, [paint])
 
   useEffect(() => {
-    if (!playing) return
-    if (step >= total) {
-      setPlaying(false)
-      return
-    }
-    let raf = 0
-    let last = performance.now()
-    let wait = step > 0 && drawn.current === 0 ? PAUSE_MS : 0
+    if (!playing || step >= total) return
+    // trạng thái của vòng hoạt ảnh gom trong một đối tượng (không gán lại biến của effect)
+    const t = { raf: 0, last: performance.now(), wait: step > 0 && drawn.current === 0 ? PAUSE_MS : 0 }
     const tick = (now: number) => {
-      const dt = now - last
-      last = now
-      if (wait > 0) wait -= dt
+      const dt = now - t.last
+      t.last = now
+      if (t.wait > 0) t.wait -= dt
       else {
         drawn.current += dt * SPEED * speed
         const len = lengths.current[step] ?? 100
         if (drawn.current >= len) {
           drawn.current = 0
-          setStep((s) => s + 1)
+          setStep(step + 1)
+          // vẽ xong nét cuối thì dừng (trong callback, không setState đồng bộ trong effect)
+          if (step + 1 >= total) setPlaying(false)
           return
         }
         paint()
       }
-      raf = requestAnimationFrame(tick)
+      t.raf = requestAnimationFrame(tick)
     }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
+    t.raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(t.raf)
   }, [playing, step, total, speed, paint])
 
   const goto = (k: number) => {
     setPlaying(false)
+    setMidStroke(false)
     drawn.current = 0
     setStep(Math.max(0, Math.min(total, k)))
   }
   const replay = () => {
     drawn.current = 0
+    setMidStroke(false)
     setStep(0)
     setPlaying(true)
   }
   const toggle = () => {
-    if (playing) setPlaying(false)
-    else if (step >= total) replay()
-    else setPlaying(true)
+    if (playing) {
+      setPlaying(false)
+      setMidStroke(drawn.current > 0)
+    } else if (step >= total) replay()
+    else {
+      setMidStroke(false)
+      setPlaying(true)
+    }
   }
 
-  // Nét "hiện tại": đang phát → nét đang vẽ; đứng yên ở "Nét k/N" → nét thứ k vừa thêm.
-  const drawing = playing || drawn.current > 0
+  // Nét "hiện tại": đang phát (hoặc tạm dừng giữa nét) → nét đang vẽ; đứng yên ở "Nét k/N" → nét thứ k vừa thêm.
+  const drawing = playing || midStroke
   const cur = drawing ? step : step - 1
   const state = (i: number): NumState => (i === cur ? 'current' : i < step ? 'done' : 'todo')
   const arrow = !drawing && cur >= 0 ? geo[cur].end : null

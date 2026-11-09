@@ -3,12 +3,14 @@ import './lib/migrateOnLoad'
 import { StrictMode } from 'react'
 import { MotionConfig } from 'motion/react'
 import { createRoot } from 'react-dom/client'
-import { RouterProvider, createBrowserRouter } from 'react-router-dom'
+import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
 import './index.css'
 import { Layout } from './components/Layout'
 import { LegacyLevel } from './components/LegacyLevel'
 import { UnlockGate } from './components/UnlockGate'
 import { fixDuplicateBase } from './lib/basePath'
+import { loadManifest } from './lib/dataStore'
+import { PUBLIC_BUILD } from './lib/edition'
 // Bắt sự kiện beforeinstallprompt sớm, trước khi trang nào kịp render.
 import './lib/install'
 
@@ -30,7 +32,19 @@ const router = createBrowserRouter([
       { path: '/word/:id', lazy: () => import('./pages/WordPage').then((m) => ({ Component: m.WordPage })) },
       { path: '/kanji', lazy: () => import('./pages/Kanji').then((m) => ({ Component: m.Kanji })) },
       { path: '/kanji/:kid/learn', lazy: () => import('./pages/KanjiLearn').then((m) => ({ Component: m.KanjiLearn })) },
-      { path: '/grammar', lazy: () => import('./pages/Grammar').then((m) => ({ Component: m.Grammar })) },
+      {
+        path: '/grammar',
+        // Chuyển tới cấp có dữ liệu thấp nhất ngay ở loader (trước khi render). Trước đây dùng <Navigate> trong trang:
+        // bấm sang trang khác lúc trang Ngữ pháp đang thoát (hiệu ứng chuyển trang) thì lệnh chuyển chạy muộn kéo URL về lại.
+        loader: async () => {
+          if (PUBLIC_BUILD) return null
+          const first = await loadManifest()
+            .then((m) => m.files.find((f) => f.kind === 'grammar' && f.count > 0)?.level)
+            .catch(() => undefined)
+          return redirect(`/grammar/${(first ?? 'N4').toLowerCase()}`)
+        },
+        lazy: () => import('./pages/Grammar').then((m) => ({ Component: m.Grammar })),
+      },
       { path: '/grammar/:level', lazy: () => import('./pages/Grammar').then((m) => ({ Component: m.Grammar })) },
       { path: '/grammar/:level/:gid', lazy: () => import('./pages/GrammarDetail').then((m) => ({ Component: m.GrammarDetail })) },
       { path: '/terms/:category', lazy: () => import('./pages/DeckHub').then((m) => ({ Component: m.DeckHub })) },

@@ -107,3 +107,19 @@ test('link / bookmark hỏng có basename lặp được tự sửa khi mở app
   await page.goto(`${BASE}JapaneseLearnApp/JapaneseLearnApp/grammar/n5`)
   await expectPage(page, `${BASE}grammar/n5`)
 })
+
+test('bấm Ngữ pháp rồi bấm ngay Trang chủ: không bị kéo về /grammar/n5', async ({ page }, info) => {
+  const phone = info.project.name === 'preview-phone'
+  for (let i = 0; i < 3; i++) {
+    await page.goto(BASE)
+    await expectPage(page, BASE)
+    await nav(page, phone).getByRole('link', { name: /Ngữ pháp/ }).click()
+    // không chờ trang Ngữ pháp tải xong / chuyển cấp
+    await nav(page, phone).getByRole('link', { name: /Trang chủ/ }).click()
+    await page.waitForTimeout(1500)
+    expect(path(page)).toBe(BASE)
+  }
+  // vào /grammar trực tiếp vẫn chuyển sang cấp đầu tiên, Back không quay lại /grammar trống
+  await page.goto(`${BASE}grammar`)
+  await expectPage(page, `${BASE}grammar/n5`)
+})
