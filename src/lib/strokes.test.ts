@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { firstPoint, lastPoint, parseStrokeData, strokeFile } from './strokes'
+import { firstPoint, labelPositions, lastPoint, parseStrokeData, startDir, strokeFile } from './strokes'
 
 const load = (ch: string) => parseStrokeData(JSON.parse(readFileSync(`public/data/${strokeFile(ch)}`, 'utf-8')))!
 
@@ -40,5 +40,21 @@ describe('thứ tự nét (KanjiVG)', () => {
     expect(parseStrokeData(null)).toBeNull()
     expect(parseStrokeData({ char: 'x', strokes: [] })).toBeNull()
     expect(parseStrokeData({ char: 'x', strokes: [{ d: 'M1,1', n: 1 }] })).toBeNull()
+  })
+})
+
+describe('vị trí vòng số thứ tự nét', () => {
+  for (const ch of ['合', '書', '曜', '議']) {
+    for (const r of [4.5, 5.8]) {
+      it(`${ch} (r=${r}): các vòng số không chồng nhau`, () => {
+        const pos = labelPositions(load(ch).strokes, r)
+        for (let i = 0; i < pos.length; i++)
+          for (let j = i + 1; j < pos.length; j++) expect(Math.hypot(pos[i][0] - pos[j][0], pos[i][1] - pos[j][1])).toBeGreaterThan(2 * r)
+      })
+    }
+  }
+  it('hướng đặt bút nét 1 chữ 日 là đi xuống', () => {
+    const [, dy] = startDir(load('日').strokes[0].d)
+    expect(dy).toBeGreaterThan(0.5)
   })
 })

@@ -64,6 +64,10 @@
   khung). `public/data/strokes/<hex>.json` `{ char, strokes: [{ d, n, x, y }] }` + `strokes/index.json` (danh sách chữ có
   dữ liệu; app đọc trước, không fetch chữ thiếu → không 404). Không nằm trong manifest; SW cache runtime `/data/*.json`.
   Component `src/components/strokes/StrokeOrder.tsx` (SVG tự vẽ, không thư viện), store `src/lib/strokes.ts`.
+  Số thứ tự nét: vòng tròn đặt sát điểm đặt bút (`labelPositions`: lệch theo pháp tuyến, đè thì thử vị trí KanjiVG
+  rồi dò vòng quanh), cỡ chữ theo khung thật (≥ 11px), bật mặc định (`jla:v1:stroke-numbers`); màu: nét hiện tại
+  `--beni` (+ mũi tên cuối nét), đã vẽ `--ai` nhạt, chưa vẽ ẩn / mờ. Dải hình: không lộ thanh cuộn (`.no-scrollbar`),
+  snap, mờ hai mép; ≥ 1024px xếp nhiều hàng.
 - `radicals.json`: đúng **214 bộ, `no` = số Khang Hy** (khối Unicode U+2F00–U+2FD5, NFKC), có `strokes`, `variants`
   (亻 của 人, 阝 ấp = 163 / 阝 phụ = 170 theo tên). Bộ thiếu trong Excel lấy từ `data-source/radicals-extra.json`
   (`auto: true`). `src/data/radical-kanji.json` (Unihan) cũng theo số Khang Hy. Script ghi

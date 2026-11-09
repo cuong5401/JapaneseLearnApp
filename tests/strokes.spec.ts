@@ -77,3 +77,64 @@ for (const width of WIDTHS) {
     })
   })
 }
+
+/** Tâm + đường kính (px thật) các vòng số trong khung chính. */
+const numCircles = (page: Page, ch: string) =>
+  page
+    .locator(`[data-stroke-order="${ch}"] > svg [data-stroke-num] circle`)
+    .evaluateAll((els) => els.map((e) => {
+      const b = e.getBoundingClientRect()
+      return { x: b.x + b.width / 2, y: b.y + b.height / 2, d: b.width }
+    }))
+
+for (const width of WIDTHS) {
+  test.describe(`${width}px số thứ tự nét`, () => {
+    test.use({ viewport: { width, height: width < 768 ? 844 : 900 } })
+
+    test('合 hoàn chỉnh hiện đủ 6 vòng số; 合 書 曜 議 không chồng nhau; chữ số ≥ 11px', async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' })
+      for (const ch of ['合', '書', '曜', '議']) {
+        await page.goto(`/kanji?k=${encodeURIComponent(ch)}`)
+        const box = detail(page, width).locator(`[data-stroke-order="${ch}"]`)
+        await expect(box.locator('[data-stroke-step]')).toHaveText(/Nét (\d+)\/\1/)
+        const n = Number((await box.locator('[data-stroke-step]').textContent())!.match(/\/(\d+)/)![1])
+        if (ch === '合') expect(n).toBe(6)
+        await expect(box.locator('> svg [data-stroke-num]')).toHaveCount(n)
+        const cs = await numCircles(page, ch)
+        for (let i = 0; i < cs.length; i++)
+          for (let j = i + 1; j < cs.length; j++) expect(Math.hypot(cs[i].x - cs[j].x, cs[i].y - cs[j].y), `${ch} số ${i + 1}–${j + 1}`).toBeGreaterThan(cs[i].d)
+        // cỡ chữ thật = fontSize (đơn vị viewBox) × tỉ lệ khung
+        const px = await box.locator('> svg').evaluate((svg) => {
+          const t = svg.querySelector('[data-stroke-num] text')!
+          return Number(t.getAttribute('font-size')) * (svg.getBoundingClientRect().width / 109)
+        })
+        expect(px).toBeGreaterThanOrEqual(10.99)
+      }
+    })
+
+    test('bấm › từng nét: số của nét đó đổi màu đỏ (current), các số trước là done', async ({ page }) => {
+      await page.goto('/kanji?k=合')
+      const box = detail(page, width).locator('[data-stroke-order="合"]')
+      await box.getByRole('button', { name: 'Tạm dừng' }).click()
+      await box.locator('[data-stroke-strip] button').first().click()
+      for (let k = 1; k <= 6; k++) {
+        if (k > 1) await box.getByRole('button', { name: 'Nét sau' }).click()
+        await expect(box.locator(`> svg [data-stroke-num="${k}"]`)).toHaveAttribute('data-state', 'current')
+        await expect(box.locator(`> svg [data-stroke-num="${k}"] circle`)).toHaveAttribute('fill', 'var(--beni)')
+        if (k > 1) await expect(box.locator(`> svg [data-stroke-num="${k - 1}"]`)).toHaveAttribute('data-state', 'done')
+        await expect(box.locator('[data-stroke-arrow]')).toHaveCount(1)
+      }
+    })
+
+    for (const theme of ['light', 'dark']) {
+      test(`ảnh chụp 合 ${theme}`, async ({ page }) => {
+        await page.addInitScript((t) => localStorage.setItem('jla:theme', t), theme)
+        await page.emulateMedia({ reducedMotion: 'reduce' })
+        await page.goto('/kanji?k=合')
+        const box = detail(page, width).locator('[data-stroke-order="合"]')
+        await expect(box.locator('[data-stroke-step]')).toHaveText('Nét 6/6')
+        await box.screenshot({ path: `test-results/strokes-${width}-${theme}.png` })
+      })
+    }
+  })
+}

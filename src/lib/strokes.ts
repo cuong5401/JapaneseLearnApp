@@ -46,29 +46,104 @@ export function firstPoint(d: string): [number, number] {
   return [x, y]
 }
 
+type Pt = [number, number]
+
 /**
- * Điểm cuối của path gồm M + các đoạn c/C/s/S/l/L (dạng KanjiVG). Đủ để biết hướng nét trong test.
+ * Đi qua path dạng KanjiVG (M + c/C/s/S/l/L/h/v): trả về điểm đầu, điểm cuối, tiếp tuyến đầu và cuối.
  */
-export function lastPoint(d: string): [number, number] {
+function walk(d: string): { start: Pt; end: Pt; startDir: Pt; endDir: Pt } {
   let x = 0
   let y = 0
+  let start: Pt = [0, 0]
+  let startDir: Pt | null = null
+  let ctrl: Pt = [0, 0] // điểm điều khiển cuối trước điểm hiện tại
+  const take = (v: Pt) => {
+    if (!startDir && (Math.abs(v[0] - start[0]) > 0.05 || Math.abs(v[1] - start[1]) > 0.05)) startDir = [v[0] - start[0], v[1] - start[1]]
+  }
   for (const seg of d.match(/[MmCcSsLlHhVvZz][^MmCcSsLlHhVvZz]*/g) ?? []) {
     const cmd = seg[0]
+    const lc = cmd.toLowerCase()
     const n = (seg.slice(1).match(NUM) ?? []).map(Number)
-    const rel = cmd === cmd.toLowerCase()
-    const size = { m: 2, l: 2, c: 6, s: 4, h: 1, v: 1, z: 0 }[cmd.toLowerCase() as 'm']
+    const rel = cmd === lc
+    const size = { m: 2, l: 2, c: 6, s: 4, h: 1, v: 1, z: 0 }[lc as 'm']
     for (let i = 0; size && i + size <= n.length; i += size) {
       const g = n.slice(i, i + size)
-      if (cmd.toLowerCase() === 'h') x = rel ? x + g[0] : g[0]
-      else if (cmd.toLowerCase() === 'v') y = rel ? y + g[0] : g[0]
-      else {
-        const [ex, ey] = g.slice(-2)
-        x = rel ? x + ex : ex
-        y = rel ? y + ey : ey
+      const abs = (j: number): Pt => (rel ? [x + g[j], y + g[j + 1]] : [g[j], g[j + 1]])
+      if (lc === 'm') {
+        ;[x, y] = abs(0)
+        start = [x, y]
+        ctrl = [x, y]
+        continue
       }
+      let pts: Pt[]
+      if (lc === 'c') pts = [abs(0), abs(2), abs(4)]
+      else if (lc === 's') pts = [abs(0), abs(2)]
+      else if (lc === 'l') pts = [abs(0)]
+      else if (lc === 'h') pts = [[rel ? x + g[0] : g[0], y]]
+      else pts = [[x, rel ? y + g[0] : g[0]]]
+      pts.forEach(take)
+      const last = pts[pts.length - 1]
+      ctrl = pts.length > 1 ? pts[pts.length - 2] : [x, y]
+      ;[x, y] = last
     }
   }
-  return [x, y]
+  const end: Pt = [x, y]
+  let endDir: Pt = [end[0] - ctrl[0], end[1] - ctrl[1]]
+  if (Math.hypot(...endDir) < 0.05) endDir = [end[0] - start[0], end[1] - start[1]]
+  return { start, end, startDir: startDir ?? [0, 1], endDir }
+}
+
+/** Điểm cuối của path. Đủ để biết hướng nét trong test. */
+export const lastPoint = (d: string): Pt => walk(d).end
+
+const unit = ([a, b]: Pt): Pt => {
+  const l = Math.hypot(a, b) || 1
+  return [a / l, b / l]
+}
+
+/** Hướng (vector đơn vị) ở đầu nét: chiều đặt bút. */
+export const startDir = (d: string): Pt => unit(walk(d).startDir)
+
+/** Điểm cuối + hướng (vector đơn vị) ở cuối nét: đặt mũi tên chỉ hướng viết. */
+export function strokeEnd(d: string): { at: Pt; dir: Pt } {
+  const w = walk(d)
+  return { at: w.end, dir: unit(w.endDir) }
+}
+
+/**
+ * Tâm vòng số thứ tự cho từng nét (bán kính r, đơn vị viewBox 109): sát điểm đặt bút, dịch ra ngoài nét
+ * theo pháp tuyến; đè lên vòng khác thì thử vị trí gốc của KanjiVG rồi các vị trí khác.
+ */
+export function labelPositions(strokes: readonly Stroke[], r: number): Pt[] {
+  const min = r
+  const max = STROKE_VIEWBOX - r
+  const clamp = ([a, b]: Pt): Pt => [Math.min(max, Math.max(min, a)), Math.min(max, Math.max(min, b))]
+  const gap = 2 * r + 0.5
+  const placed: Pt[] = []
+  for (const s of strokes) {
+    const p = firstPoint(s.d)
+    const [tx, ty] = startDir(s.d)
+    const off = 5 + r * 0.6
+    // ưu tiên: hai bên pháp tuyến, vị trí gốc KanjiVG, phía trước điểm đặt bút; rồi dò vòng quanh P0 xa dần
+    const cands: Pt[] = [
+      [p[0] - ty * off, p[1] + tx * off],
+      [p[0] + ty * off, p[1] - tx * off],
+      [s.x + 2, s.y - 3],
+      [p[0] - tx * off, p[1] - ty * off],
+    ]
+    for (let k = 1; k <= 6; k++) {
+      const dist = off + k * 2.5
+      for (let i = 0; i < 16; i++) {
+        const a = (i / 16) * Math.PI * 2
+        cands.push([p[0] + Math.cos(a) * dist, p[1] + Math.sin(a) * dist])
+      }
+    }
+    const cs = cands.map(clamp)
+    const dist = (c: Pt) => Math.min(Infinity, ...placed.map((q) => Math.hypot(c[0] - q[0], c[1] - q[1])))
+    const ok = cs.find((c) => dist(c) > gap)
+    placed.push(ok ?? cs.reduce((x, y) => (dist(y) > dist(x) ? y : x)))
+  }
+  return placed
 }
 
 /* ───────────── Store tải dữ liệu ───────────── */

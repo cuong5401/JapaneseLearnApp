@@ -1,6 +1,7 @@
 import { useReducedMotion } from 'motion/react'
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
-import { STROKE_CREDIT, STROKE_VIEWBOX, retryStrokes, useStrokes, type Stroke } from '../../lib/strokes'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type Ref, type RefObject } from 'react'
+import { readJSON, writeJSON } from '../../lib/storage'
+import { STROKE_CREDIT, STROKE_VIEWBOX, firstPoint, labelPositions, retryStrokes, strokeEnd, useStrokes, type Stroke } from '../../lib/strokes'
 import { Skeleton } from '../LoadState'
 import { Segmented } from '../Segmented'
 
@@ -31,9 +32,10 @@ function Guides() {
 
 const STROKE_STYLE = { fill: 'none', strokeWidth: 3.4, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
 
-function Frame({ className, children, label }: { className: string; children: ReactNode; label?: string }) {
+function Frame({ className, children, label, ref }: { className: string; children: ReactNode; label?: string; ref?: Ref<SVGSVGElement> }) {
   return (
     <svg
+      ref={ref}
       viewBox={`0 0 ${STROKE_VIEWBOX} ${STROKE_VIEWBOX}`}
       className={`shrink-0 rounded-[3px] border-2 border-cell-line bg-surface ${className}`}
       role={label ? 'img' : undefined}
@@ -64,27 +66,36 @@ function IconButton({ label, onClick, disabled, children, pressed }: { label: st
   )
 }
 
-/** Dải hình tĩnh: ô thứ k có k nét (nét thứ k tô đỏ), như sách tập viết. Chạm ô thì nhảy tới nét đó. */
+/** Dải hình tĩnh: ô thứ k có k nét (nét thứ k tô đỏ, kèm số), như sách tập viết. Chạm ô thì nhảy tới nét đó. */
 function Strip({ strokes, step, onPick }: { strokes: Stroke[]; step: number; onPick: (k: number) => void }) {
   return (
-    <ol className="-mx-1 mt-3 flex h-[3.75rem] gap-1.5 overflow-x-auto overscroll-x-contain px-1 pb-1" aria-label="Từng nét" data-stroke-strip>
-      {strokes.map((_, k) => (
-        <li key={k} className="shrink-0">
-          <button
-            type="button"
-            onClick={() => onPick(k + 1)}
-            aria-label={`Nét ${k + 1}`}
-            aria-current={step === k + 1 ? 'step' : undefined}
-            className="block rounded-[5px] outline-offset-2 aria-[current=step]:ring-2 aria-[current=step]:ring-ai"
-          >
-            <Frame className="size-12">
-              {strokes.slice(0, k + 1).map((s, i) => (
-                <path key={s.n} d={s.d} {...STROKE_STYLE} strokeWidth={4.5} stroke={i === k ? 'var(--beni)' : 'var(--ink)'} />
-              ))}
-            </Frame>
-          </button>
-        </li>
-      ))}
+    <ol
+      className="no-scrollbar -mx-1 mt-3 flex h-[4.25rem] snap-x snap-mandatory scroll-px-3 gap-2 overflow-x-auto overscroll-x-contain px-3 pt-1.5 [mask-image:linear-gradient(to_right,transparent,#000_12px,#000_calc(100%-12px),transparent)] lg:h-auto lg:min-h-[4.25rem] lg:flex-wrap lg:overflow-visible lg:px-1.5 lg:pb-1 lg:[mask-image:none]"
+      aria-label="Từng nét"
+      data-stroke-strip
+    >
+      {strokes.map((s, k) => {
+        const on = step === k + 1
+        return (
+          <li key={k} className="relative shrink-0 snap-start">
+            <button type="button" onClick={() => onPick(k + 1)} aria-label={`Nét ${k + 1}`} aria-current={on ? 'step' : undefined} className="block rounded-[5px]">
+              <Frame className={`size-12 ${on ? 'border-ai' : ''}`}>
+                {strokes.slice(0, k + 1).map((t, i) => (
+                  <path key={t.n} d={t.d} {...STROKE_STYLE} strokeWidth={4.5} stroke={i === k ? 'var(--beni)' : 'var(--ink)'} />
+                ))}
+              </Frame>
+            </button>
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -top-1.5 -left-1.5 grid size-5 place-items-center rounded-full bg-beni text-[11px] leading-none font-bold text-on-ai tabular-nums"
+            >
+              {s.n}
+            </span>
+          </li>
+        )
+      })}
+      {/* đệm cuối: ô cuối cuộn tới được trọn vẹn, không bị mask cắt */}
+      <li aria-hidden className="w-1 shrink-0 lg:hidden" />
     </ol>
   )
 }
@@ -96,11 +107,32 @@ function Placeholder({ size, children }: { size: keyof typeof SIZES; children?: 
       {children ?? <Skeleton className={`${SIZES[size]} rounded-[3px]`} />}
       <Skeleton className="mt-3 h-11 w-full max-w-72" />
       <Skeleton className="mt-2 h-9 w-full max-w-72" />
-      <Skeleton className="mt-3 h-[3.75rem] w-full" />
+      <Skeleton className="mt-3 h-[4.25rem] w-full" />
       <p className="mt-1 h-4 text-[11px] leading-4 text-muted">{STROKE_CREDIT}</p>
     </div>
   )
 }
+
+/** Cỡ chữ số (đơn vị viewBox) theo kích thước khung thật: chữ luôn ≥ 11px trên màn hình. */
+function useLabelSize(ref: RefObject<SVGSVGElement | null>) {
+  const [px, setPx] = useState(1.47) // ~160px / 109
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const measure = () => {
+      const w = el.getBoundingClientRect().width
+      if (w > 0) setPx(w / STROKE_VIEWBOX)
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [ref])
+  const font = Math.max(6.2, 11 / px)
+  return { font, r: Math.max(4.5, font * 0.62) }
+}
+
+type NumState = 'current' | 'done' | 'todo'
 
 function Player({ strokes, char, size, autoPlay }: { strokes: Stroke[]; char: string; size: keyof typeof SIZES; autoPlay: boolean }) {
   const reduce = useReducedMotion() ?? false
@@ -109,11 +141,20 @@ function Player({ strokes, char, size, autoPlay }: { strokes: Stroke[]; char: st
   const [step, setStep] = useState(() => (reduce || !autoPlay ? total : 0))
   const [playing, setPlaying] = useState(() => !reduce && autoPlay)
   const [speed, setSpeed] = useState(1)
-  const [numbers, setNumbers] = useState(false)
+  const [numbers, setNumbersState] = useState(() => readJSON('stroke-numbers', true))
   const [ghost, setGhost] = useState(true)
+  const svg = useRef<SVGSVGElement>(null)
   const paths = useRef<(SVGPathElement | null)[]>([])
   const lengths = useRef<number[]>([])
   const drawn = useRef(0) // phần đã vẽ của nét strokes[step]
+  const { font, r } = useLabelSize(svg)
+  const labels = useMemo(() => labelPositions(strokes, r), [strokes, r])
+  const geo = useMemo(() => strokes.map((s) => ({ start: firstPoint(s.d), end: strokeEnd(s.d) })), [strokes])
+
+  const setNumbers = (v: boolean) => {
+    setNumbersState(v)
+    writeJSON('stroke-numbers', v)
+  }
 
   useLayoutEffect(() => {
     lengths.current = strokes.map((_, i) => paths.current[i]?.getTotalLength() ?? 100)
@@ -180,36 +221,77 @@ function Player({ strokes, char, size, autoPlay }: { strokes: Stroke[]; char: st
     else setPlaying(true)
   }
 
-  const showCurrent = playing || drawn.current > 0
+  // Nét "hiện tại": đang phát → nét đang vẽ; đứng yên ở "Nét k/N" → nét thứ k vừa thêm.
+  const drawing = playing || drawn.current > 0
+  const cur = drawing ? step : step - 1
+  const state = (i: number): NumState => (i === cur ? 'current' : i < step ? 'done' : 'todo')
+  const arrow = !drawing && cur >= 0 ? geo[cur].end : null
+
   return (
     <div data-stroke-order={char} data-playing={playing ? 'true' : 'false'}>
-      <Frame className={SIZES[size]} label={`Thứ tự nét chữ ${char}: ${total} nét`}>
+      <Frame ref={svg} className={SIZES[size]} label={`Thứ tự nét chữ ${char}: ${total} nét`}>
         {ghost &&
-          strokes.map((s, i) => (i >= step ? <path key={`g${s.n}`} d={s.d} {...STROKE_STYLE} stroke="var(--cell-line)" opacity={0.55} /> : null))}
-        {strokes.map((s, i) =>
-          i < step || (i === step && showCurrent) ? (
-            <path
-              key={s.n}
-              ref={(el) => {
-                paths.current[i] = el
-              }}
-              d={s.d}
-              {...STROKE_STYLE}
-              stroke={i === step ? 'var(--beni)' : 'var(--ink)'}
-            />
-          ) : (
-            // vẫn render (ẩn) để đo getTotalLength
-            <path key={s.n} ref={(el) => {
+          strokes.map((s, i) => (i >= step && i !== cur ? <path key={`g${s.n}`} d={s.d} {...STROKE_STYLE} stroke="var(--cell-line)" opacity={0.55} /> : null))}
+        {strokes.map((s, i) => (
+          <path
+            key={s.n}
+            ref={(el) => {
               paths.current[i] = el
-            }} d={s.d} {...STROKE_STYLE} stroke="none" />
-          ),
+            }}
+            d={s.d}
+            {...STROKE_STYLE}
+            // nét chưa vẽ vẫn render (ẩn) để đo getTotalLength
+            stroke={i === cur ? 'var(--beni)' : i < step ? 'var(--ink)' : 'none'}
+          />
+        ))}
+        {/* chấm đặt bút: thấy nét bắt đầu từ đâu */}
+        {strokes.map((s, i) => {
+          const st = state(i)
+          if (st === 'todo' && !ghost) return null
+          return (
+            <circle
+              key={`p${s.n}`}
+              cx={geo[i].start[0]}
+              cy={geo[i].start[1]}
+              r={1.9}
+              fill={st === 'current' ? 'var(--beni)' : st === 'done' ? 'var(--ink)' : 'var(--cell-line)'}
+              opacity={st === 'todo' ? 0.6 : 1}
+            />
+          )
+        })}
+        {arrow && (
+          <polygon
+            data-stroke-arrow
+            fill="var(--beni)"
+            points={[
+              [arrow.at[0] + arrow.dir[0] * 4.5, arrow.at[1] + arrow.dir[1] * 4.5],
+              [arrow.at[0] - arrow.dir[1] * 2.6 + arrow.dir[0] * 0.5, arrow.at[1] + arrow.dir[0] * 2.6 + arrow.dir[1] * 0.5],
+              [arrow.at[0] + arrow.dir[1] * 2.6 + arrow.dir[0] * 0.5, arrow.at[1] - arrow.dir[0] * 2.6 + arrow.dir[1] * 0.5],
+            ]
+              .map((p) => p.map((v) => v.toFixed(1)).join(','))
+              .join(' ')}
+          />
         )}
         {numbers &&
-          strokes.map((s, i) => (
-            <text key={`n${s.n}`} x={s.x} y={s.y} fontSize="8" fill={i < step ? 'var(--beni)' : 'var(--muted)'} className="font-sans">
-              {s.n}
-            </text>
-          ))}
+          strokes.map((s, i) => {
+            const st = state(i)
+            if (st === 'todo' && !ghost) return null
+            const [cx, cy] = labels[i]
+            return (
+              <g key={`n${s.n}`} data-stroke-num={s.n} data-state={st} data-cx={cx.toFixed(1)} data-cy={cy.toFixed(1)} opacity={st === 'todo' ? 0.5 : 1}>
+                <circle
+                  cx={cx}
+                  cy={cy}
+                  r={r}
+                  fill={st === 'current' ? 'var(--beni)' : st === 'done' ? 'var(--ai)' : 'var(--cell-line)'}
+                  fillOpacity={st === 'done' ? 0.6 : 1}
+                />
+                <text x={cx} y={cy} dy="0.36em" textAnchor="middle" fontSize={font} fontWeight={700} fill="var(--on-ai)" className="font-sans tabular-nums">
+                  {s.n}
+                </text>
+              </g>
+            )
+          })}
       </Frame>
 
       <div className="mt-3 flex h-11 items-center gap-1.5">
@@ -238,7 +320,7 @@ function Player({ strokes, char, size, autoPlay }: { strokes: Stroke[]; char: st
         <button
           type="button"
           aria-pressed={numbers}
-          onClick={() => setNumbers((v) => !v)}
+          onClick={() => setNumbers(!numbers)}
           className="min-h-9 rounded-lg px-2.5 text-sm text-muted hover:text-ink aria-pressed:bg-ai-soft aria-pressed:text-ai"
         >
           Số nét
@@ -281,7 +363,7 @@ export function StrokeOrder({ char, size = 'md', autoPlay = true }: { char: stri
         )}
       </div>
       {/* giữ đúng chiều cao phần điều khiển + dải hình như khi có dữ liệu */}
-      <div aria-hidden className="h-48" />
+      <div aria-hidden className="h-50" />
     </div>
   )
 }
