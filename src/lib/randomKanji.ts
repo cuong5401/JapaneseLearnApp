@@ -40,3 +40,26 @@ export function pushRecent(id: string): string[] {
   }
   return next
 }
+
+/** Một từ hiện trên thẻ chữ Hán ngẫu nhiên (từ trong dữ liệu hoặc tra online). */
+export interface CardWord {
+  id: string
+  word: string
+  reading: string
+  meaning: string
+  speak: string
+}
+
+/**
+ * Một danh sách duy nhất cho cả con số "x từ chứa chữ này" và các từ hiện ra: từ trong dữ liệu trước,
+ * rồi từ tra online chưa có (bỏ trùng theo chữ viết). `localCount` = wordCount (đủ, không cắt 40).
+ */
+export function mergeKanjiWords(local: readonly CardWord[], localCount: number, online: readonly CardWord[]) {
+  const seen = new Set(local.map((w) => w.word))
+  const extra = online.filter((w) => {
+    if (seen.has(w.word)) return false
+    seen.add(w.word)
+    return true
+  })
+  return { items: [...local, ...extra], total: Math.max(localCount, local.length) + extra.length }
+}

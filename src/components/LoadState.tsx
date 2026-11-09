@@ -55,3 +55,37 @@ export function Loaded<T>({
   if (state.status !== 'ready' || state.data === undefined) return <>{skeleton ?? <PageSkeleton />}</>
   return <>{children(state.data)}</>
 }
+
+/**
+ * Hàng giữ chỗ cho danh sách đã biết trước số lượng (count/wordCount): render ngay đúng số hàng, mỗi hàng
+ * cao bằng hàng thật nhỏ nhất (`rowClass`), nên dữ liệu về thì thay vào đúng chỗ, khối không co lại.
+ */
+export function SkeletonRows({ count, rowClass = 'h-12', className = '' }: { count: number; rowClass?: string; className?: string }) {
+  return (
+    <ul role="status" aria-label="Đang tải" className={`divide-y divide-line ${className}`}>
+      {Array.from({ length: count }, (_, i) => (
+        <li key={i} className={`flex items-center ${rowClass}`}>
+          <Skeleton className="h-5 w-full rounded-md" />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/** Khung chi tiết đang tải (ô chữ lớn + vài dòng + nút): cùng dáng với KanjiDetail / WordDetail / RadicalDetail. */
+export function DetailSkeleton() {
+  return (
+    <div role="status" aria-label="Đang tải chi tiết">
+      <div className="flex gap-5">
+        <Skeleton className="size-28 shrink-0 sm:size-32" />
+        <div className="min-w-0 flex-1 space-y-2 pt-1">
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+      </div>
+      <Skeleton className="mt-5 h-11" />
+      <SkeletonRows count={5} className="mt-6" />
+    </div>
+  )
+}

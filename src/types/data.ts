@@ -67,12 +67,19 @@ export interface KanjiEntry {
   wordCount: number
 }
 
-/** kanji/radicals.json */
+/** kanji/radicals.json: đúng 214 bộ, `no` = số bộ Khang Hy (1–214) */
 export interface RadicalEntry {
   no: number
+  /** Dạng hiển thị (dạng thường dùng ở Nhật, ví dụ 阝, 青) */
   radical: string
   name: string
   meaning: string
+  /** Số nét của bộ theo Khang Hy */
+  strokes: number
+  /** Dạng biến thể / dạng chuẩn Khang Hy khác dạng hiển thị (亻 của 人, 靑 của 青…) */
+  variants?: string[]
+  /** Tên + nghĩa tự soạn (bộ không có trong Excel) */
+  auto?: boolean
 }
 
 export interface GrammarExample {

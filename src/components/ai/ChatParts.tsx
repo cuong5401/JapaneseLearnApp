@@ -20,7 +20,7 @@ export function LocalHits({ hits }: { hits: LocalHit[] }) {
           <li key={h.kind + h.id}>
             <button
               type="button"
-              onClick={() => stack.push(h.kind === 'kanji' ? { t: 'k', ch: h.title } : { t: 'w', id: h.id })}
+              onClick={() => stack.open(h.kind === 'kanji' ? { t: 'k', ch: h.title } : { t: 'w', id: h.id })}
               className="flex w-full items-baseline gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-surface"
             >
               <span lang="ja" className="shrink-0 font-jp text-lg font-semibold">

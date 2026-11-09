@@ -56,6 +56,12 @@
 - ID = tiền tố + 8 ký tự SHA-1 của chữ + cách đọc (`n5-1a2b3c4d`, `kj-…`, `gn4-…`): ổn định, là **khóa của SRS,
   sổ tay, URL** → không đổi cách sinh ID.
 - `kanji.json`: `firstLevel` = cấp từ vựng đầu tiên có chữ đó, **không phải** cấp kanji JLPT.
+- `radicals.json`: đúng **214 bộ, `no` = số Khang Hy** (khối Unicode U+2F00–U+2FD5, NFKC), có `strokes`, `variants`
+  (亻 của 人, 阝 ấp = 163 / 阝 phụ = 170 theo tên). Bộ thiếu trong Excel lấy từ `data-source/radicals-extra.json`
+  (`auto: true`). `src/data/radical-kanji.json` (Unihan) cũng theo số Khang Hy. Script ghi
+  `src/data/radical-id-migration.json` (số cũ theo dòng Excel → số mới); `src/lib/migrations.ts` đổi id `rd-NNN`
+  trong SRS + sổ tay một lần mỗi máy (import đầu tiên trong `main.tsx`) và khi nhập file tiến độ cũ (không có
+  `radicalIds: 'kangxi'`). Đổi lại cách đánh số bộ thủ thì phải thêm migration mới.
 
 ## Quy tắc bắt buộc
 
@@ -77,6 +83,25 @@
   đã thay đổi gì, kết quả test, ảnh chụp (đường dẫn), điều người dùng cần tự làm.
 - CI (`.github/workflows/deploy.yml`, push `main`): `npm ci` → lint → test → build (secret `VITE_UNLOCK_CODE`) →
   check:secrets → kiểm tra dist → e2e preview → deploy Pages. Bước nào lỗi thì không deploy.
+
+## Không layout shift (bắt buộc)
+
+- `html { scrollbar-gutter: stable }`: trang dài/ngắn, khóa cuộn không làm lệch ngang.
+- Trang bài học (từ vựng, kanji, bộ thủ, sổ tay) dùng `LESSON_PAGE` (`w-full` + max-width cố định) chung cho cả
+  3 tab; vùng nội dung tab `TAB_AREA` (min-height = vùng flashcard) — `src/components/StudyLayout.tsx`.
+- Trang Chữ Hán / Bộ thủ desktop (`WIDE_PANEL`): lưới `minmax(0,1fr)_360px`, panel 360px **luôn** giữ chỗ (chưa chọn
+  thì "Chọn một chữ để xem chi tiết"), nội dung dài xuống dòng/cuộn trong panel.
+- Danh sách đã biết trước số lượng (`words.length`, `wordCount`, số chữ của bộ): render ngay đúng số hàng skeleton
+  (`SkeletonRows`, `DetailSkeleton` trong `LoadState.tsx`) cao bằng hàng thật, khối tối thiểu 2 hàng; nhãn chờ dữ liệu
+  giữ chiều cao dòng. Không dùng `PageSkeleton` chung chung trong panel.
+- Test: `tests/layout-stability.spec.ts` (đo `getBoundingClientRect`, CLS < 0.02).
+
+## Ngăn xếp panel chi tiết
+
+- Bấm mục ở **danh sách chính** (lưới chữ/bộ thủ, kết quả tìm kiếm, sổ tay, từ ở trang chủ, kết quả chat) =
+  `stack.open(frame)`: THAY cả ngăn xếp (panel đang mở thì replace mục lịch sử).
+- Chỉ thao tác **bên trong panel** (chữ/từ liên quan) mới `stack.push`. Tối đa `MAX_FRAMES = 8` khung kể cả chữ gốc
+  `?k=` (bỏ khung cũ nhất, giữ chữ gốc). Test: `tests/detail-stack.spec.ts`.
 
 ## Thiết kế (Aizome)
 
@@ -100,7 +125,8 @@
 - Chữ Hán: chia bài theo cấp xuất hiện, flashcard, quiz âm Hán Việt, chi tiết dạng ngăn xếp theo URL
   (`?k=` chữ gốc, `?xem=w:…~k:…~r:…`; desktop là panel/drawer, điện thoại là bottom sheet). Bộ thủ + chữ thuộc bộ.
 - Ngữ pháp N5–N1 (N5/N3 có mẫu tự soạn), lọc nhóm, đánh dấu đã kiểm tra.
-- Luyện kana: bảng chữ, gõ romaji, trắc nghiệm, nghe.
+- Luyện kana: bảng chữ, flashcard (dùng chung `FlashcardSession` với `grader` ghi mức thuộc kana), gõ romaji,
+  trắc nghiệm, nghe.
 - Sổ tay (nhiều sổ, màu; nhấn giữ nút đánh dấu để lưu nhanh). Tìm kiếm toàn cục (phím `/`), vẽ tay tìm kanji.
 - "Hỏi AI": trang `/ai` + khung chat nổi ở mọi trang (`AiDock`, tab lề phải kéo được, Back/Esc thu gọn, chip
   "Hỏi về …" theo mục đang xem). Chế độ: tra từ, ngữ pháp, hội thoại, sửa câu.
@@ -108,7 +134,8 @@
   màn hình + lớp nền (chạm thì lắc, không đóng), khóa cuộn, bám bàn phím qua `visualViewport` (ẩn bottom nav),
   bấm bottom nav/header thì thu gọn + chuyển trang (replace mục lịch sử của khung), vuốt header sang phải để thu gọn.
   Chữ gõ dở / vị trí cuộn giữ trong `dockMemory`. Test: `tests/dock.mobile.spec.ts` (chạy cả dev và bản build).
-- Trang chủ: chữ Hán ngẫu nhiên (không lặp 5 chữ gần nhất; từ đi kèm thiếu thì tra thêm Mazii khi có mạng).
+- Trang chủ: chữ Hán ngẫu nhiên (không lặp 5 chữ gần nhất; từ đi kèm thiếu thì tra thêm Mazii khi có mạng; con số
+  "x từ" và danh sách cùng một nguồn `mergeKanjiWords`), thẻ "cần ôn" có biểu đồ 7 ngày tới + 3 bài tiếp theo.
 - PWA (cài đặt, cập nhật, offline), Xuất/Nhập tiến độ, mã mở khóa 4 số (nếu build có `VITE_UNLOCK_CODE`).
 
 ## Lỗi đã gặp, không lặp lại
@@ -120,4 +147,6 @@
 - React Router cập nhật `location` trong transition: khi một component lười đang tải, `useLocation()` có thể
   chưa thấy mục lịch sử vừa đẩy → bắt Back bằng `popstate` và đọc `history.state`.
 - `useNavigationType()` giữ `POP` sau khi lùi; lần tải trang đầu cũng là `POP` → đừng coi đó là bấm Back.
+- Bộ thủ từng đánh số theo thứ tự dòng Excel (lệch số Khang Hy từ bộ 10, chữ thuộc bộ sai) → luôn dùng số Khang Hy.
+- Bấm nút chấm flashcard bằng chuột giữ focus trên nút → Space bấm lại nút thay vì lật thẻ (nút dùng `onMouseDown preventDefault`).
 - StrictMode chạy effect hai lần ở dev: việc gửi/tự động gửi hoãn một nhịp (`setTimeout 0`) và dọn trong cleanup.

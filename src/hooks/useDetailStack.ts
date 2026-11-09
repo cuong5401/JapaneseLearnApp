@@ -12,13 +12,17 @@ export interface DetailStack {
   frames: Frame[]
   /** Khung gốc lấy từ URL (?k=), nếu có */
   root: Frame | null
+  /** Thao tác BÊN TRONG panel (chữ/từ liên quan): đẩy thêm một khung. */
   push: (f: Frame) => void
+  /**
+   * Bấm một mục ở danh sách chính (lưới, kết quả tìm kiếm, sổ tay): THAY cả ngăn xếp bằng đúng mục đó.
+   * Panel đang mở (hoặc `replace`) thì thay mục lịch sử hiện tại, chưa mở thì đẩy một mục để Back đóng lại.
+   */
+  open: (f: Frame, opts?: { replace?: boolean }) => void
   /** Lùi một khung: dùng lịch sử trình duyệt nếu khung đó do mình push (để Back và "←" giống nhau). */
   back: () => void
   /** Đóng hết ngăn xếp (và bỏ khung gốc nếu `includeRoot`). */
   close: (includeRoot?: boolean) => void
-  /** Chọn khung gốc mới (chữ Hán trên lưới): push trên điện thoại để Back đóng sheet, replace trên desktop. */
-  setRoot: (ch: string | null, mode: 'push' | 'replace') => void
 }
 
 /**
@@ -92,22 +96,26 @@ export function useDetailStack(rootParam?: 'k'): DetailStack {
     [depth, navigate, setParams, rootParam],
   )
 
-  const setRoot = useCallback(
-    (ch: string | null, mode: 'push' | 'replace') => {
-      if (!rootParam) return
+  const open = useCallback(
+    (f: Frame, opts?: { replace?: boolean }) => {
+      const replace = frames.length > 0 || Boolean(opts?.replace)
       setParams(
         (p) => {
-          p.delete('xem')
           p.delete('c')
-          if (ch) p.set(rootParam, ch)
-          else p.delete(rootParam)
+          if (rootParam && f.t === 'k') {
+            p.delete('xem')
+            p.set(rootParam, f.ch)
+          } else {
+            if (rootParam) p.delete(rootParam)
+            p.set('xem', serializeStack([f]))
+          }
           return p
         },
-        mode === 'push' ? { state: { stack: depth + 1 } satisfies StackState } : { replace: true, state: location.state },
+        replace ? { replace: true, state: location.state } : { state: { stack: depth + 1 } satisfies StackState },
       )
     },
-    [rootParam, setParams, depth, location.state],
+    [frames.length, rootParam, setParams, location.state, depth],
   )
 
-  return { frames, root, push, back, close, setRoot }
+  return { frames, root, push, open, back, close }
 }

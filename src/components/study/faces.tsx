@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { kanjiOfRadical } from '../../data/radicalKanji'
-import type { KanjiEntry, RadicalItem, StudyEntry, VocabItem } from '../../types'
+import { counterpart } from '../../data/kana'
+import type { KanaChar, KanjiEntry, RadicalItem, StudyEntry, VocabItem } from '../../types'
 import { GridCell } from '../GridCell'
 import { SpeakButton } from '../SpeakButton'
 import { Flip } from './Flip'
@@ -168,6 +169,61 @@ export function entryFaces(words: Map<string, StudyEntry>, kanjiByChar: Map<stri
                 </div>
                 {ex.vi && <p className="text-muted">{ex.vi}</p>}
               </div>
+            )}
+          </div>
+        }
+      />
+    )
+  }
+}
+
+/**
+ * Thẻ kana: mặt trước là chữ trong ô tập viết; mặt sau là romaji, chữ tương ứng ở bảng kia (あ ↔ ア),
+ * nút nghe và một từ ví dụ (nếu có).
+ */
+export function kanaFaces(examples: Map<string, VocabItem>): FacesRenderer<KanaChar> {
+  return (k, flipped) => {
+    const other = counterpart(k)
+    const ex = examples.get(k.id)
+    return (
+      <Flip
+        flipped={flipped}
+        front={
+          <span className="contents" data-kana-front={k.id}>
+            <GridCell className="w-[clamp(8rem,52cqw,12rem)]">{k.kana}</GridCell>
+          </span>
+        }
+        back={
+          <div className="flex h-full flex-col items-center justify-center gap-4 text-center" data-kana-back={k.id}>
+            <div className="flex items-center gap-4">
+              <GridCell className="w-24 shrink-0">{k.kana}</GridCell>
+              <div className="text-left">
+                <p className="text-4xl font-bold tracking-wide">{k.romaji}</p>
+                <p className="mt-1 text-sm text-muted">
+                  {k.script === 'hiragana' ? 'Katakana' : 'Hiragana'}:{' '}
+                  <span lang="ja" className="font-jp text-2xl text-ink">
+                    {other.kana}
+                  </span>
+                </p>
+              </div>
+            </div>
+            {/* Nút nghe không lật / không kéo thẻ */}
+            <span onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+              <SpeakButton text={k.kana} label={`Nghe ${k.kana}`} />
+            </span>
+            {ex && (
+              <p className="max-w-full border-t border-line pt-3 text-sm">
+                <span className="text-muted">Ví dụ: </span>
+                <span lang="ja" className="font-jp text-lg font-medium">
+                  {ex.word}
+                </span>
+                {ex.reading && ex.reading !== ex.word && (
+                  <span lang="ja" className="ml-1 font-jp text-muted">
+                    ({ex.reading})
+                  </span>
+                )}
+                <span className="ml-1">– {ex.meaning}</span>
+              </p>
             )}
           </div>
         }

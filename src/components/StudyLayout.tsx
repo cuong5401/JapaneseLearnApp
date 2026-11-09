@@ -2,7 +2,19 @@ import type { ReactNode } from 'react'
 import { AnimatedNumber } from './AnimatedNumber'
 
 /** Khung trang học: rộng 560px, desktop thêm cột 280px nên tiêu đề và thẻ cùng thẳng hàng. */
-export const STUDY_PAGE = 'mx-auto max-w-[560px] lg:max-w-[840px] xl:max-w-[880px]'
+export const STUDY_PAGE = 'mx-auto w-full max-w-[560px] lg:max-w-[840px] xl:max-w-[880px]'
+
+/**
+ * Khung trang bài học (từ vựng, kanji, bộ thủ, sổ tay): độ rộng cố định theo breakpoint, giống nhau ở cả
+ * 3 tab Danh sách / Flashcard / Quiz để đổi tab không làm trang co giãn.
+ */
+export const LESSON_PAGE = 'mx-auto w-full max-w-[880px]'
+
+/**
+ * Vùng nội dung tab: cao tối thiểu bằng vùng flashcard (thẻ clamp(21rem,60vh,28rem) + hàng nút trên/dưới)
+ * để đổi tab (danh sách ngắn ↔ flashcard) không làm trang co lại.
+ */
+export const TAB_AREA = 'min-h-[calc(clamp(21rem,60vh,28rem)+9rem)]'
 
 /** Vùng học (tối đa 560px) và cột thông tin phiên 280px bên phải trên desktop. */
 export function StudyLayout({ children, aside }: { children: ReactNode; aside: ReactNode }) {

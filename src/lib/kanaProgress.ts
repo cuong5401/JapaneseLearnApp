@@ -86,6 +86,13 @@ export const kanaProgress = {
     }
   },
   getSnapshot: () => stats,
+  /** Hoàn tác (flashcard): đặt lại mức thuộc về bản trước (xóa nếu trước đó chưa có). */
+  restore(id: string, stat?: KanaStat) {
+    const next = { ...stats }
+    if (stat) next[id] = stat
+    else delete next[id]
+    commit(next)
+  },
   record(id: string, correct: boolean, firstAttempt: boolean) {
     commit({ ...stats, [id]: updateStat(stats[id], correct, firstAttempt, Date.now()) })
   },

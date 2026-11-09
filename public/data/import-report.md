@@ -13,7 +13,7 @@ Nguồn: `TU-VUNG-NGU-PHAP-N5-1.xlsx`
 | vocab/onomatopoeia.json | 59 | 7 KB |
 | vocab/adverbs.json | 189 | 18 KB |
 | kanji/kanji.json | 1489 | 259 KB |
-| kanji/radicals.json | 205 | 13 KB |
+| kanji/radicals.json | 214 | 17 KB |
 | grammar/n5.json | 63 | 48 KB |
 | grammar/n4.json | 68 | 157 KB |
 | grammar/n3.json | 155 | 347 KB |
@@ -1463,6 +1463,14 @@ Nguồn: `TU-VUNG-NGU-PHAP-N5-1.xlsx`
 ## kanji (1)
 
 - 89 từ không ghép được (số chữ Hán khác số âm Hán Việt)
+
+## bộ thủ (5)
+
+- dòng 39 "大" (đại): trùng bộ 37, bỏ qua
+- dòng 108 "匹" (thất): không phải bộ thủ Khang Hy, bỏ qua
+- dòng 205 "横" (hoành): không phải bộ thủ Khang Hy, bỏ qua
+- dòng 206 "色" (sắc): trùng bộ 139, bỏ qua
+- 205 dòng Excel -> 214 bộ (26 mục từ radicals-extra.json)
 
 ## grammar-extra n5 (10)
 

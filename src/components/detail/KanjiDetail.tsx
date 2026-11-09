@@ -6,7 +6,7 @@ import { levelNote } from '../../lib/kanjiText'
 import { progress } from '../../lib/progress'
 import type { KanjiEntry } from '../../types'
 import { GridCell } from '../GridCell'
-import { LoadError, Skeleton } from '../LoadState'
+import { LoadError, SkeletonRows } from '../LoadState'
 import { Button, ButtonLink } from '../Pressable'
 import { AskAiLink } from '../ai/AskAiLink'
 import { kanjiQuestion } from '../../lib/ai/questions'
@@ -18,26 +18,20 @@ type Push = (f: Frame) => void
 function KanjiWords({ item, onPush }: { item: KanjiEntry; onPush: Push }) {
   const { status, entries, error, retry } = useEntries(item.words)
   if (status === 'error') return <LoadError error={error} onRetry={retry} />
-  if (status !== 'ready')
-    return (
-      <div className="space-y-2">
-        {Array.from({ length: 4 }, (_, i) => (
-          <Skeleton key={i} className="h-11" />
-        ))}
-      </div>
-    )
+  // Đã biết số từ (item.words): giữ đúng số hàng ngay từ đầu để dữ liệu về không làm panel đổi chiều cao.
+  if (status !== 'ready') return <SkeletonRows count={item.words.length} className="min-h-24" />
   const words = item.words.flatMap((id) => {
     const e = entries.get(id)
     return e?.kind === 'word' ? [e.item] : []
   })
   return (
-    <ul className="divide-y divide-line">
+    <ul className="min-h-24 divide-y divide-line" data-kanji-words>
       {words.map((w) => (
         <li key={w.id}>
           <button
             type="button"
             onClick={() => onPush({ t: 'w', id: w.id })}
-            className="-mx-2 flex w-[calc(100%+1rem)] items-baseline gap-x-3 rounded-lg px-2 py-2.5 text-left hover:bg-sunken"
+            className="-mx-2 flex min-h-12 w-[calc(100%+1rem)] items-baseline gap-x-3 rounded-lg px-2 py-2.5 text-left hover:bg-sunken"
           >
             <span lang="ja" className="shrink-0 font-jp text-lg font-medium">
               {w.word}
@@ -45,7 +39,7 @@ function KanjiWords({ item, onPush }: { item: KanjiEntry; onPush: Push }) {
             <span lang="ja" className="min-w-0 truncate font-jp text-sm text-muted">
               {w.reading !== w.word && w.reading}
             </span>
-            <span className="ml-auto max-w-[55%] text-right text-sm">{w.meaning}</span>
+            <span className="ml-auto max-w-[55%] text-right text-sm break-words">{w.meaning}</span>
           </button>
         </li>
       ))}

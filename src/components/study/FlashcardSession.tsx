@@ -37,6 +37,27 @@ const STACK_SPRING = { type: 'spring', stiffness: 420, damping: 34 } as const
 
 const vocabLabel = (item: VocabItem) => item.word
 
+/**
+ * Nơi ghi kết quả chấm thẻ. Mặc định là SRS (`progress`); luyện kana dùng mức thuộc kana.
+ * `grade` trả về bản trước khi chấm để `restore` hoàn tác được (phím Z).
+ */
+export interface FlashcardGrader {
+  grade: (id: string, known: boolean) => unknown
+  restore: (id: string, prev: unknown) => void
+}
+
+const srsGrader: FlashcardGrader = {
+  grade: (id, known) => {
+    const prev = progress.getSnapshot()[id]
+    progress.grade(id, known ? 4 : 1)
+    return prev
+  },
+  restore: (id, prev) => progress.restore(id, prev as SrsCard | undefined),
+}
+
+/** Bấm nút chấm bằng chuột không lấy focus: nếu không, Space sẽ bấm lại nút (chấm thêm thẻ) thay vì lật thẻ. */
+const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault()
+
 interface StackCardProps<T> {
   item: T
   faces: FacesRenderer<T>
@@ -45,6 +66,7 @@ interface StackCardProps<T> {
   flipped: boolean
   onFlip: () => void
   onCommit: (dir: Dir) => void
+  bookmark: boolean
   ref?: Ref<CardHandle>
 }
 
@@ -52,7 +74,7 @@ interface StackCardProps<T> {
  * Một thẻ trong ngăn xếp. Thẻ trên cùng (depth 0) kéo được; các thẻ sau nhỏ dần và lệch xuống.
  * Cùng một component cho mọi vị trí nên khi thẻ trên bay đi, thẻ kế tiếp trồi lên mượt.
  */
-function StackCard<T extends { id: string }>({ item, faces, label, depth, flipped, onFlip, onCommit, ref }: StackCardProps<T>) {
+function StackCard<T extends { id: string }>({ item, faces, label, depth, flipped, onFlip, onCommit, bookmark, ref }: StackCardProps<T>) {
   const reduce = useReducedMotion()
   const x = useMotionValue(0)
   const rotate = useTransform(x, [-240, 240], [-12, 12])
@@ -109,9 +131,11 @@ function StackCard<T extends { id: string }>({ item, faces, label, depth, flippe
         <>
           {faces(item, flipped)}
           {/* Nút đánh dấu ở góc thẻ: không lật thẻ, không kéo thẻ. */}
-          <div className="absolute top-2 right-2 z-10">
-            <BookmarkButton itemRef={item.id} label={label(item)} size="sm" />
-          </div>
+          {bookmark && (
+            <div className="absolute top-2 right-2 z-10">
+              <BookmarkButton itemRef={item.id} label={label(item)} size="sm" />
+            </div>
+          )}
         </>
       ) : (
         <div className="h-full rounded-2xl border border-line bg-surface" />
@@ -228,6 +252,8 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
   next,
   faces = vocabFaces as unknown as FacesRenderer<T>,
   label = vocabLabel as unknown as (item: T) => string,
+  grader = srsGrader,
+  bookmark = true,
 }: {
   items: T[]
   back: SessionLink
@@ -236,6 +262,10 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
   faces?: FacesRenderer<T>
   /** Tên ngắn của mục cho trình đọc màn hình */
   label?: (item: T) => string
+  /** Nơi ghi kết quả (mặc định: lịch ôn SRS) */
+  grader?: FlashcardGrader
+  /** Nút lưu sổ tay ở góc thẻ (kana không có trong sổ tay) */
+  bookmark?: boolean
 }) {
   // Đang vuốt thẻ: tab "Hỏi AI" thu nhỏ, mờ đi, không đè vùng vuốt.
   useDockQuiet()
@@ -243,7 +273,7 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
   const [pos, setPos] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [results, setResults] = useState<Record<string, Verdict>>({})
-  const [history, setHistory] = useState<{ id: string; prev?: SrsCard }[]>([])
+  const [history, setHistory] = useState<{ id: string; prev: unknown }[]>([])
   const [hintSeen, setHintSeen] = useState(() => readJSON('swipe-hint-seen', false))
   const topRef = useRef<CardHandle>(null)
 
@@ -255,8 +285,7 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
     (dir: Dir) => {
       const item = queue[pos]
       if (!item) return
-      const prev = progress.getSnapshot()[item.id]
-      progress.grade(item.id, dir > 0 ? 4 : 1)
+      const prev = grader.grade(item.id, dir > 0)
       setHistory((h) => [...h, { id: item.id, prev }])
       setResults((r) => ({ ...r, [item.id]: dir > 0 ? 'known' : 'unknown' }))
       setFlipped(false)
@@ -266,13 +295,13 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
         writeJSON('swipe-hint-seen', true)
       }
     },
-    [queue, pos, hintSeen],
+    [queue, pos, hintSeen, grader],
   )
 
   const undo = useCallback(() => {
     const last = history[history.length - 1]
     if (!last) return
-    progress.restore(last.id, last.prev)
+    grader.restore(last.id, last.prev)
     setHistory((h) => h.slice(0, -1))
     setResults((r) => {
       const next = { ...r }
@@ -281,7 +310,7 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
     })
     setFlipped(false)
     setPos((p) => Math.max(0, p - 1))
-  }, [history])
+  }, [history, grader])
 
   const startSession = (items: T[]) => {
     setQueue(items)
@@ -363,6 +392,7 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
                     flipped={depth === 0 && flipped}
                     onFlip={() => setFlipped((f) => !f)}
                     onCommit={commit}
+                    bookmark={bookmark}
                   />
                 ))
                 .reverse()}
@@ -374,6 +404,7 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
 
             <div className="mt-3 grid grid-cols-2 gap-2">
               <Button
+                onMouseDown={keepFocus}
                 onClick={() => topRef.current?.flyOut(-1)}
                 className="flex min-h-12 items-center justify-center gap-2 rounded-lg border-2 border-beni bg-surface font-semibold text-beni hover:bg-beni-soft"
               >
@@ -383,6 +414,7 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
                 Chưa nhớ
               </Button>
               <Button
+                onMouseDown={keepFocus}
                 onClick={() => topRef.current?.flyOut(1)}
                 className="flex min-h-12 items-center justify-center gap-2 rounded-lg bg-ai font-semibold text-on-ai hover:opacity-90"
               >

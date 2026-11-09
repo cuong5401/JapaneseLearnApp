@@ -1,9 +1,14 @@
 import { AnimatePresence, motion, useIsPresent } from 'motion/react'
-import { useCallback, useEffect, useRef, useState, type FormEvent, type RefObject } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
 import { KANA_BY_ID } from '../../data/kana'
 import { kanaMatches } from '../../lib/answer'
-import { kanaProgress } from '../../lib/kanaProgress'
+import { kanaProgress, type KanaStat } from '../../lib/kanaProgress'
+import { kanaExamples } from '../../lib/kanaExamples'
+import { useFiles } from '../../hooks/useData'
+import { FlashcardSession, type FlashcardGrader } from '../study/FlashcardSession'
+import { kanaFaces } from '../study/faces'
+import { STUDY_PAGE } from '../StudyLayout'
 import {
   advance,
   answer,
@@ -18,7 +23,7 @@ import {
 import { isInteractiveTarget } from '../../lib/keyboard'
 import { speak, useJapaneseVoice } from '../../lib/speech'
 import { readJSON, writeJSON } from '../../lib/storage'
-import type { KanaChar } from '../../types'
+import type { KanaChar, VocabItem } from '../../types'
 import { AnimatedNumber } from '../AnimatedNumber'
 import { Celebration } from '../Celebration'
 import { GridCell } from '../GridCell'
@@ -28,12 +33,16 @@ import { useDockQuiet } from '../../lib/ai/dock'
 
 /* ───────────── Cài đặt (nhớ lựa chọn lần trước) ───────────── */
 
+/** 'flashcard': lật thẻ, vuốt Nhớ / Chưa nhớ (không phải câu hỏi) */
+type PracticeMode = ModeChoice | 'flashcard'
+
 interface PracticeSettings {
-  mode: ModeChoice
+  mode: PracticeMode
   count: CountChoice
 }
 
-const MODES: { value: ModeChoice; label: string; detail: string; sample: string }[] = [
+const MODES: { value: PracticeMode; label: string; detail: string; sample: string }[] = [
+  { value: 'flashcard', label: 'Flashcard', detail: 'Lật thẻ, tự chấm Nhớ / Chưa nhớ', sample: 'か ↔ ka' },
   { value: 'typing', label: 'Gõ romaji', detail: 'Nhìn chữ, gõ cách đọc', sample: 'か → ka' },
   { value: 'choice', label: 'Trắc nghiệm', detail: 'Nhìn chữ, chọn cách đọc', sample: 'か → ka' },
   { value: 'reverse', label: 'Ngược lại', detail: 'Nhìn romaji, chọn chữ', sample: 'ka → か' },
@@ -46,7 +55,7 @@ const DEFAULT_SETTINGS: PracticeSettings = { mode: 'typing', count: 'each' }
 function loadSettings(): PracticeSettings {
   const s = readJSON<Partial<PracticeSettings>>('kana-practice', {})
   return {
-    mode: MODES.some((m) => m.value === s.mode) ? (s.mode as ModeChoice) : DEFAULT_SETTINGS.mode,
+    mode: MODES.some((m) => m.value === s.mode) ? (s.mode as PracticeMode) : DEFAULT_SETTINGS.mode,
     count: s.count === 20 || s.count === 50 || s.count === 'each' ? s.count : DEFAULT_SETTINGS.count,
   }
 }
@@ -86,7 +95,7 @@ function Setup({
   onStart: (s: PracticeSettings) => void
   onExit: () => void
 }) {
-  const [mode, setMode] = useState<ModeChoice>(initial.mode === 'listen' && voice !== true ? 'choice' : initial.mode)
+  const [mode, setMode] = useState<PracticeMode>(initial.mode === 'listen' && voice !== true ? 'choice' : initial.mode)
   const [count, setCount] = useState<CountChoice>(initial.count)
   const modes = MODES.filter((m) => m.value !== 'listen' || voice === true)
   const effectiveMode = mode === 'listen' && voice !== true ? 'choice' : mode
@@ -139,6 +148,7 @@ function Setup({
         {voice === null && <p className="mt-2 text-sm text-muted">Đang kiểm tra giọng đọc tiếng Nhật…</p>}
       </fieldset>
 
+      {effectiveMode !== 'flashcard' && (
       <fieldset className="mt-6">
         <legend className="mb-2 font-semibold">Số câu</legend>
         <Segmented<CountChoice>
@@ -152,6 +162,7 @@ function Setup({
           ]}
         />
       </fieldset>
+      )}
 
       <Button
         onClick={() => onStart({ mode: effectiveMode, count })}
@@ -159,7 +170,11 @@ function Setup({
       >
         Bắt đầu
       </Button>
-      <p className="mt-3 text-center text-sm text-muted">Trả lời sai thì chữ đó được hỏi lại sau vài câu. Phiên kết thúc khi mọi chữ đều đúng.</p>
+      <p className="mt-3 text-center text-sm text-muted">
+        {effectiveMode === 'flashcard'
+          ? 'Mỗi chữ một thẻ: Space lật, ← Chưa nhớ, → Đã nhớ, Z hoàn tác.'
+          : 'Trả lời sai thì chữ đó được hỏi lại sau vài câu. Phiên kết thúc khi mọi chữ đều đúng.'}
+      </p>
     </div>
   )
 }
@@ -521,6 +536,48 @@ function ConfirmExit({ onStay, onLeave }: { onStay: () => void; onLeave: () => v
   )
 }
 
+/* ───────────── Flashcard ───────────── */
+
+const KANA_WORD_FILES = ['vocab/n5.json', 'vocab/n4.json']
+
+/** Flashcard kana: chấm Nhớ = đúng ngay lần đầu, Chưa nhớ = sai (cùng quy tắc mức thuộc với phiên luyện). */
+const kanaGrader: FlashcardGrader = {
+  grade: (id, known) => {
+    const prev = kanaProgress.getSnapshot()[id]
+    kanaProgress.record(id, known, true)
+    return prev
+  },
+  restore: (id, prev) => kanaProgress.restore(id, prev as KanaStat | undefined),
+}
+
+function KanaFlashcards({ chars, title, onExit }: { chars: KanaChar[]; title: string; onExit: () => void }) {
+  const files = useFiles(KANA_WORD_FILES)
+  const loaded = files.data.filter(Boolean).length
+  const examples = useMemo(
+    () => kanaExamples(chars, files.data.flatMap((d) => (Array.isArray(d) ? (d as VocabItem[]) : []))),
+    // files.data là mảng mới mỗi lần render; số file đã tải đủ để biết khi nào tính lại.
+    [chars, loaded], // eslint-disable-line react-hooks/exhaustive-deps
+  )
+  const faces = useMemo(() => kanaFaces(examples), [examples])
+  // "Về bảng chữ cái" ở màn tổng kết là link /kana (bỏ ?luyen=1) nên trang tự về bảng chữ.
+  return (
+    <div className={STUDY_PAGE} data-kana-flashcards>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        <CloseButton onClick={onExit} label="Về bảng chữ cái" />
+      </div>
+      <FlashcardSession
+          items={chars}
+          faces={faces}
+          label={(k) => `chữ ${k.kana}`}
+          grader={kanaGrader}
+          bookmark={false}
+          back={{ to: '/kana', label: 'Về bảng chữ cái' }}
+        />
+    </div>
+  )
+}
+
 /* ───────────── Phiên luyện ───────────── */
 
 interface Run {
@@ -537,7 +594,7 @@ function Runner({ run, available, onRetryWrong, onRestart, onExit }: {
   onRestart: () => void
   onExit: () => void
 }) {
-  const { mode } = run.settings
+  const mode = run.settings.mode as ModeChoice
   const [s, setS] = useState(() => createSession(run.ids, run.settings.count, mode, available))
   const [verdict, setVerdict] = useState<Verdict>(null)
   const [startedAt] = useState(() => Date.now())
@@ -705,6 +762,9 @@ export function KanaSession({ chars, title, onExit }: { chars: KanaChar[]; title
         }}
       />
     )
+
+  if (run.settings.mode === 'flashcard')
+    return <KanaFlashcards key={run.round} chars={run.ids.map((id) => KANA_BY_ID.get(id)!)} title={title} onExit={onExit} />
 
   return (
     <Runner

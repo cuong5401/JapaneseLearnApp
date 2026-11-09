@@ -13,7 +13,7 @@ Kết quả (thư mục đích):
     vocab/onomatopoeia.json   từ láy
     vocab/adverbs.json        phó từ (sheet "Trợ từ")
     kanji/kanji.json          chỉ mục chữ Hán, tổng hợp từ cột Hán Việt
-    kanji/radicals.json       bộ thủ
+    kanji/radicals.json       214 bộ thủ Khang Hy (thiếu thì lấy data-source/radicals-extra.json)
     grammar/n4.json … n1.json ngữ pháp
     import-report.md          các dòng bị bỏ / nghi lỗi để rà lại
 
@@ -272,13 +272,105 @@ def build_kanji(vocab_by_level, compounds):
     return out
 
 
+# 214 bộ Khang Hy: khối Unicode Kangxi Radicals U+2F00–U+2FD5, NFKC ra chữ thường (⼀ → 一)
+KANGXI = [unicodedata.normalize('NFKC', chr(0x2F00 + i)) for i in range(214)]
+KANGXI_NO = {ch: i + 1 for i, ch in enumerate(KANGXI)}
+# số nét theo khoảng số bộ (bảng Khang Hy xếp theo số nét)
+_STROKE_RANGES = [(6, 1), (29, 2), (60, 3), (94, 4), (117, 5), (146, 6), (166, 7), (175, 8), (186, 9),
+                  (194, 10), (200, 11), (204, 12), (208, 13), (210, 14), (211, 15), (213, 16), (214, 17)]
+KANGXI_STROKES = {no: next(s for last, s in _STROKE_RANGES if no <= last) for no in range(1, 215)}
+# dạng biến thể / chữ Nhật giản thể trong Excel -> số bộ gốc
+RADICAL_VARIANTS = {
+    '〡': 2, '亻': 9, '刂': 18, '⺈': 18, '忄': 61, '⺗': 61, '扌': 64, '攵': 66, '氵': 85, '灬': 86, '丬': 90,
+    '牜': 93, '犭': 94, '礻': 113, '糹': 120, '纟': 120, '罒': 122, '⺲': 122, '艹': 140, '⺾': 140, '衤': 145,
+    '辶': 162, '⻌': 162, '青': 174, '飠': 184, '⻞': 184, '麦': 199, '黄': 201, '黒': 203, '斉': 210, '歯': 211,
+    '亀': 213,
+}
+# 阝 là hai bộ khác nhau: bên phải = 邑 (ấp), bên trái = 阜 (phụ) -> phân biệt theo tên trong Excel
+RADICAL_BY_NAME = {('阝', 'ấp'): 163, ('阝', 'phụ'): 170}
+# Excel ghi nhầm mã (〡 Hàng Châu thay cho 丨)
+RADICAL_DISPLAY = {'〡': '丨'}
+RADICAL_MIGRATION = Path(__file__).resolve().parent.parent / 'src' / 'data' / 'radical-id-migration.json'
+RADICALS_EXTRA = Path(__file__).resolve().parent.parent / 'data-source' / 'radicals-extra.json'
+
+
+def kangxi_no(ch, name):
+    """Số bộ Khang Hy của một dòng Excel, None nếu không phải bộ thủ."""
+    if (ch, name) in RADICAL_BY_NAME:
+        return RADICAL_BY_NAME[(ch, name)]
+    n = KANGXI_NO.get(unicodedata.normalize('NFKC', ch))
+    return n or RADICAL_VARIANTS.get(ch)
+
+
 def read_radicals(ws):
+    """Trả về (214 bộ theo số Khang Hy, ánh xạ số cũ theo thứ tự dòng -> số mới để migrate id rd-NNN).
+
+    Trước đây `no` = thứ tự dòng Excel (205 dòng, trùng 大 / 色, thiếu bộ) nên lệch số từ bộ 10 trở đi.
+    """
+    rows = [(col(r, 0), col(r, 1), col(r, 2)) for _, r in rows_of(ws) if col(r, 0) != 'BỘ THỦ']
+    by_no, variants, old_to_new = {}, defaultdict(list), {}
+    # lượt 1: dòng là chữ chuẩn của bộ; lượt 2: biến thể (gắn vào bộ gốc, hoặc làm dạng hiển thị nếu bộ gốc thiếu)
+    for pass_std in (True, False):
+        for i, (ch, name, meaning) in enumerate(rows, start=1):
+            no = kangxi_no(ch, name)
+            if no is None:
+                if pass_std:
+                    report['bộ thủ'].append(f'dòng {i + 1} "{ch}" ({name}): không phải bộ thủ Khang Hy, bỏ qua')
+                continue
+            norm = unicodedata.normalize('NFKC', ch)
+            is_std = KANGXI_NO.get(norm) == no and (ch, name) not in RADICAL_BY_NAME
+            if is_std != pass_std:
+                continue
+            old_to_new[i] = no
+            if no in by_no:
+                if is_std:
+                    report['bộ thủ'].append(f'dòng {i + 1} "{ch}" ({name}): trùng bộ {no}, bỏ qua')
+                elif ch not in variants[no] and ch != by_no[no]['radical']:
+                    variants[no].append(ch)
+                continue
+            shown = RADICAL_DISPLAY.get(ch, norm if is_std else ch)
+            by_no[no] = OrderedDict([('no', no), ('radical', shown), ('name', name), ('meaning', meaning)])
+            if shown != KANGXI[no - 1]:
+                variants[no].append(KANGXI[no - 1])
+    extra = json.loads(RADICALS_EXTRA.read_text(encoding='utf-8'))['radicals']
+    for e in extra:
+        no = e['no']
+        if no in by_no and not e.get('override'):
+            raise SystemExit(f'radicals-extra.json: bộ {no} đã có trong Excel (thêm "override": true nếu muốn thay)')
+        if no not in by_no:
+            by_no[no] = OrderedDict([('no', no), ('radical', KANGXI[no - 1])])
+        by_no[no]['name'], by_no[no]['meaning'] = e['name'], e['meaning']
+        by_no[no]['auto'] = True
+    missing = [n for n in range(1, 215) if n not in by_no]
+    if missing:
+        raise SystemExit(f'thiếu bộ thủ {missing}: bổ sung vào {RADICALS_EXTRA.name}')
     out = []
-    for n, r in rows_of(ws):
-        if col(r, 0) == 'BỘ THỦ':
-            continue
-        out.append(OrderedDict([('no', len(out) + 1), ('radical', col(r, 0)), ('name', col(r, 1)), ('meaning', col(r, 2))]))
-    return out
+    for no in range(1, 215):
+        r = by_no[no]
+        auto = r.pop('auto', False)
+        r['strokes'] = KANGXI_STROKES[no]
+        if variants[no]:
+            r['variants'] = variants[no]
+        if auto:
+            r['auto'] = True
+        out.append(r)
+    report['bộ thủ'].append(f'{len(rows)} dòng Excel -> 214 bộ ({len(extra)} mục từ {RADICALS_EXTRA.name})')
+    return out, old_to_new
+
+
+def check_radicals(data_dir):
+    rads = json.loads((Path(data_dir) / 'kanji/radicals.json').read_text(encoding='utf-8'))
+    errors = []
+    if [r['no'] for r in rads] != list(range(1, 215)):
+        errors.append('radicals.json phải có đúng 214 bộ, số 1..214')
+    for no, ch in {1: '一', 9: '人', 36: '夕', 37: '大', 38: '女', 39: '子', 40: '宀', 85: '水', 214: '龠'}.items():
+        r = rads[no - 1] if len(rads) >= no else None
+        if not r or (r['radical'] != ch and ch not in r.get('variants', [])):
+            errors.append(f'bộ {no} phải là {ch}')
+    print(f'radicals: {len(rads)} bộ, {len(errors)} lỗi')
+    for e in errors:
+        print('  LỖI', e)
+    return not errors
 
 
 # ---------------------------------------------------------------- ngữ pháp
@@ -695,7 +787,7 @@ def main(xlsx, out_dir):
     extra['adverbs'] = read_simple(S['Trợ từ'], 'adv', 'Phó từ', 1, 2, 3).to_list()
 
     kanji = build_kanji(vocab, extra['compounds'])
-    radicals = read_radicals(S['bộ thủ'])
+    radicals, radical_old_to_new = read_radicals(S['bộ thủ'])
 
     grammar = OrderedDict()
     kanji_level = {k['kanji']: k['firstLevel'] for k in kanji}
@@ -741,6 +833,8 @@ def main(xlsx, out_dir):
         ('files', files),
     ])
     write_json(out / 'manifest.json', manifest)
+    # id bộ thủ rd-NNN cũ (theo thứ tự dòng Excel) -> số Khang Hy: app dùng để migrate SRS / sổ tay
+    write_json(RADICAL_MIGRATION, OrderedDict((str(k), v) for k, v in sorted(radical_old_to_new.items())))
 
     # báo cáo
     lines = ['# Báo cáo chuyển đổi', '', f'Nguồn: `{Path(xlsx).name}`', '', '| File | Số mục | Dung lượng |', '|---|---:|---:|']
@@ -757,7 +851,9 @@ def main(xlsx, out_dir):
 if __name__ == '__main__':
     sys.stdout.reconfigure(encoding='utf-8')
     if len(sys.argv) >= 2 and sys.argv[1] == '--check':
-        sys.exit(0 if check_extra(sys.argv[2] if len(sys.argv) > 2 else 'public/data') else 1)
+        d = sys.argv[2] if len(sys.argv) > 2 else 'public/data'
+        ok = check_extra(d)
+        sys.exit(0 if check_radicals(d) and ok else 1)
     if len(sys.argv) != 3:
         print(__doc__)
         sys.exit(1)

@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useEntries, useKanjiIndex, useRadicals } from '../../hooks/useData'
 import { frameKey, type Frame } from '../../lib/detailStack'
-import { LoadError, PageSkeleton } from '../LoadState'
+import { DetailSkeleton, LoadError } from '../LoadState'
 import { CharDetail } from './CharDetail'
 import { KanjiDetail } from './KanjiDetail'
 import { RadicalDetail } from './RadicalDetail'
@@ -16,7 +16,7 @@ function Missing({ what }: { what: string }) {
 function KanjiFrame({ ch, onPush }: { ch: string; onPush: Push }) {
   const index = useKanjiIndex()
   if (index.status === 'error') return <LoadError error={index.error} onRetry={index.retry} />
-  if (!index.data) return <PageSkeleton rows={4} />
+  if (!index.data) return <DetailSkeleton />
   const item = index.data.find((k) => k.kanji === ch)
   // Chữ ngoài kanji.json (chọn từ bảng vẽ tay): trang tối giản, vẫn có từ chứa chữ và nút lưu sổ tay.
   return item ? <KanjiDetail item={item} onPush={onPush} /> : <CharDetail ch={ch} onPush={onPush} />
@@ -25,7 +25,7 @@ function KanjiFrame({ ch, onPush }: { ch: string; onPush: Push }) {
 function WordFrame({ id, onPush }: { id: string; onPush: Push }) {
   const { status, entries, error, retry } = useEntries([id])
   if (status === 'error') return <LoadError error={error} onRetry={retry} />
-  if (status !== 'ready') return <PageSkeleton rows={4} />
+  if (status !== 'ready') return <DetailSkeleton />
   const e = entries.get(id)
   return e?.kind === 'word' ? <WordDetail item={e.item} onPush={onPush} inPanel /> : <Missing what="từ này" />
 }
@@ -33,7 +33,7 @@ function WordFrame({ id, onPush }: { id: string; onPush: Push }) {
 function RadicalFrame({ no, onPush }: { no: number; onPush: Push }) {
   const radicals = useRadicals()
   if (radicals.status === 'error') return <LoadError error={radicals.error} onRetry={radicals.retry} />
-  if (!radicals.data) return <PageSkeleton rows={3} />
+  if (!radicals.data) return <DetailSkeleton />
   const item = radicals.data.find((r) => r.no === no)
   return item ? <RadicalDetail item={item} onPush={onPush} /> : <Missing what={`bộ số ${no}`} />
 }

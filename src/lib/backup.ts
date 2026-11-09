@@ -4,6 +4,7 @@ import { sanitizeChecked, type CheckedMap } from './grammarChecked'
 import { isKanaStat, type KanaStat } from './kanaProgress'
 import { sanitizeState, type NotebookState } from './notebooks'
 import { LESSON_SIZES, type LessonSize } from './lessons'
+import { migrateCards, migrateNotebooks } from './migrations'
 
 /**
  * Xuất / nhập tiến độ ra file .json để chuyển giữa các máy (máy tính ↔ điện thoại).
@@ -23,6 +24,8 @@ export interface Backup {
   grammarChecked?: CheckedMap
   /** Từ "Hỏi AI" gợi ý đã lưu (để mục sổ tay aw-… còn dữ liệu ở máy khác). Không bao giờ chứa API key. */
   aiWords?: Record<string, AiWordItem>
+  /** 'kangxi': id bộ thủ rd-NNN theo số Khang Hy. File cũ không có field này -> đổi id khi nhập. */
+  radicalIds?: 'kangxi'
 }
 
 export function createBackup(
@@ -34,7 +37,7 @@ export function createBackup(
   grammarChecked?: CheckedMap,
   aiWords?: Record<string, AiWordItem>,
 ): Backup {
-  return { app: 'kotonoha', version: 1, exportedAt: now.toISOString(), cards, lessonSize, kana, notebooks, grammarChecked, aiWords }
+  return { app: 'kotonoha', version: 1, exportedAt: now.toISOString(), cards, lessonSize, kana, notebooks, grammarChecked, aiWords, radicalIds: 'kangxi' }
 }
 
 export function backupFileName(now = new Date()): string {
@@ -92,10 +95,16 @@ export function parseBackup(text: string): ParseResult {
     }
   }
   const lessonSize = (LESSON_SIZES as readonly number[]).includes(b.lessonSize as number) ? b.lessonSize : undefined
+  const notebooks = sanitizeState(b.notebooks) ?? undefined
+  // file xuất trước khi bộ thủ đổi sang số Khang Hy: đổi id rd-NNN như migration trên máy
+  const old = b.radicalIds !== 'kangxi'
   return {
     ok: true,
     skipped,
-    backup: { app: 'kotonoha', version: 1, exportedAt: String(b.exportedAt ?? ''), cards, lessonSize, kana, notebooks: sanitizeState(b.notebooks) ?? undefined,
+    backup: { app: 'kotonoha', version: 1, exportedAt: String(b.exportedAt ?? ''),
+      cards: old ? migrateCards(cards) : cards, lessonSize, kana,
+      notebooks: old && notebooks ? migrateNotebooks(notebooks) : notebooks,
+      radicalIds: 'kangxi',
       grammarChecked: sanitizeChecked(b.grammarChecked) ?? undefined,
       aiWords: sanitizeAiWords(b.aiWords) ?? undefined,
     },

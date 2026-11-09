@@ -171,3 +171,43 @@ for (const theme of THEMES) {
     })
   }
 }
+
+for (const width of WIDTHS) {
+  test.describe(`${width}px flashcard`, () => {
+    test.use({ viewport: { width, height: width < 768 ? 844 : 900 } })
+
+    test('flashcard kana: lật, mặt sau có romaji + chữ bảng kia, → đã nhớ, ← chưa nhớ, Z hoàn tác, tổng kết, mức thuộc', async ({ page }) => {
+      await page.addInitScript(seed('light', 'flashcard'))
+      await page.goto('/kana')
+      await page.getByRole('button', { name: 'Luyện 5 chữ đã chọn' }).click()
+      await expect(page.getByRole('radio', { name: /Flashcard/ })).toHaveAttribute('aria-checked', 'true')
+      await page.getByRole('button', { name: 'Bắt đầu' }).click()
+      await expect(page.locator('[data-kana-flashcards]')).toBeVisible()
+      await expect(page.locator('[data-kana-front="h-a"]')).toBeVisible()
+
+      // Space lật: mặt sau có romaji và katakana tương ứng
+      await page.keyboard.press(' ')
+      const back = page.locator('[data-kana-back="h-a"]')
+      await expect(back).toContainText('a')
+      await expect(back).toContainText('ア')
+
+      await page.keyboard.press('ArrowRight') // あ: đã nhớ
+      await expect(page.locator('[data-kana-front="h-i"]')).toBeVisible()
+      await page.keyboard.press('ArrowLeft') // い: chưa nhớ
+      await expect(page.locator('[data-kana-front="h-u"]')).toBeVisible()
+      await page.keyboard.press('z') // hoàn tác い
+      await expect(page.locator('[data-kana-front="h-i"]')).toBeVisible()
+      const stats = () => page.evaluate(() => JSON.parse(localStorage.getItem('jla:v1:kana') ?? '{}'))
+      expect(Object.keys(await stats())).toEqual(['h-a'])
+      expect((await stats())['h-a'].streak).toBe(1)
+
+      for (let i = 0; i < 4; i++) {
+        await page.keyboard.press('ArrowRight')
+        await page.waitForTimeout(250)
+      }
+      await expect(page.getByText('Đã nhớ').first()).toBeVisible()
+      await expect(page.getByRole('link', { name: 'Về bảng chữ cái' })).toBeVisible()
+      expect(Object.keys(await stats()).sort()).toEqual(['h-a', 'h-e', 'h-i', 'h-o', 'h-u'])
+    })
+  })
+}

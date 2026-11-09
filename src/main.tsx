@@ -1,3 +1,5 @@
+// Phải đứng đầu: migrate localStorage trước khi module store nào được nạp.
+import './lib/migrateOnLoad'
 import { StrictMode } from 'react'
 import { MotionConfig } from 'motion/react'
 import { createRoot } from 'react-dom/client'

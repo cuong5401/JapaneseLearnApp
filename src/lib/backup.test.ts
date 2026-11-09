@@ -64,3 +64,18 @@ describe('backup', () => {
     expect(r.updated).toBe(1)
   })
 })
+
+describe('backup: id bộ thủ', () => {
+  it('file cũ (chưa có radicalIds) được đổi id bộ thủ khi nhập', () => {
+    const r = parseBackup(JSON.stringify({ app: 'kotonoha', version: 1, cards: { 'rd-036': card('rd-036', 1) },
+      notebooks: { books: [{ id: 'default', name: 'Từ khó', color: 'kihada', createdAt: 0, updatedAt: 0 }], items: { default: [{ ref: 'rd-036', addedAt: 1 }] } } }))
+    expect(r.ok && Object.keys(r.backup.cards)).toEqual(['rd-037'])
+    expect(r.ok && r.backup.notebooks?.items.default[0].ref).toBe('rd-037')
+  })
+
+  it('file mới giữ nguyên id', () => {
+    const text = JSON.stringify(createBackup({ 'rd-036': card('rd-036', 1) }, 30))
+    const r = parseBackup(text)
+    expect(r.ok && Object.keys(r.backup.cards)).toEqual(['rd-036'])
+  })
+})

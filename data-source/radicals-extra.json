@@ -1,0 +1,31 @@
+{
+  "_note": "Bổ sung cho sheet \"bộ thủ\": các bộ Khang Hy không có trong Excel (auto = tự soạn). Mục có \"override\": true thay tên/nghĩa của dòng Excel.",
+  "radicals": [
+    { "no": 23, "name": "hễ", "meaning": "che đậy, giấu giếm" },
+    { "no": 35, "name": "tuy", "meaning": "đi chậm" },
+    { "no": 71, "name": "vô", "meaning": "không có" },
+    { "no": 73, "name": "viết", "meaning": "nói rằng" },
+    { "no": 89, "name": "hào", "meaning": "hào âm dương (Kinh Dịch)" },
+    { "no": 97, "name": "qua", "meaning": "quả dưa" },
+    { "no": 98, "name": "ngõa", "meaning": "ngói, đồ gốm" },
+    { "no": 114, "name": "nhựu", "meaning": "vết chân thú" },
+    { "no": 122, "name": "võng", "meaning": "cái lưới", "override": true },
+    { "no": 138, "name": "cấn", "meaning": "dừng lại, bền cứng" },
+    { "no": 146, "name": "á", "meaning": "che đậy, úp lên" },
+    { "no": 165, "name": "biện", "meaning": "phân biệt" },
+    { "no": 179, "name": "cửu", "meaning": "rau hẹ" },
+    { "no": 188, "name": "cốt", "meaning": "xương" },
+    { "no": 191, "name": "đấu", "meaning": "đánh nhau" },
+    { "no": 192, "name": "sưởng", "meaning": "rượu nếp thơm để cúng" },
+    { "no": 193, "name": "cách", "meaning": "nồi ba chân" },
+    { "no": 197, "name": "lỗ", "meaning": "đất mặn, muối mỏ" },
+    { "no": 202, "name": "thử", "meaning": "lúa nếp" },
+    { "no": 204, "name": "chỉ", "meaning": "may vá, thêu thùa" },
+    { "no": 205, "name": "mãnh", "meaning": "con ếch" },
+    { "no": 206, "name": "đỉnh", "meaning": "cái đỉnh, vạc ba chân" },
+    { "no": 207, "name": "cổ", "meaning": "cái trống" },
+    { "no": 208, "name": "thử", "meaning": "con chuột" },
+    { "no": 212, "name": "long", "meaning": "con rồng" },
+    { "no": 214, "name": "dược", "meaning": "sáo ba lỗ" }
+  ]
+}

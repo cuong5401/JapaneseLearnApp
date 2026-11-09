@@ -5,7 +5,7 @@ import { LessonGrid } from '../components/LessonGrid'
 import { LoadError, PageSkeleton } from '../components/LoadState'
 import { Button } from '../components/Pressable'
 import { Segmented } from '../components/Segmented'
-import { STUDY_PAGE } from '../components/StudyLayout'
+import { LESSON_PAGE, STUDY_PAGE, TAB_AREA } from '../components/StudyLayout'
 import { BookColor } from '../components/notebook/BookColor'
 import { ChoiceQuiz, type ChoiceQuizConfig } from '../components/study/ChoiceQuiz'
 import { FlashcardSession, type SessionLink } from '../components/study/FlashcardSession'
@@ -186,10 +186,10 @@ export function NotebookPage() {
 
   const open = (c: EntryCard) => {
     const e = c.entry
-    if (e.kind === 'word') stack.push({ t: 'w', id: c.id })
-    else if (e.kind === 'kanji') stack.push({ t: 'k', ch: e.item.kanji })
-    else if (e.kind === 'radical') stack.push({ t: 'r', no: e.item.no })
-    else if (e.kind === 'char') stack.push({ t: 'k', ch: e.item.char })
+    if (e.kind === 'word') stack.open({ t: 'w', id: c.id })
+    else if (e.kind === 'kanji') stack.open({ t: 'k', ch: e.item.kanji })
+    else if (e.kind === 'radical') stack.open({ t: 'r', no: e.item.no })
+    else if (e.kind === 'char') stack.open({ t: 'k', ch: e.item.char })
   }
   const remove = (ref: string) => notebooks.removeItem(book.id, ref)
 
@@ -202,11 +202,12 @@ export function NotebookPage() {
     const quizItems = lesson.filter((c) => QUIZ.answer(c))
     const quizPool = cards.filter((c) => QUIZ.answer(c))
     return (
-      <div className="mx-auto max-w-[880px]">
+      <div className={LESSON_PAGE} data-lesson-page>
         {header}
         <div className="mb-6">
           <Segmented label="Chế độ học" value={mode} onChange={(m) => setParams(m === 'list' ? { bai: String(lessonIndex + 1) } : { bai: String(lessonIndex + 1), mode: m }, { replace: true })} options={MODES} />
         </div>
+        <div className={TAB_AREA} data-tab-area>
         {mode === 'list' && (
           <ul className="divide-y divide-line rounded-2xl border border-line bg-surface p-1">
             {lesson.map((c) => (
@@ -224,6 +225,7 @@ export function NotebookPage() {
             <ChoiceQuiz key={`${lessonIndex}-${size}`} items={quizItems} pool={quizPool} config={QUIZ} />
           </div>
         )}
+        </div>
       </div>
     )
   }

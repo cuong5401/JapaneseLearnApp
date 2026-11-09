@@ -50,7 +50,7 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
   const open = (doc: SearchDoc) => {
     onClose()
     // Từ vựng mở chi tiết ngay trên trang đang xem (ngăn xếp chi tiết); chữ Hán, ngữ pháp mở trang riêng.
-    if (doc.kind === 'word') stack.push({ t: 'w', id: doc.id })
+    if (doc.kind === 'word') stack.open({ t: 'w', id: doc.id })
     else navigate(doc.href)
   }
 

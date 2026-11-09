@@ -7,6 +7,7 @@ import { Segmented } from '../components/Segmented'
 import { SpeakButton } from '../components/SpeakButton'
 import { BookmarkButton } from '../components/notebook/BookmarkButton'
 import { Stagger, StaggerItem } from '../components/Stagger'
+import { LESSON_PAGE, TAB_AREA } from '../components/StudyLayout'
 import { HanViet } from '../components/VocabBits'
 import { FlashcardSession, type SessionLink } from '../components/study/FlashcardSession'
 import { QuizSession } from '../components/study/QuizSession'
@@ -100,9 +101,9 @@ function WordList({ items, start }: { items: VocabItem[]; start: number }) {
           </thead>
           <tbody className="divide-y divide-line">
             {items.map((w, i) => (
-              <tr key={w.id} className="align-top">
+              <tr key={w.id} className="align-middle">
                 <td className="py-3 pr-3 pl-4 text-sm tabular-nums text-muted">
-                  <span className="flex items-center gap-2 pt-1">
+                  <span className="flex items-center gap-2">
                     {start + i + 1}
                     <StatusDot id={w.id} />
                   </span>
@@ -188,7 +189,7 @@ function LessonBody({ deck, items }: { deck: Deck & { kind: 'vocab' }; items: Vo
     !weakMode && index + 1 < lessons.length ? { to: `${base}/${index + 2}?tab=${tab}`, label: `Bài tiếp theo: Bài ${index + 2}` } : undefined
 
   return (
-    <div className="mx-auto max-w-[880px]">
+    <div className={LESSON_PAGE} data-lesson-page>
       <PageHeader title={title} back={{ to: base, label: deckTitle(deck) }}>
         <span className="text-sm text-muted">
           {weakMode ? `${list.length} từ` : `Từ ${start + 1}–${start + list.length}, ${list.length} từ`}
@@ -204,6 +205,7 @@ function LessonBody({ deck, items }: { deck: Deck & { kind: 'vocab' }; items: Vo
         />
       </div>
 
+      <div className={TAB_AREA} data-tab-area>
       {tab === 'list' && (
         <>
           <WordList items={list} start={start} />
@@ -226,15 +228,16 @@ function LessonBody({ deck, items }: { deck: Deck & { kind: 'vocab' }; items: Vo
         </>
       )}
       {tab === 'flashcards' && (
-        <div className="mx-auto max-w-[560px] lg:max-w-none">
+        <div className="mx-auto w-full max-w-[560px] lg:max-w-none">
           <FlashcardSession key={`${lesson}-${size}`} items={list} back={back} next={nextLesson} />
         </div>
       )}
       {tab === 'quiz' && (
-        <div className="mx-auto max-w-[560px] lg:max-w-none">
+        <div className="mx-auto w-full max-w-[560px] lg:max-w-none">
           <QuizSession key={`${lesson}-${size}`} items={list} pool={items} back={back} next={nextLesson} />
         </div>
       )}
+      </div>
     </div>
   )
 }

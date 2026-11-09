@@ -10,7 +10,7 @@ import { speechText } from '../../lib/speech'
 import { formatInterval } from '../../lib/srs'
 import type { VocabItem } from '../../types'
 import { GridCell } from '../GridCell'
-import { LoadError, PageSkeleton } from '../LoadState'
+import { LoadError, Skeleton, SkeletonRows } from '../LoadState'
 import { Button } from '../Pressable'
 import { SpeakButton } from '../SpeakButton'
 import { HanViet, WordMeta } from '../VocabBits'
@@ -32,7 +32,7 @@ export function WordLinks({ ids, title, onPush }: { ids: string[]; title: string
     <section className="mt-6">
       <h3 className="mb-2 font-semibold">{title}</h3>
       {status !== 'ready' ? (
-        <PageSkeleton rows={Math.min(ids.length, 3)} />
+        <SkeletonRows count={ids.length} rowClass="h-[3.25rem] px-4" className="rounded-xl border border-line bg-surface" />
       ) : (
         <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
           {words.map((w) => (
@@ -40,7 +40,7 @@ export function WordLinks({ ids, title, onPush }: { ids: string[]; title: string
               <button
                 type="button"
                 onClick={() => onPush({ t: 'w', id: w.id })}
-                className="flex w-full flex-wrap items-baseline gap-x-3 gap-y-0.5 px-4 py-3 text-left hover:bg-sunken"
+                className="flex min-h-[3.25rem] w-full flex-wrap items-baseline gap-x-3 gap-y-0.5 px-4 py-3 text-left hover:bg-sunken"
               >
                 <span lang="ja" className="font-jp text-lg font-semibold">
                   {w.word}
@@ -69,11 +69,13 @@ export function KanjiBreakdown({ word, onPush }: { word: string; onPush: Push })
     const byChar = new Map(index.data.map((k) => [k.kanji, k]))
     return chars.map((c) => byChar.get(c)).filter((k) => k !== undefined)
   }, [index.data, chars])
-  if (!chars.length || !found.length) return null
+  if (!chars.length || (index.data && !found.length)) return null
   return (
     <section className="mt-6">
       <h3 className="mb-3 font-semibold">Chữ Hán trong từ</h3>
       <ul className="flex flex-wrap gap-3">
+        {/* Chưa tải chỉ mục: giữ đúng số ô (số chữ Hán trong từ) cùng kích thước ô thật. */}
+        {!index.data && chars.map((c) => <li key={c}><Skeleton className="h-[7.75rem] w-24" /></li>)}
         {found.map((k) => (
           <li key={k.id}>
             <button

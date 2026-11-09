@@ -9,16 +9,19 @@ import { ProgressBar } from '../components/ProgressBar'
 import { SpeakButton } from '../components/SpeakButton'
 import { BookmarkButton } from '../components/notebook/BookmarkButton'
 import { Stagger, StaggerItem } from '../components/Stagger'
-import { DECK_ID_PREFIX, EXTRA_DECKS, LEVEL_DECKS, TERM_INFO, VOCAB_DECK_INFO, getTerms } from '../data'
-import { useEntries, useKanjiIndex, useManifest } from '../hooks/useData'
+import { DECK_ID_PREFIX, EXTRA_DECKS, LEVEL_DECKS, TERM_INFO, VOCAB_DECK_INFO, getTerms, isCurrentId } from '../data'
+import { useEntries, useKanjiIndex, useManifest, useVocab } from '../hooks/useData'
 import { useDetailStack } from '../hooks/useDetailStack'
-import { useCards, useDueIds, usePrefixStats } from '../hooks/useProgress'
+import { useCards, useDueIds, useNow, usePrefixStats } from '../hooks/useProgress'
+import { dueForecast, forecastLabels } from '../lib/forecast'
+import { continueLesson, lessonProgress, splitLessons } from '../lib/lessons'
+import { useLessonSize } from '../lib/settings'
 import { fetchKanjiWords } from '../lib/kanjiWordsApi'
-import { kanjiPool, pickRandom, pushRecent, readRecent } from '../lib/randomKanji'
+import { kanjiPool, mergeKanjiWords, pickRandom, pushRecent, readRecent, type CardWord } from '../lib/randomKanji'
 import { speechText } from '../lib/speech'
 import { webWords } from '../lib/webWords'
 import { PUBLIC_BUILD, PUBLIC_GRAMMAR_NOTE } from '../lib/edition'
-import { TERM_CATEGORIES, type DataManifest, type KanjiEntry, type TermCategory, type VocabDeckKey } from '../types'
+import { TERM_CATEGORIES, type DataManifest, type KanjiEntry, type SrsCard, type TermCategory, type VocabDeckKey } from '../types'
 
 const CARD = 'flex h-full rounded-2xl border border-line bg-surface p-4 transition-colors hover:border-ai sm:p-5'
 
@@ -27,19 +30,12 @@ const fileCount = (m: DataManifest | undefined, path: string) => m?.files.find((
 /** Số từ đi kèm tối đa trên thẻ. */
 const MAX_WORDS = 5
 
-interface CardWord {
-  id: string
-  word: string
-  reading: string
-  meaning: string
-  speak: string
-}
-
 const isOnline = () => typeof navigator === 'undefined' || navigator.onLine !== false
 
 /**
  * Từ đi kèm chữ: lấy từ dữ liệu có sẵn (cấp thấp trước); có mạng mà chưa đủ MAX_WORDS thì tra thêm
- * qua Mazii. Mất mạng thì chỉ hiện từ có sẵn, không có từ nào thì không hiện danh sách.
+ * qua Mazii. Con số "x từ chứa chữ này" và danh sách hiện ra lấy từ CÙNG một danh sách gộp
+ * (mergeKanjiWords): từ Mazii về thì số tăng theo đúng số từ thêm vào danh sách.
  */
 function useKanjiWords(kanji: KanjiEntry) {
   const localIds = useMemo(() => kanji.words.slice(0, MAX_WORDS), [kanji.words])
@@ -62,7 +58,7 @@ function useKanjiWords(kanji: KanjiEntry) {
     const known = new Set(localWords.map((w) => w.word))
     fetchKanjiWords(kanji.kanji, ctrl.signal).then((found) => {
       if (ctrl.signal.aborted) return
-      const extra = found.filter((w) => !known.has(w.word)).slice(0, need)
+      const extra = found.filter((w) => !known.has(w.word))
       const ids = webWords.addAll(extra)
       setOnline({ ch: kanji.kanji, words: extra.map((w, i) => ({ id: ids[i], word: w.word, reading: w.reading, meaning: w.meaning, speak: w.reading || w.word })) })
     })
@@ -71,7 +67,10 @@ function useKanjiWords(kanji: KanjiEntry) {
 
   const extra = online?.ch === kanji.kanji ? online.words : []
   const fetching = need > 0 && online?.ch !== kanji.kanji && isOnline()
-  return { words: [...localWords, ...extra], loading: !localReady || fetching, error: local.status === 'error' }
+  const merged = mergeKanjiWords(localWords, kanji.wordCount, extra)
+  // Số hàng giữ chỗ: biết trước nếu dữ liệu có đủ MAX_WORDS từ (hoặc mất mạng); còn chờ Mazii thì giữ đủ MAX_WORDS.
+  const slots = kanji.wordCount >= MAX_WORDS || !isOnline() ? Math.min(kanji.wordCount, MAX_WORDS) : MAX_WORDS
+  return { words: merged.items.slice(0, MAX_WORDS), total: merged.total, slots, loading: !localReady || fetching, error: local.status === 'error' }
 }
 
 function DiceIcon() {
@@ -88,7 +87,7 @@ function DiceIcon() {
 }
 
 function RandomKanji({ kanji, onOpenWord }: { kanji: KanjiEntry; onOpenWord: (id: string) => void }) {
-  const { words, loading } = useKanjiWords(kanji)
+  const { words, total, slots, loading } = useKanjiWords(kanji)
   return (
     <div data-random-kanji={kanji.kanji}>
       <div className="mt-4 flex items-center gap-[clamp(1rem,5cqw,1.75rem)]">
@@ -96,8 +95,9 @@ function RandomKanji({ kanji, onOpenWord }: { kanji: KanjiEntry; onOpenWord: (id
         <div className="min-w-0">
           <p className="text-[clamp(1.5rem,8cqw,2.5rem)] leading-tight font-bold tracking-wide">{kanji.hanViet}</p>
           {kanji.hanVietAlt?.length ? <p className="mt-1 text-muted">Âm khác: {kanji.hanVietAlt.join(', ')}</p> : null}
-          <p className="mt-2 text-sm text-muted">
-            {kanji.wordCount} từ chứa chữ này{kanji.firstLevel && `, xuất hiện từ ${kanji.firstLevel}`}
+          <p className="mt-2 text-sm text-muted" data-word-total={total}>
+            <span className="inline-block min-w-[2ch] text-right tabular-nums">{total}</span> từ chứa chữ này
+            {kanji.firstLevel && `, xuất hiện từ ${kanji.firstLevel}`}
           </p>
           <div className="mt-1 flex items-center gap-1">
             <Link to={`/kanji?k=${encodeURIComponent(kanji.kanji)}`} className="mr-2 inline-block text-sm font-medium text-ai hover:underline">
@@ -108,7 +108,7 @@ function RandomKanji({ kanji, onOpenWord }: { kanji: KanjiEntry; onOpenWord: (id
         </div>
       </div>
       {(words.length > 0 || loading) && (
-        <ul className="mt-5 space-y-1 border-t border-cell-line/60 pt-3 text-sm" aria-label={`Từ có chữ ${kanji.kanji}`}>
+        <ul className="mt-5 space-y-1 border-t border-cell-line/60 pt-3 text-sm" aria-label={`Từ có chữ ${kanji.kanji}`} data-kanji-words>
           {words.map((w) => (
             <li key={w.id} data-kanji-word={w.id} className="flex items-center gap-2">
               <button
@@ -129,9 +129,10 @@ function RandomKanji({ kanji, onOpenWord }: { kanji: KanjiEntry; onOpenWord: (id
               <SpeakButton text={w.speak} size="sm" label={`Nghe ${w.word}`} />
             </li>
           ))}
+          {/* Giữ đúng số hàng sẽ hiện (cao bằng hàng thật, min-h-11) để từ về không làm thẻ đổi chiều cao. */}
           {loading &&
-            Array.from({ length: Math.max(1, Math.min(2, MAX_WORDS - words.length)) }, (_, i) => (
-              <li key={`s${i}`} role="status" aria-label="Đang tải từ đi kèm" className="py-2">
+            Array.from({ length: Math.max(0, slots - words.length) }, (_, i) => (
+              <li key={`s${i}`} role="status" aria-label="Đang tải từ đi kèm" className="flex min-h-11 items-center">
                 <Skeleton className="h-5 w-2/3 bg-surface/60" />
               </li>
             ))}
@@ -207,7 +208,7 @@ function RandomKanjiCard() {
       ) : kanji ? (
         <AnimatePresence mode="wait" initial={false}>
           <motion.div key={kanji.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.15 }}>
-            <RandomKanji kanji={kanji} onOpenWord={(id) => stack.push({ t: 'w', id })} />
+            <RandomKanji kanji={kanji} onOpenWord={(id) => stack.open({ t: 'w', id })} />
           </motion.div>
         </AnimatePresence>
       ) : (
@@ -223,39 +224,117 @@ function RandomKanjiCard() {
   )
 }
 
+/** Biểu đồ cột nhỏ: số thẻ đến hạn 7 ngày tới (từ `due` của thẻ, không cần lịch sử). */
+function Forecast({ counts, labels }: { counts: number[]; labels: string[] }) {
+  const max = Math.max(1, ...counts)
+  return (
+    <figure className="w-full" data-due-forecast>
+      <figcaption className="mb-2 text-sm text-muted">Thẻ đến hạn 7 ngày tới</figcaption>
+      <ol className="grid h-20 grid-cols-7 items-end gap-1.5">
+        {counts.map((n, i) => (
+          <li key={i} className="flex h-full flex-col items-center justify-end gap-1" aria-label={`${labels[i]}: ${n} thẻ`}>
+            <span className="text-[11px] leading-none tabular-nums text-muted">{n || ''}</span>
+            <span className={`w-full rounded-t ${i === 0 ? 'bg-ai' : 'bg-ai-soft'}`} style={{ height: `${Math.max(4, (n / max) * 80)}%` }} />
+          </li>
+        ))}
+      </ol>
+      <div className="mt-1 grid grid-cols-7 gap-1.5 text-center text-[11px] text-muted" aria-hidden>
+        {labels.map((l, i) => (
+          <span key={i}>{l}</span>
+        ))}
+      </div>
+    </figure>
+  )
+}
+
+/** Bộ từ đang học: bộ của thẻ ôn gần nhất (mặc định N5). */
+function activeDeck(cards: Record<string, SrsCard>): VocabDeckKey {
+  let best: SrsCard | undefined
+  for (const c of Object.values(cards)) if (isCurrentId(c.id) && (!best || c.lastReviewed > best.lastReviewed)) best = c
+  const prefix = best?.id.split('-')[0]
+  return (Object.keys(DECK_ID_PREFIX) as VocabDeckKey[]).find((k) => DECK_ID_PREFIX[k] === prefix) ?? 'n5'
+}
+
+/** 3 bài gợi ý tiếp theo của bộ đang học: bắt đầu từ bài "học tiếp", bỏ bài đã thuộc hết. */
+function NextLessons({ cards }: { cards: Record<string, SrsCard> }) {
+  const deck = activeDeck(cards)
+  const vocab = useVocab({ kind: 'vocab', key: deck })
+  const size = useLessonSize()
+  const next = useMemo(() => {
+    if (!vocab.data) return []
+    const prog = splitLessons(vocab.data, size).map((l) => lessonProgress(l.map((w) => w.id), cards))
+    const from = continueLesson(prog)
+    return prog
+      .map((p, i) => ({ ...p, i }))
+      .filter((p) => p.i >= from && p.state !== 'mastered')
+      .slice(0, 3)
+  }, [vocab.data, size, cards])
+  const info = VOCAB_DECK_INFO[deck]
+  return (
+    <div className="w-full" data-next-lessons>
+      <p className="mb-2 text-sm text-muted">Bài tiếp theo · {info.level ?? info.name}</p>
+      <ul className="space-y-1.5">
+        {vocab.data
+          ? next.map((l) => (
+              <li key={l.i}>
+                <Link to={`/vocab/${deck}/${l.i + 1}`} className="flex min-h-11 items-center justify-between gap-3 rounded-lg border border-line px-3 hover:border-ai">
+                  <span className="font-medium">Bài {l.i + 1}</span>
+                  <span className="text-sm tabular-nums text-muted">
+                    {l.learned}/{l.total} từ
+                  </span>
+                </Link>
+              </li>
+            ))
+          : Array.from({ length: 3 }, (_, i) => (
+              <li key={i}>
+                <Skeleton className="h-11" />
+              </li>
+            ))}
+      </ul>
+    </div>
+  )
+}
+
 function DueCard() {
   const due = useDueIds().length
-  const scheduled = Object.keys(useCards()).length
+  const cards = useCards()
+  const now = useNow()
+  // Thẻ của dữ liệu hiện tại (bỏ id cũ không còn) để số "đang chờ" khớp với trang Ôn tập.
+  const current = useMemo(() => Object.values(cards).filter((c) => isCurrentId(c.id)), [cards])
+  const counts = useMemo(() => dueForecast(current, now), [current, now])
+  const labels = useMemo(() => forecastLabels(now), [now])
   return (
-    <section
-      aria-labelledby="due"
-      className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-line bg-surface p-5 lg:flex-col lg:flex-nowrap lg:items-start lg:justify-start lg:p-7"
-    >
-      <div className="lg:flex lg:flex-1 lg:flex-col">
-        <h2 id="due" className="font-semibold lg:text-sm lg:font-medium lg:text-muted">
-          {due > 0 ? (
-            <>
-              <span className="lg:hidden">{due} thẻ cần ôn hôm nay</span>
-              <span className="hidden lg:inline">Cần ôn hôm nay</span>
-            </>
-          ) : (
-            'Không có thẻ nào đến hạn'
-          )}
-        </h2>
-        <p className="hidden lg:mt-3 lg:block">
-          <AnimatedNumber value={due > 0 ? due : scheduled} className={`text-6xl font-bold ${due > 0 ? 'text-ai' : 'text-muted'}`} />
-          <span className="ml-2 text-muted">{due > 0 ? 'thẻ' : 'thẻ đang chờ trong lịch ôn'}</span>
-        </p>
-        <p className="mt-0.5 text-sm text-muted lg:mt-auto lg:pt-4">
-          {due > 0 ? 'Ôn đúng lúc sắp quên giúp nhớ lâu hơn.' : 'Học từ mới bằng flashcard hoặc quiz, chúng sẽ tự vào lịch ôn.'}
-        </p>
+    <section aria-labelledby="due" className="flex flex-col gap-5 rounded-2xl border border-line bg-surface p-5 lg:p-6" data-due-card>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <div className="min-w-0">
+          <h2 id="due" className="font-semibold lg:text-sm lg:font-medium lg:text-muted">
+            {due > 0 ? (
+              <>
+                <span className="lg:hidden">{due} thẻ cần ôn hôm nay</span>
+                <span className="hidden lg:inline">Cần ôn hôm nay</span>
+              </>
+            ) : (
+              'Không có thẻ nào đến hạn'
+            )}
+          </h2>
+          <p className="hidden lg:mt-1 lg:block">
+            <AnimatedNumber value={due > 0 ? due : current.length} className={`text-5xl font-bold ${due > 0 ? 'text-ai' : 'text-muted'}`} />
+            <span className="ml-2 text-muted">{due > 0 ? 'thẻ' : 'thẻ đang chờ trong lịch ôn'}</span>
+          </p>
+        </div>
+        <ButtonLink
+          to={due > 0 ? '/review' : '/vocab/n5'}
+          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-ai px-5 font-semibold text-on-ai hover:opacity-90"
+        >
+          {due > 0 ? 'Ôn tập ngay' : 'Học từ N5'}
+        </ButtonLink>
       </div>
-      <ButtonLink
-        to={due > 0 ? '/review' : '/vocab/n5'}
-        className="inline-flex min-h-11 items-center justify-center rounded-lg bg-ai px-5 font-semibold text-on-ai hover:opacity-90 lg:w-full"
-      >
-        {due > 0 ? 'Ôn tập ngay' : 'Học từ N5'}
-      </ButtonLink>
+      {current.length > 0 ? (
+        <Forecast counts={counts} labels={labels} />
+      ) : (
+        <p className="text-sm text-muted">Học từ mới bằng flashcard hoặc quiz, chúng sẽ tự vào lịch ôn.</p>
+      )}
+      <NextLessons cards={cards} />
     </section>
   )
 }

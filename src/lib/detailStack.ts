@@ -1,10 +1,13 @@
 /**
  * Ngăn xếp chi tiết trong panel / bottom sheet: chữ Hán → từ → chữ Hán khác…
  * Lưu trong URL (?xem=w:n5-1a2b3c4d~k:日~r:72) để F5 và nút Back hoạt động đúng.
+ *
+ * Quy tắc: bấm một mục ở danh sách chính (lưới, kết quả tìm kiếm) THAY cả ngăn xếp bằng mục đó;
+ * chỉ thao tác bên trong panel (chữ/từ liên quan) mới đẩy thêm. Tối đa MAX_FRAMES khung (kể cả chữ gốc ?k=).
  */
 export type Frame = { t: 'w'; id: string } | { t: 'k'; ch: string } | { t: 'r'; no: number }
 
-export const MAX_FRAMES = 12
+export const MAX_FRAMES = 8
 const SEP = '~'
 
 export function frameKey(f: Frame): string {
@@ -38,12 +41,13 @@ export const sameFrame = (a: Frame | undefined, b: Frame | undefined) => Boolean
 
 /**
  * Thêm khung lên đầu ngăn xếp. `below` là khung nằm dưới cùng không thuộc danh sách (ví dụ chữ Hán gốc
- * ở ?k=): không đẩy trùng khung đang hiện. Quá MAX_FRAMES thì bỏ khung cũ nhất.
+ * ở ?k=): không đẩy trùng khung đang hiện. Tổng số khung (tính cả `below`) quá MAX_FRAMES thì bỏ khung cũ nhất
+ * trong `frames` (khung gốc giữ nguyên).
  */
 export function pushFrame(frames: readonly Frame[], f: Frame, below?: Frame): Frame[] {
   const top = frames[frames.length - 1] ?? below
   if (sameFrame(top, f)) return [...frames]
-  return [...frames, f].slice(-MAX_FRAMES)
+  return [...frames, f].slice(-(MAX_FRAMES - (below ? 1 : 0)))
 }
 
 export const popFrame = (frames: readonly Frame[]) => frames.slice(0, -1)

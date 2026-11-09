@@ -89,6 +89,8 @@
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
+    /* Luôn chừa chỗ thanh cuộn (Windows): trang dài/ngắn, mở sheet khóa cuộn không làm nội dung lệch ngang. */
+    scrollbar-gutter: stable;
   }
   html,
   body {

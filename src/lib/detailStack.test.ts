@@ -30,4 +30,14 @@ describe('ngăn xếp chi tiết', () => {
     expect(popFrame(st)).toHaveLength(MAX_FRAMES - 1)
     expect(popFrame([])).toEqual([])
   })
+
+  it('tối đa 8 khung kể cả chữ gốc; chữ gốc giữ nguyên', () => {
+    expect(MAX_FRAMES).toBe(8)
+    const root: Frame = { t: 'k', ch: '日' }
+    let st: Frame[] = []
+    for (let i = 0; i < 12; i++) st = pushFrame(st, { t: 'r', no: i + 1 }, root)
+    expect(st).toHaveLength(7)
+    expect(st[6]).toEqual({ t: 'r', no: 12 })
+    expect(parseStack(serializeStack([...st, ...st]))).toHaveLength(8)
+  })
 })

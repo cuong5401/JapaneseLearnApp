@@ -123,7 +123,7 @@ describe('id bộ thủ', () => {
     expect(radicalNo('rd-072')).toBe(72)
     expect(radicalNo('kj-15917f3b')).toBeNull()
     expect(pathForId('rd-072')).toBe('kanji/radicals.json')
-    const list = [{ no: 72, radical: '日', name: 'nhật', meaning: 'mặt trời' }]
+    const list = [{ no: 72, radical: '日', name: 'nhật', meaning: 'mặt trời', strokes: 4 }]
     expect(withRadicalIds(list)[0].id).toBe('rd-072')
     expect(withRadicalIds(list)).toBe(withRadicalIds(list))
   })

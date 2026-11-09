@@ -1,4 +1,3 @@
-import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { BottomSheet } from '../components/BottomSheet'
@@ -16,7 +15,7 @@ import { ChoiceQuiz, type ChoiceQuizConfig } from '../components/study/ChoiceQui
 import { FlashcardSession, type SessionLink } from '../components/study/FlashcardSession'
 import { KanjiQuiz } from '../components/study/KanjiQuiz'
 import { kanjiFaces, radicalFaces, sampleWordIds } from '../components/study/faces'
-import { STUDY_PAGE } from '../components/StudyLayout'
+import { STUDY_PAGE, TAB_AREA } from '../components/StudyLayout'
 import { kanjiOfRadical } from '../data/radicalKanji'
 import { useEntries, useKanjiIndex, useRadicals } from '../hooks/useData'
 import { useDetailStack } from '../hooks/useDetailStack'
@@ -125,8 +124,7 @@ function RadicalCard({ r, onOpen }: { r: RadicalItem; onOpen: (r: RadicalItem) =
       <GridCell className="size-14">{r.radical}</GridCell>
       <span className="pointer-events-none min-w-0">
         <span className="block text-xs tabular-nums text-muted">
-          Bộ {r.no}
-          {count > 0 && ` · ${count} chữ`}
+          Bộ {r.no} · {count} chữ
         </span>
         <span className="block truncate font-semibold capitalize">{r.name}</span>
         <span className="block text-sm leading-snug text-muted">{r.meaning}</span>
@@ -200,6 +198,16 @@ function KanjiFlashcards({ chars, back, next }: { chars: KanjiEntry[]; back: Ses
   return <FlashcardSession items={chars} faces={faces} label={(k) => `chữ ${k.kanji}`} back={back} next={next} />
 }
 
+/** Panel desktop khi chưa chọn gì: giữ đúng chỗ 360px, không để cột trái giãn ra. */
+function EmptyPanel({ section }: { section: Section }) {
+  return (
+    <div className="flex min-h-64 flex-col items-center justify-center gap-3 text-center text-muted" data-empty-panel>
+      <GridCell className="size-20 opacity-40">{section === 'radicals' ? '部' : '字'}</GridCell>
+      <p>{section === 'radicals' ? 'Chọn một bộ để xem chi tiết' : 'Chọn một chữ để xem chi tiết'}</p>
+    </div>
+  )
+}
+
 /* ───────────── Trang ───────────── */
 
 export function Kanji() {
@@ -241,9 +249,9 @@ export function Kanji() {
       { replace },
     )
 
-  // Chọn chữ: desktop thay chữ trong panel (replace), điện thoại mở sheet (push để Back đóng sheet).
-  const pickChar = (k: KanjiEntry) => stack.setRoot(k.kanji, wide ? 'replace' : 'push')
-  const openRadical = (r: RadicalItem) => stack.push({ t: 'r', no: r.no })
+  // Bấm ở lưới = THAY ngăn xếp (desktop: replace; điện thoại: sheet chưa mở thì push để Back đóng sheet).
+  const pickChar = (k: KanjiEntry) => stack.open({ t: 'k', ch: k.kanji }, { replace: wide })
+  const openRadical = (r: RadicalItem) => stack.open({ t: 'r', no: r.no }, { replace: wide })
 
   const levelLabel = LEVEL_OPTIONS.find((o) => o.value === level)?.label ?? ''
   const gridHref = kanjiHref(params, { bai: null, mode: null })
@@ -283,6 +291,7 @@ export function Kanji() {
               mode={mode}
               onMode={(m) => setParam({ mode: m === 'list' ? null : m, xem: null })}
             />
+            <div className={TAB_AREA} data-tab-area>
             {mode === 'list' && <CharGrid chars={chars} active={stack.root?.t === 'k' ? stack.root.ch : defaultFrame?.t === 'k' ? defaultFrame.ch : undefined} onPick={pickChar} />}
             {mode === 'flashcards' && (
               <div className={STUDY_PAGE}>
@@ -294,6 +303,7 @@ export function Kanji() {
                 <KanjiQuiz key={`${lessonIndex}-${size}-${level}`} pool={chars} distractors={filtered} />
               </div>
             )}
+            </div>
           </>
         )
       }
@@ -349,6 +359,7 @@ export function Kanji() {
               mode={mode}
               onMode={(m) => setParam({ mode: m === 'list' ? null : m, xem: null })}
             />
+            <div className={TAB_AREA} data-tab-area>
             {mode === 'list' && <RadicalList items={items} onOpen={openRadical} />}
             {mode === 'flashcards' && (
               <div className={STUDY_PAGE}>
@@ -360,6 +371,7 @@ export function Kanji() {
                 <ChoiceQuiz key={`${lessonIndex}-${size}`} items={items} pool={radicals.data} config={RADICAL_QUIZ} />
               </div>
             )}
+            </div>
           </>
         )
       }
@@ -367,8 +379,9 @@ export function Kanji() {
   }
 
   // Ngăn xếp chi tiết: ?k= (chữ gốc) + ?xem=; desktop có chữ mặc định để panel không trống.
+  // Panel luôn giữ chỗ 360px ở desktop (chế độ danh sách) để chọn mục / đổi tab không làm cột trái đổi độ rộng.
   const frames = stack.frames.length ? stack.frames : defaultFrame ? [defaultFrame] : []
-  const showPanel = wide && frames.length > 0 && mode === 'list'
+  const showPanel = wide && mode === 'list'
 
   return (
     <div>
@@ -401,15 +414,19 @@ export function Kanji() {
         )}
       </div>
 
-      <div className={showPanel ? 'grid grid-cols-[minmax(0,1fr)_340px] items-start gap-8' : ''}>
+      <div className={showPanel ? 'grid grid-cols-[minmax(0,1fr)_360px] items-start gap-8' : ''} data-kanji-layout>
         <div className="min-w-0">{body}</div>
         {showPanel && (
-          <aside className="sticky top-10 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain rounded-2xl border border-line bg-surface p-5" aria-label="Chi tiết chữ Hán">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div key={frames.length} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }}>
-                <DetailStackView frames={frames} onPush={stack.push} onBack={stack.back} />
-              </motion.div>
-            </AnimatePresence>
+          <aside
+            className="sticky top-10 max-h-[calc(100dvh-5rem)] w-[360px] min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain rounded-2xl border border-line bg-surface p-5 break-words [scrollbar-gutter:stable]"
+            aria-label="Chi tiết chữ Hán"
+            data-detail-panel
+          >
+            {frames.length ? (
+              <DetailStackView frames={frames} onPush={stack.push} onBack={stack.back} />
+            ) : (
+              <EmptyPanel section={section} />
+            )}
           </aside>
         )}
       </div>

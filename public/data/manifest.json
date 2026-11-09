@@ -1,7 +1,7 @@
 {
-  "version": "202611081220",
+  "version": "202611091102",
   "source": "TU-VUNG-NGU-PHAP-N5-1.xlsx",
-  "generatedAt": "2026-11-08T12:20:28+00:00",
+  "generatedAt": "2026-11-09T11:02:01+00:00",
   "pageSize": 20,
   "files": [
     {
@@ -85,9 +85,9 @@
       "path": "kanji/radicals.json",
       "kind": "radicals",
       "title": "Bộ thủ",
-      "count": 205,
-      "bytes": 13582,
-      "hash": "4a07bc718f"
+      "count": 214,
+      "bytes": 17539,
+      "hash": "23f03849a1"
     },
     {
       "path": "grammar/n5.json",

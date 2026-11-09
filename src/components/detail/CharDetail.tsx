@@ -5,7 +5,7 @@ import { charRef } from '../../lib/chars'
 import type { Frame } from '../../lib/detailStack'
 import { VOCAB_DECKS, type VocabItem } from '../../types'
 import { GridCell } from '../GridCell'
-import { LoadError, Skeleton } from '../LoadState'
+import { LoadError, Skeleton, SkeletonRows } from '../LoadState'
 import { AskAiLink } from '../ai/AskAiLink'
 import { kanjiQuestion } from '../../lib/ai/questions'
 import { BookmarkButton } from '../notebook/BookmarkButton'
@@ -46,7 +46,11 @@ export function CharDetail({ ch, onPush }: { ch: string; onPush: (f: Frame) => v
             <BookmarkButton itemRef={charRef(ch)} label={`chữ ${ch}`} className="-mt-1.5 -mr-2" />
           </div>
           <p className="mt-1 text-sm text-muted">Chữ này chưa có trong danh sách chữ Hán của Kotonoha nên chưa có âm Hán Việt và chưa vào lịch ôn.</p>
-          {!pending && <p className="mt-2 text-sm text-muted">{words.length ? `${words.length} từ chứa chữ này` : 'Không có từ nào chứa chữ này'}</p>}
+          {pending ? (
+            <Skeleton className="mt-2 h-5 w-32 rounded-md" />
+          ) : (
+            <p className="mt-2 text-sm text-muted">{words.length ? `${words.length} từ chứa chữ này` : 'Không có từ nào chứa chữ này'}</p>
+          )}
         </div>
       </div>
       <AskAiLink question={kanjiQuestion(ch)} className="mt-4 w-full" />
@@ -56,21 +60,17 @@ export function CharDetail({ ch, onPush }: { ch: string; onPush: (f: Frame) => v
       </h3>
       {files.status === 'error' && <LoadError error={files.error} onRetry={files.retry} />}
       {pending && files.status !== 'error' ? (
-        <div className="space-y-2">
-          {Array.from({ length: 3 }, (_, i) => (
-            <Skeleton key={i} className="h-11" />
-          ))}
-        </div>
+        <SkeletonRows count={5} className="min-h-24" />
       ) : words.length === 0 ? (
         <p className="py-3 text-sm text-muted">Trong các bộ từ hiện có không có từ nào chứa chữ {ch}.</p>
       ) : (
-        <ul className="divide-y divide-line">
+        <ul className="min-h-24 divide-y divide-line">
           {words.slice(0, LIMIT).map((w) => (
             <li key={w.id}>
               <button
                 type="button"
                 onClick={() => onPush({ t: 'w', id: w.id })}
-                className="-mx-2 flex w-[calc(100%+1rem)] items-baseline gap-x-3 rounded-lg px-2 py-2.5 text-left hover:bg-sunken"
+                className="-mx-2 flex min-h-12 w-[calc(100%+1rem)] items-baseline gap-x-3 rounded-lg px-2 py-2.5 text-left hover:bg-sunken"
               >
                 <span lang="ja" className="shrink-0 font-jp text-lg font-medium">
                   {w.word}
