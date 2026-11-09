@@ -46,7 +46,8 @@ export function useDetailStack(rootParam?: 'k'): DetailStack {
   const push = useCallback(
     (f: Frame) => {
       const next = pushFrame(extra, f, root ?? undefined)
-      if (next.length === extra.length) return
+      // Trùng khung đang hiện thì bỏ qua (đủ 8 khung thì độ dài không đổi nhưng vẫn là khung mới).
+      if (serializeStack(next) === serializeStack(extra)) return
       setParams(
         (p) => {
           p.set('xem', serializeStack(next))

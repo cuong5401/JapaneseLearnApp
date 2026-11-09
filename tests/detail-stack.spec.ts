@@ -38,6 +38,7 @@ test('bấm 12 lần trong panel: tối đa 8 khung, ‹ lùi đúng khung trư�
   await settle(page)
   const panel = page.getByRole('complementary', { name: 'Chi tiết chữ Hán' })
   await expect(panel.locator('[data-detail-kanji="日"]')).toBeVisible()
+  await page.waitForTimeout(400)
   const seen: string[] = []
   for (let i = 0; i < 12; i++) {
     // xen kẽ: chữ → từ đầu tiên chứa chữ; từ → chữ Hán đầu tiên trong từ (khác chữ vừa xem nếu có)
@@ -50,6 +51,8 @@ test('bấm 12 lần trong panel: tối đa 8 khung, ‹ lùi đúng khung trư�
       await chars.nth(n > 1 ? 1 : 0).click()
     }
     await settle(page)
+    // chờ hiệu ứng chuyển khung trong panel xong (khung cũ còn trong DOM khi đang thoát)
+    await page.waitForTimeout(400)
     seen.push(new URL(page.url()).searchParams.get('xem') ?? '')
     expect(frameCount(page)).toBeLessThanOrEqual(8)
   }

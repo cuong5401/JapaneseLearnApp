@@ -14,7 +14,7 @@ export const LESSON_PAGE = 'mx-auto w-full max-w-[880px]'
  * Vùng nội dung tab: cao tối thiểu bằng vùng flashcard (thẻ clamp(21rem,60vh,28rem) + hàng nút trên/dưới)
  * để đổi tab (danh sách ngắn ↔ flashcard) không làm trang co lại.
  */
-export const TAB_AREA = 'min-h-[calc(clamp(21rem,60vh,28rem)+9rem)]'
+export const TAB_AREA = 'min-h-[calc(clamp(21rem,60vh,28rem)+12rem)]'
 
 /** Vùng học (tối đa 560px) và cột thông tin phiên 280px bên phải trên desktop. */
 export function StudyLayout({ children, aside }: { children: ReactNode; aside: ReactNode }) {

@@ -13,14 +13,20 @@ process.env.E2E_BASE = '/JapaneseLearnApp/'
 const PREVIEW = /[\\/]preview[\\/].*\.spec\.ts$/
 const DOCK_PHONE = /dock\.mobile\.spec\.ts$/
 
+/**
+ * PW_CHANNEL=chrome: chạy project Chromium bằng Google Chrome đã cài (có chữ ký) thay cho chromium-headless-shell
+ * của Playwright, khi Windows Smart App Control chặn trình duyệt tải về. WebKit vẫn dùng bản của Playwright.
+ */
+const CHROME = process.env.PW_CHANNEL ? { channel: process.env.PW_CHANNEL } : {}
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
   reporter: [['list']],
   use: { baseURL: `http://localhost:${PORT}` },
   projects: [
-    { name: 'preview-desktop', testMatch: PREVIEW, use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 900 } } },
-    { name: 'preview-phone', testMatch: [PREVIEW, DOCK_PHONE], use: { ...devices['Pixel 7'] } },
+    { name: 'preview-desktop', testMatch: PREVIEW, use: { ...devices['Desktop Chrome'], ...CHROME, viewport: { width: 1280, height: 900 } } },
+    { name: 'preview-phone', testMatch: [PREVIEW, DOCK_PHONE], use: { ...devices['Pixel 7'], ...CHROME } },
     { name: 'preview-iphone', testMatch: DOCK_PHONE, use: { ...devices['iPhone 15'] } },
   ],
   webServer: {

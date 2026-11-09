@@ -23,6 +23,16 @@ const tab = (page: Page) => page.locator('[data-ai-tab]')
 const panel = (page: Page) => page.locator('[data-ai-panel]')
 const box = async (page: Page, sel: string) => (await page.locator(sel).boundingBox())!
 const viewport = (page: Page) => page.viewportSize()!
+/** Chiều rộng bố cục (trừ chỗ chừa thanh cuộn – scrollbar-gutter trên màn ≥ 768px): lề phải của phần tử fixed. */
+const layoutWidth = (page: Page) =>
+  page.evaluate(() => {
+    const probe = document.createElement('div')
+    probe.style.cssText = 'position:fixed;right:0;top:0;width:1px;height:1px'
+    document.body.append(probe)
+    const r = Math.round(probe.getBoundingClientRect().right)
+    probe.remove()
+    return r
+  })
 
 /** Khung đã trượt hết vào trong màn hình (hết hiệu ứng). */
 async function expectOpen(page: Page) {
@@ -32,7 +42,7 @@ async function expectOpen(page: Page) {
       const b = await panel(page).boundingBox()
       return b ? Math.round(b.x + b.width) : 0
     })
-    .toBeLessThanOrEqual(viewport(page).width)
+    .toBeLessThanOrEqual(await layoutWidth(page))
   await settled(page, '[data-ai-panel]')
 }
 
@@ -53,8 +63,9 @@ async function settled(page: Page, sel: string) {
 async function expectClosed(page: Page) {
   await expect(dock(page)).toHaveAttribute('data-ai-dock', 'closed')
   // Tab dính sát lề phải, khung nằm ngoài màn hình.
-  await expect.poll(async () => Math.round((await tab(page).boundingBox())!.x + (await tab(page).boundingBox())!.width)).toBe(viewport(page).width)
-  await expect.poll(async () => Math.round((await panel(page).boundingBox())!.x)).toBeGreaterThanOrEqual(viewport(page).width)
+  const right = await layoutWidth(page)
+  await expect.poll(async () => Math.round((await tab(page).boundingBox())!.x + (await tab(page).boundingBox())!.width)).toBe(right)
+  await expect.poll(async () => Math.round((await panel(page).boundingBox())!.x)).toBeGreaterThanOrEqual(right)
   // Khung nằm ngoài lề phải nhưng bị cắt: trang không cuộn ngang được.
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 }
@@ -91,7 +102,7 @@ for (const width of WIDTHS) {
         } else {
           expect(p.width).toBeCloseTo(400, 0)
           expect(p.height).toBeCloseTo(600, 0)
-          expect(width - (p.x + p.width)).toBeCloseTo(24, 0)
+          expect((await layoutWidth(page)) - (p.x + p.width)).toBeCloseTo(24, 0)
           expect(900 - (p.y + p.height)).toBeCloseTo(24, 0)
         }
         await expect(panel(page).getByRole('heading', { name: 'Hỏi AI' })).toBeVisible()

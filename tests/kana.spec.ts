@@ -201,9 +201,9 @@ for (const width of WIDTHS) {
       expect(Object.keys(await stats())).toEqual(['h-a'])
       expect((await stats())['h-a'].streak).toBe(1)
 
-      for (let i = 0; i < 4; i++) {
+      for (const next of ['h-u', 'h-e', 'h-o', null]) {
         await page.keyboard.press('ArrowRight')
-        await page.waitForTimeout(250)
+        if (next) await expect(page.locator(`[data-kana-front="${next}"]`)).toBeVisible()
       }
       await expect(page.getByText('Đã nhớ').first()).toBeVisible()
       await expect(page.getByRole('link', { name: 'Về bảng chữ cái' })).toBeVisible()
