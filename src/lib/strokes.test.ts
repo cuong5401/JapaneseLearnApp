@@ -1,6 +1,6 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { firstPoint, labelPositions, lastPoint, parseStrokeData, startDir, strokeFile } from './strokes'
+import { approxLength, firstPoint, labelPositions, lastPoint, parseStrokeData, pathErrors, startDir, strokeFile } from './strokes'
 
 const load = (ch: string) => parseStrokeData(JSON.parse(readFileSync(`public/data/${strokeFile(ch)}`, 'utf-8')))!
 
@@ -56,5 +56,42 @@ describe('vị trí vòng số thứ tự nét', () => {
   it('hướng đặt bút nét 1 chữ 日 là đi xuống', () => {
     const [, dy] = startDir(load('日').strokes[0].d)
     expect(dy).toBeGreaterThan(0.5)
+  })
+})
+
+describe('dữ liệu path sau nén', () => {
+  it('pathErrors bắt đúng lỗi nén cũ', () => {
+    expect(pathErrors('M1,1c14.6-0,1,1,2,2')).toContain('có số "-0"')
+    // "14.62-0.02" bị nén thành "14.60": lệnh c chỉ còn 5 tham số
+    expect(pathErrors('M1,1c14.60,1,1,2,2')).toEqual(['lệnh c có 5 tham số'])
+    expect(pathErrors('M1,1c14.6,0,1,1,2,2c1.5.5,1,1,2,2')).toEqual([])
+    expect(pathErrors('M1,1c1-0.5,1,1,2,2')).toEqual([])
+  })
+
+  it('mọi path trong public/data/strokes hợp lệ, không nét nào bị cụt (dài > 2; nét chấm ngắn nhất ~5)', () => {
+    const files = readdirSync('public/data/strokes').filter((f) => f !== 'index.json')
+    expect(files.length).toBeGreaterThan(1700)
+    const bad: string[] = []
+    for (const f of files) {
+      const data = parseStrokeData(JSON.parse(readFileSync(`public/data/strokes/${f}`, 'utf-8')))!
+      for (const s of data.strokes) {
+        const errs = pathErrors(s.d)
+        const span = approxLength(s.d)
+        if (errs.length || span <= 2) bad.push(`${data.char} nét ${s.n}: ${errs.join(', ') || `ngắn ${span.toFixed(1)}`}`)
+      }
+    }
+    expect(bad).toEqual([])
+  })
+
+  it('事 8 nét (nét 8 sổ dọc xuyên giữa), 年 6 nét, 曜 18 nét', () => {
+    const ji = load('事').strokes
+    expect(ji).toHaveLength(8)
+    const [x0, y0] = firstPoint(ji[7].d)
+    const [, y1] = lastPoint(ji[7].d)
+    expect(y1 - y0).toBeGreaterThan(60)
+    expect(x0).toBeGreaterThan(45)
+    expect(x0).toBeLessThan(62)
+    expect(load('年').strokes).toHaveLength(6)
+    expect(load('曜').strokes).toHaveLength(18)
   })
 })

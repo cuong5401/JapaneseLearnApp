@@ -51,12 +51,13 @@ type Pt = [number, number]
 /**
  * Đi qua path dạng KanjiVG (M + c/C/s/S/l/L/h/v): trả về điểm đầu, điểm cuối, tiếp tuyến đầu và cuối.
  */
-function walk(d: string): { start: Pt; end: Pt; startDir: Pt; endDir: Pt } {
+function walk(d: string): { start: Pt; end: Pt; startDir: Pt; endDir: Pt; length: number } {
   let x = 0
   let y = 0
   let start: Pt = [0, 0]
   let startDir: Pt | null = null
   let ctrl: Pt = [0, 0] // điểm điều khiển cuối trước điểm hiện tại
+  let length = 0 // độ dài đường gấp khúc qua mọi điểm (≥ độ dài thật của đường cong)
   const take = (v: Pt) => {
     if (!startDir && (Math.abs(v[0] - start[0]) > 0.05 || Math.abs(v[1] - start[1]) > 0.05)) startDir = [v[0] - start[0], v[1] - start[1]]
   }
@@ -82,6 +83,11 @@ function walk(d: string): { start: Pt; end: Pt; startDir: Pt; endDir: Pt } {
       else if (lc === 'h') pts = [[rel ? x + g[0] : g[0], y]]
       else pts = [[x, rel ? y + g[0] : g[0]]]
       pts.forEach(take)
+      let prev: Pt = [x, y]
+      for (const q of pts) {
+        length += Math.hypot(q[0] - prev[0], q[1] - prev[1])
+        prev = q
+      }
       const last = pts[pts.length - 1]
       ctrl = pts.length > 1 ? pts[pts.length - 2] : [x, y]
       ;[x, y] = last
@@ -90,11 +96,14 @@ function walk(d: string): { start: Pt; end: Pt; startDir: Pt; endDir: Pt } {
   const end: Pt = [x, y]
   let endDir: Pt = [end[0] - ctrl[0], end[1] - ctrl[1]]
   if (Math.hypot(...endDir) < 0.05) endDir = [end[0] - start[0], end[1] - start[1]]
-  return { start, end, startDir: startDir ?? [0, 1], endDir }
+  return { start, end, startDir: startDir ?? [0, 1], endDir, length }
 }
 
 /** Điểm cuối của path. Đủ để biết hướng nét trong test. */
 export const lastPoint = (d: string): Pt => walk(d).end
+
+/** Độ dài xấp xỉ của nét (đường gấp khúc qua các điểm điều khiển và điểm cuối). */
+export const approxLength = (d: string): number => walk(d).length
 
 const unit = ([a, b]: Pt): Pt => {
   const l = Math.hypot(a, b) || 1
@@ -204,4 +213,44 @@ export function retryStrokes(ch: string) {
     states.delete(ch)
     request(ch)
   }
+}
+
+/* ───────────── Kiểm tra cú pháp path (test dữ liệu) ───────────── */
+
+const SVG_TOKEN = /([MmLlHhVvCcSsQqTtAaZz])|([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)|([\s,]+)|(.)/g
+const ARITY: Record<string, number> = { m: 2, l: 2, t: 2, c: 6, s: 4, q: 4, h: 1, v: 1, z: 0 }
+
+/**
+ * Lỗi cú pháp của một path SVG (rỗng = hợp lệ): ký tự lạ, lệnh thiếu / thừa tham số, số "-0"
+ * (dấu hiệu nén sai: "14.62-0.02" làm tròn thành "14.60" làm hỏng phần còn lại của path).
+ */
+export function pathErrors(d: string): string[] {
+  const errors: string[] = []
+  if (/-0(?![.\d]*[1-9])/.test(d)) errors.push('có số "-0"')
+  const tokens: (string | number)[] = []
+  for (const m of d.matchAll(SVG_TOKEN)) {
+    if (m[4]) errors.push(`ký tự lạ "${m[4]}"`)
+    else if (m[1]) tokens.push(m[1])
+    else if (m[2]) tokens.push(Number(m[2]))
+  }
+  if (typeof tokens[0] !== 'string' || tokens[0].toLowerCase() !== 'm') errors.push('không bắt đầu bằng M')
+  for (let i = 0; i < tokens.length; ) {
+    const cmd = tokens[i++]
+    if (typeof cmd !== 'string') {
+      errors.push('số không thuộc lệnh nào')
+      continue
+    }
+    const n = ARITY[cmd.toLowerCase()]
+    if (n === undefined) {
+      errors.push(`lệnh ${cmd} không hỗ trợ`)
+      continue
+    }
+    let count = 0
+    while (i < tokens.length && typeof tokens[i] === 'number') {
+      count++
+      i++
+    }
+    if (n === 0 ? count !== 0 : count === 0 || count % n !== 0) errors.push(`lệnh ${cmd} có ${count} tham số`)
+  }
+  return errors
 }

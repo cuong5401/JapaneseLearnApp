@@ -274,11 +274,3 @@ html[data-keyboard="open"] [data-ai-tab] {
     background: var(--sunken);
   }
 }
-
-/* Vùng cuộn ngang không lộ thanh cuộn (dải hình thứ tự nét): vẫn cuộn bằng vuốt / rê / con lăn. */
-.no-scrollbar {
-  scrollbar-width: none;
-}
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}

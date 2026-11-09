@@ -64,10 +64,13 @@
   khung). `public/data/strokes/<hex>.json` `{ char, strokes: [{ d, n, x, y }] }` + `strokes/index.json` (danh sách chữ có
   dữ liệu; app đọc trước, không fetch chữ thiếu → không 404). Không nằm trong manifest; SW cache runtime `/data/*.json`.
   Component `src/components/strokes/StrokeOrder.tsx` (SVG tự vẽ, không thư viện), store `src/lib/strokes.ts`.
-  Số thứ tự nét: vòng tròn đặt sát điểm đặt bút (`labelPositions`: lệch theo pháp tuyến, đè thì thử vị trí KanjiVG
-  rồi dò vòng quanh), cỡ chữ theo khung thật (≥ 11px), bật mặc định (`jla:v1:stroke-numbers`); màu: nét hiện tại
-  `--beni` (+ mũi tên cuối nét), đã vẽ `--ai` nhạt, chưa vẽ ẩn / mờ. Dải hình: không lộ thanh cuộn (`.no-scrollbar`),
-  snap, mờ hai mép; ≥ 1024px xếp nhiều hàng.
+  Số thứ tự nét (bật mặc định, `jla:v1:stroke-numbers`): chỉ nét hiện tại có vòng `--beni` (+ chấm đặt bút, mũi tên
+  cuối nét), nét đã vẽ là số xám nhỏ không nền, nét chưa vẽ không có số; vị trí theo `labelPositions` (không chồng).
+  Nét mờ: mảnh, `--cell-line`, opacity thấp. Không có dải hình nhỏ, không ghi nguồn dưới khung (ở Cài đặt + README).
+- **Nén path SVG (`scripts/import-strokes.py`)**: tách token đúng ngữ pháp SVG (số dính nhau "1.5.5", "14.62-0.02");
+  giữa hai số LUÔN có dấu phẩy, chỉ bỏ khi số sau âm SAU khi làm tròn; không bao giờ ra "-0"; làm tròn theo tọa độ
+  tuyệt đối (lệnh tương đối = round(abs) − round(điểm đầu đoạn)) để không cộng dồn sai số. `verify_path` bắt buộc
+  (đúng số tham số mỗi lệnh, lệch bản gốc < 0.5), sai thì script dừng. Vitest `strokes.test.ts` kiểm toàn bộ file.
 - `radicals.json`: đúng **214 bộ, `no` = số Khang Hy** (khối Unicode U+2F00–U+2FD5, NFKC), có `strokes`, `variants`
   (亻 của 人, 阝 ấp = 163 / 阝 phụ = 170 theo tên). Bộ thiếu trong Excel lấy từ `data-source/radicals-extra.json`
   (`auto: true`). `src/data/radical-kanji.json` (Unihan) cũng theo số Khang Hy. Script ghi
@@ -161,6 +164,8 @@
 - React Router cập nhật `location` trong transition: khi một component lười đang tải, `useLocation()` có thể
   chưa thấy mục lịch sử vừa đẩy → bắt Back bằng `popstate` và đọc `history.state`.
 - `useNavigationType()` giữ `POP` sau khi lùi; lần tải trang đầu cũng là `POP` → đừng coi đó là bấm Back.
+- Nén path thứ tự nét bằng regex làm tròn rồi ghép số: "14.62-0.02" → "14.60" (mất dấu trừ = mất dấu ngăn cách),
+  986/1795 chữ hỏng (事 mất nét sổ). Xem quy tắc nén path ở mục Dữ liệu.
 - Bộ thủ từng đánh số theo thứ tự dòng Excel (lệch số Khang Hy từ bộ 10, chữ thuộc bộ sai) → luôn dùng số Khang Hy.
 - Bấm nút chấm flashcard bằng chuột giữ focus trên nút → Space bấm lại nút thay vì lật thẻ (nút dùng `onMouseDown preventDefault`).
 - StrictMode chạy effect hai lần ở dev: việc gửi/tự động gửi hoãn một nhịp (`setTimeout 0`) và dọn trong cleanup.
