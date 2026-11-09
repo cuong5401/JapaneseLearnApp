@@ -10,6 +10,7 @@ import { UpdatePrompt } from './UpdatePrompt'
 import { Toaster } from './Toaster'
 import { SaveSheetHost } from './notebook/SaveSheet'
 import { GlobalDetail } from './detail/GlobalDetail'
+import { AiDock } from './ai/AiDock'
 
 // Hộp tìm kiếm và chỉ mục của nó chỉ tải khi mở lần đầu.
 const SearchDialog = lazy(() => import('./SearchDialog'))
@@ -31,9 +32,9 @@ const NAV: NavItem[] = [
   { to: '/kana', glyph: 'あ', label: 'Luyện kana', short: 'Kana', end: false, noBottom: true },
   { to: '/review', glyph: '復', label: 'Ôn tập', end: false },
   { to: '/notebooks', glyph: '帳', label: 'Sổ tay', end: false },
-  { to: '/ai', glyph: '問', label: 'Hỏi AI', end: false },
-  // Thanh đáy điện thoại có 6 chỗ: Tiến độ nhường chỗ cho Hỏi AI (vẫn có trong sidebar, nav trên, Cài đặt).
-  { to: '/progress', glyph: '進', label: 'Tiến độ', end: false, noBottom: true },
+  // Điện thoại đã có tab "Hỏi AI" nổi ở lề phải: thanh đáy nhường chỗ này cho Tiến độ.
+  { to: '/ai', glyph: '問', label: 'Hỏi AI', end: false, noBottom: true },
+  { to: '/progress', glyph: '進', label: 'Tiến độ', end: false },
 ]
 
 function GearIcon({ className = 'size-5' }: { className?: string }) {
@@ -227,7 +228,7 @@ export function Layout() {
       </aside>
 
       {/* Điện thoại & tablet: header */}
-      <header className="sticky top-0 z-20 border-b border-line bg-paper/90 pt-[env(safe-area-inset-top)] backdrop-blur lg:hidden">
+      <header data-app-header className="sticky top-0 z-20 border-b border-line bg-paper/90 pt-[env(safe-area-inset-top)] backdrop-blur lg:hidden">
         <div className="mx-auto flex h-14 max-w-[900px] items-center gap-4 px-4 md:px-6">
           <Logo />
           <nav className="ml-auto hidden items-center gap-0.5 md:flex" aria-label="Điều hướng chính">
@@ -305,6 +306,7 @@ export function Layout() {
       {/* Điện thoại: thanh điều hướng đáy */}
       <nav
         aria-label="Điều hướng chính"
+        data-bottom-nav
         className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       >
         <ul className="mx-auto grid max-w-lg grid-cols-6">
@@ -339,6 +341,8 @@ export function Layout() {
       <Toaster />
       <GlobalDetail />
       <SaveSheetHost />
+      {/* Khung chat nổi ở mọi trang, trừ trang Hỏi AI đầy đủ. */}
+      {!pathname.startsWith('/ai') && <AiDock />}
 
       {search.open && (
         <Suspense fallback={null}>

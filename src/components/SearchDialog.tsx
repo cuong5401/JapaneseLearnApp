@@ -1,9 +1,10 @@
 import { motion } from 'motion/react'
 import { Suspense, lazy, useDeferredValue, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { createPortal } from 'react-dom'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useDetailStack } from '../hooks/useDetailStack'
 import { useSearchDocs } from '../hooks/useSearchDocs'
+import { aiDock, type DockRequest } from '../lib/ai/dock'
 import { setHandoff } from '../lib/ai/handoff'
 import { modelSupportsImages } from '../lib/ai/providers'
 import { aiSettings, useAiSettings } from '../lib/ai/settings'
@@ -20,6 +21,7 @@ const HandwritingPanel = lazy(() => import('./handwriting/HandwritingPanel'))
 
 export default function SearchDialog({ onClose, initialDraw = false }: { onClose: () => void; initialDraw?: boolean }) {
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const stack = useDetailStack()
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -62,9 +64,13 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
   const canAskAi = ai.hasKey && modelSupportsImages(ai.provider, aiSettings.model())
   const askAiDrawn = (png: string) => {
     if (!png) return
-    setHandoff({ mode: 'lookup', text: 'Đây là chữ Hán tôi vẽ tay. Đó là chữ gì?', image: { mime: 'image/png', data: png } })
+    const request: DockRequest = { mode: 'lookup', text: 'Đây là chữ Hán tôi vẽ tay. Đó là chữ gì?', image: { mime: 'image/png', data: png } }
     onClose()
-    navigate('/ai')
+    // Trang /ai không có khung nổi: chuyển ảnh qua sessionStorage như trước. Trang khác: mở khung chat nổi.
+    if (pathname.startsWith('/ai')) {
+      setHandoff(request)
+      navigate('/ai')
+    } else aiDock.ask(request)
   }
   const viewDrawn = (ch: string) => {
     onClose()

@@ -7,6 +7,7 @@ import { VOCAB_DECKS, type VocabItem } from '../../types'
 import { GridCell } from '../GridCell'
 import { LoadError, Skeleton } from '../LoadState'
 import { AskAiLink } from '../ai/AskAiLink'
+import { kanjiQuestion } from '../../lib/ai/questions'
 import { BookmarkButton } from '../notebook/BookmarkButton'
 
 const PATHS = VOCAB_DECKS.map((k) => VOCAB_DECK_INFO[k].path)
@@ -48,7 +49,7 @@ export function CharDetail({ ch, onPush }: { ch: string; onPush: (f: Frame) => v
           {!pending && <p className="mt-2 text-sm text-muted">{words.length ? `${words.length} từ chứa chữ này` : 'Không có từ nào chứa chữ này'}</p>}
         </div>
       </div>
-      <AskAiLink mode="lookup" q={`Giải thích chữ Hán ${ch}: âm Hán Việt, ý nghĩa, cách đọc và các từ hay dùng`} className="mt-4 w-full" />
+      <AskAiLink question={kanjiQuestion(ch)} className="mt-4 w-full" />
       <h3 className="mt-6 mb-1 text-sm font-semibold text-muted">
         Từ chứa chữ {ch}
         {words.length > LIMIT && ` (${LIMIT}/${words.length} từ đầu tiên)`}

@@ -26,7 +26,9 @@ for (const width of WIDTHS) {
     test('Gửi câu hỏi → trả lời hiện dần (furigana, Markdown) → lưu từ vào sổ tay', async ({ page }) => {
       await useMock(page)
       await page.goto('/ai')
-      if (width < 768) await expect(page.getByRole('navigation').getByRole('link', { name: /Hỏi AI/ }).last()).toBeVisible()
+      // Điện thoại: Hỏi AI không còn trên thanh đáy (đã có khung chat nổi); trang /ai không hiện khung nổi.
+      if (width < 768) await expect(page.locator('[data-bottom-nav]').getByRole('link', { name: /Hỏi AI/ })).toHaveCount(0)
+      await expect(page.locator('[data-ai-dock]')).toHaveCount(0)
       await ask(page, '日本語')
 
       // Tra từ: dữ liệu sẵn có hiện ngay.
@@ -98,14 +100,16 @@ for (const width of WIDTHS) {
       expect(await noOverflow(page)).toBe(true)
     })
 
-    test('"Hỏi AI" từ chi tiết chữ Hán mở chat có sẵn câu hỏi và tự gửi', async ({ page }) => {
+    test('"Hỏi AI" từ chi tiết chữ Hán mở khung chat nổi có sẵn câu hỏi và tự gửi, không rời trang', async ({ page }) => {
       await useMock(page)
       await page.goto(`/kanji?k=${encodeURIComponent('日')}`)
-      await page.locator('[data-detail-kanji="日"]').waitFor()
+      await page.locator('[data-detail-kanji="日"]').first().waitFor()
       await page.locator('[data-ask-ai]').first().click()
-      await expect(page).toHaveURL(/\/ai\?c=/)
-      await expect(page.locator('[data-msg="user"]').first()).toContainText('Giải thích chữ Hán 日')
-      await expect(page.locator('[data-msg="assistant"]').last()).toContainText('tiếng Nhật', { timeout: 10_000 })
+      await expect(page.locator('[data-ai-dock]')).toHaveAttribute('data-ai-dock', 'open')
+      expect(new URL(page.url()).pathname).toBe('/kanji')
+      const panel = page.locator('[data-ai-panel]')
+      await expect(panel.locator('[data-msg="user"]').first()).toContainText('Giải thích chữ Hán 日')
+      await expect(panel.locator('[data-msg="assistant"]').last()).toContainText('tiếng Nhật', { timeout: 10_000 })
     })
   })
 }

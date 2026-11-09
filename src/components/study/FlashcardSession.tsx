@@ -18,6 +18,7 @@ import { isInteractiveTarget } from '../../lib/keyboard'
 import { progress } from '../../lib/progress'
 import { readJSON, writeJSON } from '../../lib/storage'
 import type { SrsCard, VocabItem } from '../../types'
+import { useDockQuiet } from '../../lib/ai/dock'
 
 export interface SessionLink {
   to: string
@@ -236,6 +237,8 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
   /** Tên ngắn của mục cho trình đọc màn hình */
   label?: (item: T) => string
 }) {
+  // Đang vuốt thẻ: tab "Hỏi AI" thu nhỏ, mờ đi, không đè vùng vuốt.
+  useDockQuiet()
   const [queue, setQueue] = useState<T[]>(source)
   const [pos, setPos] = useState(0)
   const [flipped, setFlipped] = useState(false)

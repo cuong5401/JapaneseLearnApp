@@ -81,6 +81,9 @@ function horizontalOverflow(page: Page) {
     const bad: string[] = []
     for (const el of document.querySelectorAll<HTMLElement>('body *')) {
       if (el.closest('[aria-hidden="true"].fixed')) continue // hiệu ứng ăn mừng
+      // Khung chat Hỏi AI thu gọn: cố ý nằm ngoài lề phải, vùng chứa fixed overflow-hidden cắt đi
+      // (ai-dock.spec kiểm riêng là trang không cuộn ngang được).
+      if (el.closest('[data-ai-dock="closed"]')) continue
       const r = el.getBoundingClientRect()
       if (r.width && (r.right > w + 1 || r.left < -1)) bad.push(`${el.tagName}.${String(el.className).slice(0, 50)}`)
     }

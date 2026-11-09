@@ -130,3 +130,64 @@ test('bottom sheet chi tiết cuộn trong chính nó (overscroll contain)', asy
   })
   expect(ob).toBe('contain')
 })
+
+test.describe('khung chat Hỏi AI nổi', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('jla:v1:ai-settings', JSON.stringify({ provider: 'mock' })))
+  })
+
+  /** Ô nhập nằm trọn trong phần màn hình nhìn thấy (visualViewport). */
+  const inputVisible = (page: Page) =>
+    page.locator('[data-ai-panel] [data-ai-input]').evaluate((el) => {
+      const r = el.getBoundingClientRect()
+      const vv = window.visualViewport!
+      return { top: r.top, bottom: r.bottom, visibleTop: vv.offsetTop, visibleBottom: vv.offsetTop + vv.height }
+    })
+
+  test('focus ô nhập trong khung: không phóng to, ô nhập không bị che', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('[data-ai-tab]').tap()
+    await expect(page.locator('[data-ai-dock]')).toHaveAttribute('data-ai-dock', 'open')
+    const input = page.locator('[data-ai-panel] [data-ai-input]')
+    await input.tap()
+    await expect(input).toBeFocused()
+    await page.waitForTimeout(400)
+    expect(await scale(page)).toBe(1)
+    expect(parseFloat(await input.evaluate((el) => getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16)
+    const v = await inputVisible(page)
+    expect(v.top).toBeGreaterThanOrEqual(v.visibleTop)
+    expect(v.bottom).toBeLessThanOrEqual(v.visibleBottom)
+  })
+
+  test('bàn phím ảo che nửa dưới (giả lập visualViewport): khung co lại, ô nhập vẫn thấy', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('[data-ai-tab]').tap()
+    await expect(page.locator('[data-ai-dock]')).toHaveAttribute('data-ai-dock', 'open')
+    const before = (await page.locator('[data-ai-panel]').boundingBox())!
+    // iOS: bàn phím không đổi layout viewport mà thu visualViewport lại.
+    const kbTop = await page.evaluate(() => {
+      const vv = window.visualViewport!
+      const h = Math.round(window.innerHeight * 0.55)
+      Object.defineProperty(vv, 'height', { configurable: true, get: () => h })
+      vv.dispatchEvent(new Event('resize'))
+      return h
+    })
+    await expect.poll(async () => Math.round((await page.locator('[data-ai-panel]').boundingBox())!.height)).toBeLessThan(Math.round(before.height))
+    await page.waitForTimeout(400)
+    const p = (await page.locator('[data-ai-panel]').boundingBox())!
+    expect(p.y).toBeGreaterThanOrEqual(0)
+    expect(p.y + p.height).toBeLessThanOrEqual(kbTop)
+    const v = await inputVisible(page)
+    expect(v.bottom).toBeLessThanOrEqual(kbTop)
+    expect(v.top).toBeGreaterThanOrEqual(0)
+  })
+
+  test('Back của điện thoại thu gọn khung, không rời trang', async ({ page }) => {
+    await page.goto('/grammar/n5')
+    await page.locator('[data-ai-tab]').tap()
+    await expect(page.locator('[data-ai-dock]')).toHaveAttribute('data-ai-dock', 'open')
+    await page.goBack()
+    await expect(page.locator('[data-ai-dock]')).toHaveAttribute('data-ai-dock', 'closed')
+    expect(new URL(page.url()).pathname).toBe('/grammar/n5')
+  })
+})

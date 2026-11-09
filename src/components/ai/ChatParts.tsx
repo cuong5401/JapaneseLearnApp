@@ -1,8 +1,11 @@
+import type { FormEvent, KeyboardEvent, ReactNode, Ref } from 'react'
 import { Link } from 'react-router-dom'
 import { useDetailStack } from '../../hooks/useDetailStack'
-import type { LocalHit, StoredMessage } from '../../lib/ai/history'
+import type { Conversation, LocalHit, StoredMessage } from '../../lib/ai/history'
 import { extractWords } from '../../lib/ai/parse'
+import { MODES, type ChatMode } from '../../lib/ai/prompts'
 import { PROVIDERS } from '../../lib/ai/providers'
+import type { LiveAnswer } from '../../lib/ai/session'
 import { AiWordCard } from './AiWordCard'
 import { AiMarkdown } from './Markdown'
 
@@ -57,7 +60,7 @@ export function UserBubble({ m }: { m: StoredMessage }) {
 export function AssistantBubble({ text, error, streaming, onRetry }: { text: string; error?: string; streaming?: boolean; onRetry?: () => void }) {
   const { body, words } = extractWords(text)
   return (
-    <div data-msg="assistant" data-streaming={streaming ? 'true' : undefined} className="min-w-0">
+    <div data-msg="assistant" data-streaming={streaming ? 'true' : undefined} className="@container min-w-0">
       <div className="rounded-2xl rounded-bl-md border border-line bg-surface px-4 py-3">
         {body ? <AiMarkdown text={body} /> : streaming ? <span className="inline-block animate-pulse text-muted">Đang trả lời…</span> : null}
         {streaming && body && <span aria-hidden className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-ai align-middle" />}
@@ -73,7 +76,7 @@ export function AssistantBubble({ text, error, streaming, onRetry }: { text: str
         )}
       </div>
       {!streaming && words.length > 0 && (
-        <ul aria-label="Từ vựng trong câu trả lời" className="mt-2 grid gap-2 sm:grid-cols-2">
+        <ul aria-label="Từ vựng trong câu trả lời" className="mt-2 grid gap-2 @md:grid-cols-2">
           {words.map((w) => (
             <AiWordCard key={w.word} w={w} />
           ))}
@@ -109,5 +112,118 @@ export function SetupCard() {
         Mở Cài đặt AI
       </Link>
     </section>
+  )
+}
+
+/** Chip chọn chế độ (Tra từ, Ngữ pháp…). `compact`: hàng cuộn ngang cho khung chat nổi. */
+export function ModeChips({ mode, onChange, compact = false }: { mode: ChatMode; onChange: (m: ChatMode) => void; compact?: boolean }) {
+  return (
+    <div
+      role="group"
+      aria-label="Chế độ"
+      className={compact ? '-mx-1 flex gap-1.5 overflow-x-auto overscroll-x-contain px-1 pb-1 [scrollbar-width:none]' : 'flex flex-wrap gap-2'}
+    >
+      {MODES.map((m) => (
+        <button
+          key={m.id}
+          type="button"
+          aria-pressed={mode === m.id}
+          data-mode={m.id}
+          onClick={() => onChange(m.id)}
+          className={`shrink-0 rounded-full border font-medium whitespace-nowrap ${compact ? 'min-h-9 px-3 text-xs' : 'min-h-10 px-3.5 text-sm'} ${
+            mode === m.id ? 'border-ai bg-ai text-on-ai' : 'border-line bg-surface hover:border-ai'
+          }`}
+        >
+          {m.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/** Tin nhắn của một cuộc + câu trả lời đang hiện dần; cuộc trống thì hiện gợi ý theo chế độ. */
+export function ChatThread({ active, mode, live, busy, onRetry, footnote }: {
+  active: Conversation | null
+  mode: ChatMode
+  live: LiveAnswer
+  busy: boolean
+  onRetry: (c: Conversation) => void
+  footnote?: ReactNode
+}) {
+  const info = MODES.find((m) => m.id === mode)!
+  const lastIndex = (active?.messages.length ?? 0) - 1
+  const streamingHere = live && live.convId === active?.id
+  return (
+    <div className="space-y-4" aria-live="polite">
+      {!active || active.messages.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-line p-6 text-center text-muted">
+          <p className="font-medium text-ink">{info.label}</p>
+          <p className="mt-1 text-sm">{info.placeholder}</p>
+          {footnote && <p className="mt-3 text-xs">{footnote}</p>}
+        </div>
+      ) : (
+        active.messages.map((m, i) =>
+          m.role === 'user' ? (
+            <UserBubble key={i} m={m} />
+          ) : (
+            <AssistantBubble key={i} text={m.text} error={m.error} onRetry={i === lastIndex && m.error && !busy ? () => onRetry(active) : undefined} />
+          ),
+        )
+      )}
+      {streamingHere && <AssistantBubble text={live.text} streaming />}
+    </div>
+  )
+}
+
+/** Ô soạn câu hỏi: Enter gửi, Shift+Enter xuống dòng; đang trả lời thì hiện nút Dừng. */
+export function Composer({ draft, setDraft, onSend, busy, onStop, placeholder, className = '', inputRef, before }: {
+  draft: string
+  setDraft: (s: string) => void
+  onSend: () => void
+  busy: boolean
+  onStop: () => void
+  placeholder: string
+  className?: string
+  inputRef?: Ref<HTMLTextAreaElement>
+  before?: ReactNode
+}) {
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault()
+    onSend()
+  }
+  const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault()
+      onSend()
+    }
+  }
+  return (
+    <form onSubmit={onSubmit} className={className}>
+      {before}
+      <div className="flex items-end gap-2">
+        <label className="min-w-0 flex-1">
+          <span className="sr-only">Câu hỏi</span>
+          <textarea
+            ref={inputRef}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={onKey}
+            rows={Math.min(5, Math.max(1, draft.split('\n').length))}
+            placeholder={placeholder}
+            data-ai-input
+            className="block max-h-40 w-full resize-none bg-transparent px-2 py-2 outline-none placeholder:text-muted"
+          />
+        </label>
+        {busy ? (
+          <button type="button" onClick={onStop} className="min-h-11 shrink-0 rounded-xl border-2 border-beni px-4 font-semibold text-beni hover:bg-beni-soft">
+            Dừng
+          </button>
+        ) : (
+          <button type="submit" disabled={!draft.trim()} className="min-h-11 shrink-0 rounded-xl bg-ai px-4 font-semibold text-on-ai hover:opacity-90 disabled:opacity-40">
+            Gửi
+          </button>
+        )}
+      </div>
+    </form>
   )
 }

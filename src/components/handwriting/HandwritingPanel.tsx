@@ -3,6 +3,7 @@ import { useKanjiIndex } from '../../hooks/useData'
 import { useKanjiCanvas } from '../../hooks/useKanjiCanvas'
 import { strokesToPng } from '../../lib/handwriting/png'
 import { DrawPad } from './DrawPad'
+import { useDockQuiet } from '../../lib/ai/dock'
 
 interface Props {
   /** Chạm một ứng viên: thêm chữ vào ô tìm kiếm (khung được xóa để vẽ chữ tiếp). */
@@ -18,6 +19,7 @@ const btn = 'min-h-11 rounded-lg border border-line px-3 text-sm font-medium hov
 
 /** Bảng vẽ chữ Hán: khung vẽ, 10 ứng viên cập nhật sau mỗi nét, Hoàn tác nét | Xóa | Đóng. */
 export default function HandwritingPanel({ onPick, onView, onClose, onAskAi }: Props) {
+  useDockQuiet()
   const index = useKanjiIndex()
   const byChar = useMemo(() => new Map(index.data?.map((k) => [k.kanji, k]) ?? []), [index.data])
   const prefer = useMemo(() => index.data?.map((k) => k.kanji), [index.data])

@@ -24,6 +24,7 @@ import { Celebration } from '../Celebration'
 import { GridCell } from '../GridCell'
 import { Button } from '../Pressable'
 import { Segmented } from '../Segmented'
+import { useDockQuiet } from '../../lib/ai/dock'
 
 /* ───────────── Cài đặt (nhớ lựa chọn lần trước) ───────────── */
 
@@ -678,6 +679,7 @@ export function KanaSession({ chars, title, onExit }: { chars: KanaChar[]; title
   const voice = useJapaneseVoice()
   const [settings, setSettings] = useState(loadSettings)
   const [run, setRun] = useState<Run | null>(null)
+  useDockQuiet(run !== null)
   const available: QuestionMode[] = voice ? ['typing', 'choice', 'reverse', 'listen'] : ['typing', 'choice', 'reverse']
 
   const start = (ids: string[], next: PracticeSettings) => {
