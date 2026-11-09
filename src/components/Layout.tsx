@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState, type MouseEvent } from 'react'
 import { Link, NavLink, useLocation, useOutlet } from 'react-router-dom'
 import { useTheme, type ThemeChoice } from '../hooks/useTheme'
+import { useDockNavClick } from '../hooks/useDockNavClick'
 import { useDueIds } from '../hooks/useProgress'
 import { isInteractiveTarget } from '../lib/keyboard'
 import { searchUi, useSearchUi } from '../lib/searchUi'
@@ -96,9 +97,9 @@ function ThemeIcon({ choice }: { choice: ThemeChoice }) {
   )
 }
 
-function Logo() {
+function Logo({ onClick }: { onClick?: (e: MouseEvent) => void }) {
   return (
-    <Link to="/" className="flex items-center gap-2.5 font-bold tracking-tight">
+    <Link to="/" onClick={onClick} className="flex items-center gap-2.5 font-bold tracking-tight">
       <span lang="ja" className="grid size-9 place-items-center rounded-[3px] bg-ai font-jp text-xl text-on-ai">
         言
       </span>
@@ -129,6 +130,8 @@ export function Layout() {
   const { pathname } = useLocation()
   const themeLabel = `Giao diện: ${THEME_LABEL[choice].toLowerCase()}`
   const search = useSearchUi()
+  // Điện thoại, khung Hỏi AI đang mở: bấm điều hướng thì thu gọn khung và chuyển trang trong một lần bấm.
+  const dockNav = useDockNavClick()
 
   // Phím "/" mở tìm kiếm (trừ khi đang gõ trong ô nhập).
   useEffect(() => {
@@ -146,7 +149,7 @@ export function Layout() {
       {/* Desktop: sidebar trái */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[240px] flex-col border-r border-line bg-surface px-4 pt-7 pb-5 lg:flex">
         <div className="px-2">
-          <Logo />
+          <Logo onClick={dockNav('/')} />
         </div>
         <div className="mt-7 flex items-stretch gap-1.5">
           <button
@@ -174,6 +177,7 @@ export function Layout() {
               <li key={n.to}>
                 <NavLink
                   to={n.to}
+                  onClick={dockNav(n.to)}
                   end={n.end}
                   className={({ isActive }) =>
                     `relative flex min-h-12 items-center gap-3 rounded-xl px-3 font-medium transition-colors ${isActive ? 'text-ai' : 'text-muted hover:text-ink'}`
@@ -230,13 +234,14 @@ export function Layout() {
       {/* Điện thoại & tablet: header */}
       <header data-app-header className="sticky top-0 z-20 border-b border-line bg-paper/90 pt-[env(safe-area-inset-top)] backdrop-blur lg:hidden">
         <div className="mx-auto flex h-14 max-w-[900px] items-center gap-4 px-4 md:px-6">
-          <Logo />
+          <Logo onClick={dockNav('/')} />
           <nav className="ml-auto hidden items-center gap-0.5 md:flex" aria-label="Điều hướng chính">
             {/* Tablet: logo đã dẫn về trang chủ, bỏ mục Trang chủ cho vừa 6 mục. */}
             {NAV.filter((n) => n.to !== '/').map((n) => (
               <NavLink
                 key={n.to}
                 to={n.to}
+                onClick={dockNav(n.to)}
                 end={n.end}
                 className={({ isActive }) =>
                   `relative flex items-center rounded-lg px-2 py-2 text-sm font-medium whitespace-nowrap transition-colors ${isActive ? 'text-ai' : 'text-muted hover:text-ink'}`
@@ -279,7 +284,7 @@ export function Layout() {
           >
             <ThemeIcon choice={choice} />
           </button>
-          <Link to="/settings" aria-label="Cài đặt" title="Cài đặt" className="grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink">
+          <Link to="/settings" onClick={dockNav('/settings')} aria-label="Cài đặt" title="Cài đặt" className="grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink">
             <GearIcon />
           </Link>
         </div>
@@ -314,6 +319,7 @@ export function Layout() {
             <li key={n.to}>
               <NavLink
                 to={n.to}
+                onClick={dockNav(n.to)}
                 end={n.end}
                 className={({ isActive }) =>
                   `flex min-h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium ${isActive ? 'text-ai' : 'text-muted'}`

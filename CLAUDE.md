@@ -89,7 +89,8 @@
 - iPhone Safari: input/textarea/select ≥ 16px trên màn cảm ứng (`pointer-coarse:text-base`), không khóa zoom
   trong viewport; `touch-action: manipulation`; `overscroll-behavior: none` (html/body), vùng cuộn trong dùng
   `overscroll-contain`; bàn phím ảo xử lý bằng `visualViewport` (xem `AiDock`).
-  Lớp phủ (BottomSheet, tìm kiếm) khóa cuộn bằng `document.body.style.overflow = 'hidden'`.
+  Khóa cuộn trang: khung Hỏi AI dùng `lockScroll()` (`src/lib/scrollLock.ts`: body `position: fixed; top: -scrollY`,
+  vì iOS bỏ qua `overflow: hidden`); BottomSheet và tìm kiếm vẫn dùng `body.style.overflow = 'hidden'`.
 
 ## Tính năng hiện có
 
@@ -103,6 +104,10 @@
 - Sổ tay (nhiều sổ, màu; nhấn giữ nút đánh dấu để lưu nhanh). Tìm kiếm toàn cục (phím `/`), vẽ tay tìm kanji.
 - "Hỏi AI": trang `/ai` + khung chat nổi ở mọi trang (`AiDock`, tab lề phải kéo được, Back/Esc thu gọn, chip
   "Hỏi về …" theo mục đang xem). Chế độ: tra từ, ngữ pháp, hội thoại, sửa câu.
+  Desktop: khung 400×600, chuyển trang vẫn mở. Điện thoại (`DOCK_PHONE`: < 768px hoặc màn cảm ứng): sheet gần toàn
+  màn hình + lớp nền (chạm thì lắc, không đóng), khóa cuộn, bám bàn phím qua `visualViewport` (ẩn bottom nav),
+  bấm bottom nav/header thì thu gọn + chuyển trang (replace mục lịch sử của khung), vuốt header sang phải để thu gọn.
+  Chữ gõ dở / vị trí cuộn giữ trong `dockMemory`. Test: `tests/dock.mobile.spec.ts` (chạy cả dev và bản build).
 - Trang chủ: chữ Hán ngẫu nhiên (không lặp 5 chữ gần nhất; từ đi kèm thiếu thì tra thêm Mazii khi có mạng).
 - PWA (cài đặt, cập nhật, offline), Xuất/Nhập tiến độ, mã mở khóa 4 số (nếu build có `VITE_UNLOCK_CODE`).
 

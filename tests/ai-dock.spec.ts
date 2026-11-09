@@ -179,6 +179,23 @@ for (const width of WIDTHS) {
         await expect(panel(page).locator('[data-ai-word="勉強"]')).toBeVisible()
       })
 
+      test('desktop: chuyển trang bằng sidebar khung vẫn mở, không lớp nền, không khóa cuộn; Esc thu gọn', async ({ page }) => {
+        test.skip(width < 768, 'Chỉ desktop')
+        await seed(page, theme)
+        await page.goto('/kanji')
+        await tab(page).click()
+        await expectOpen(page)
+        await expect(page.locator('[data-ai-backdrop]')).toHaveCount(0)
+        expect(await page.evaluate(() => document.body.style.position)).toBe('')
+        await page.locator('aside').getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: /Ngữ pháp/ }).click()
+        await expect(page).toHaveURL(/\/grammar/)
+        await page.waitForTimeout(400)
+        await expect(dock(page)).toHaveAttribute('data-ai-dock', 'open')
+        await page.keyboard.press('Escape')
+        await expectClosed(page)
+        expect(new URL(page.url()).pathname).toMatch(/^\/grammar/)
+      })
+
       test('Back và Esc thu gọn khung, không rời trang', async ({ page }) => {
         await seed(page, theme)
         await page.goto('/grammar/n5')

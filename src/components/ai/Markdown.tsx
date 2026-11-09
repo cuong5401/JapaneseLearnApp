@@ -51,8 +51,8 @@ const components: Components = {
     </a>
   ),
   table: ({ children }) => (
-    <div className="my-3 max-w-full overflow-x-auto overscroll-x-contain">
-      <table className="w-full border-collapse text-sm">{children}</table>
+    <div data-md-table className="my-3 max-w-full overflow-x-auto overscroll-x-contain">
+      <table className="w-max min-w-full border-collapse text-sm">{children}</table>
     </div>
   ),
   th: ({ children }) => <th className="border border-line bg-sunken px-2 py-1.5 text-left font-semibold">{children}</th>,

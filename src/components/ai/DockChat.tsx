@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState, type RefObject } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type HTMLAttributes, type RefObject } from 'react'
 import { Link } from 'react-router-dom'
 import { useAiChat } from '../../hooks/useAiChat'
 import { useAiPageContext } from '../../hooks/useAiPageContext'
 import { useChatSend } from '../../hooks/useChatSend'
-import { aiDock, useAiDock } from '../../lib/ai/dock'
+import { aiDock, dockMemory, useAiDock } from '../../lib/ai/dock'
 import { useChats } from '../../lib/ai/history'
 import { MODES } from '../../lib/ai/prompts'
 import { useAiSettings } from '../../lib/ai/settings'
+import { lockedScrollY } from '../../lib/scrollLock'
 import { ChatThread, Composer, ModeChips } from './ChatParts'
 
 interface Props {
@@ -15,6 +16,10 @@ interface Props {
   /** Rời khung để sang trang khác (Cài đặt): thu gọn mà không lùi lịch sử */
   onLeave: () => void
   inputRef: RefObject<HTMLTextAreaElement | null>
+  /** Cử chỉ vuốt sang phải để thu gọn (điện thoại): chỉ gắn vào header */
+  headerProps?: HTMLAttributes<HTMLDivElement>
+  /** Bàn phím ảo đang mở: cuộn xuống tin mới nhất */
+  keyboard?: boolean
 }
 
 function ExpandIcon() {
@@ -25,8 +30,11 @@ function ExpandIcon() {
   )
 }
 
-/** Nội dung khung chat nổi: dùng chung phiên chat, lịch sử và chế độ với trang /ai. */
-export default function DockChat({ onCollapse, onExpand, onLeave, inputRef }: Props) {
+/**
+ * Nội dung khung chat nổi: dùng chung phiên chat, lịch sử và chế độ với trang /ai.
+ * Chữ đang gõ dở và vị trí cuộn giữ trong `dockMemory` nên còn nguyên khi thu gọn / mở lại.
+ */
+export default function DockChat({ onCollapse, onExpand, onLeave, inputRef, headerProps, keyboard = false }: Props) {
   const dock = useAiDock()
   const settings = useAiSettings()
   const list = useChats()
@@ -34,7 +42,11 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef }: Pr
   const context = useAiPageContext()
   const active = list.find((c) => c.id === dock.convId) ?? null
   const mode = dock.mode
-  const [draft, setDraft] = useState('')
+  const [draft, setDraftState] = useState(() => dockMemory.draft)
+  const setDraft = (s: string) => {
+    dockMemory.draft = s
+    setDraftState(s)
+  }
   const scrollRef = useRef<HTMLDivElement>(null)
   const send = useChatSend(active, (id) => aiDock.setConv(id))
   const placeholder = MODES.find((m) => m.id === mode)!.placeholder
@@ -50,22 +62,35 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef }: Pr
     return () => clearTimeout(t)
   }, [dock.request]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Cuộn theo câu trả lời khi đang ở gần cuối khung.
+  // Gắn lại khung (vd. rời trang /ai): về đúng vị trí cuộn cũ.
+  useLayoutEffect(() => {
+    const el = scrollRef.current
+    if (el && dockMemory.scrollTop >= 0) el.scrollTop = dockMemory.scrollTop
+  }, [settings.hasKey])
+
+  // Cuộn theo câu trả lời khi đang ở gần cuối khung; bàn phím mở thì về tin mới nhất.
   const liveText = chat.live?.text
   const count = active?.messages.length ?? 0
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
-    if (el.scrollHeight - el.scrollTop - el.clientHeight < 160 || liveText === '') el.scrollTop = el.scrollHeight
-  }, [liveText, count, active?.id])
+    if (keyboard || el.scrollHeight - el.scrollTop - el.clientHeight < 160 || liveText === '') el.scrollTop = el.scrollHeight
+  }, [liveText, count, active?.id, keyboard])
 
   const onSend = () => {
     if (send(draft, { mode })) setDraft('')
   }
 
+  // iOS có thể vẫn cuộn cửa sổ khi focus ô nhập dù trang đang bị khóa (body fixed): đặt lại về 0.
+  const onInputFocus = () => {
+    requestAnimationFrame(() => {
+      if (lockedScrollY() !== null && window.scrollY !== 0) window.scrollTo(0, 0)
+    })
+  }
+
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="shrink-0 border-b border-line px-3 pt-2 pb-2">
+      <div {...headerProps} data-dock-header style={{ touchAction: 'none' }} className="shrink-0 border-b border-line px-3 pt-2 pb-2 select-none">
         <div className="flex items-center gap-1">
           <h2 id="ai-dock-title" className="flex items-center gap-2 font-bold">
             <span lang="ja" aria-hidden className="grid size-7 place-items-center rounded-[3px] bg-ai font-jp text-sm text-on-ai">
@@ -111,38 +136,50 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef }: Pr
         </div>
       ) : (
         <>
-          <div ref={scrollRef} data-dock-scroll className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
+          <div
+            ref={scrollRef}
+            data-dock-scroll
+            onScroll={(e) => {
+              dockMemory.scrollTop = e.currentTarget.scrollTop
+            }}
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3"
+          >
             <ChatThread active={active} mode={mode} live={chat.live} busy={chat.busy} onRetry={(c) => void chat.retry(c.id, c.mode)} />
           </div>
-          <Composer
-            inputRef={inputRef}
-            draft={draft}
-            setDraft={setDraft}
-            onSend={onSend}
-            busy={chat.busy}
-            onStop={chat.stop}
-            placeholder={placeholder}
-            className="shrink-0 border-t border-line p-2"
-            before={
-              context && (
-                <button
-                  type="button"
-                  data-ai-context
-                  onClick={() => {
-                    aiDock.setMode(context.mode)
-                    setDraft(context.text)
-                    inputRef.current?.focus()
-                  }}
-                  className="mb-1.5 inline-flex min-h-9 max-w-full items-center gap-1.5 rounded-full border border-ai/40 bg-ai-soft px-3 text-sm font-medium text-ai hover:border-ai"
-                >
-                  <span className="shrink-0">Hỏi về</span>
-                  <span lang="ja" className="truncate font-jp">
-                    {context.label}
-                  </span>
-                </button>
-              )
-            }
-          />
+          <div data-dock-composer style={{ touchAction: 'none' }} className="shrink-0 border-t border-line">
+            <Composer
+              inputRef={inputRef}
+              draft={draft}
+              setDraft={setDraft}
+              onSend={onSend}
+              busy={chat.busy}
+              onStop={chat.stop}
+              placeholder={placeholder}
+              maxRows={4}
+              onFocus={onInputFocus}
+              inputClassName="touch-pan-y"
+              className="p-2"
+              before={
+                context && (
+                  <button
+                    type="button"
+                    data-ai-context
+                    onClick={() => {
+                      aiDock.setMode(context.mode)
+                      setDraft(context.text)
+                      inputRef.current?.focus({ preventScroll: true })
+                    }}
+                    className="mb-1.5 inline-flex min-h-9 max-w-full items-center gap-1.5 rounded-full border border-ai/40 bg-ai-soft px-3 text-sm font-medium text-ai hover:border-ai"
+                  >
+                    <span className="shrink-0">Hỏi về</span>
+                    <span lang="ja" className="truncate font-jp">
+                      {context.label}
+                    </span>
+                  </button>
+                )
+              }
+            />
+          </div>
         </>
       )}
     </div>

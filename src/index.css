@@ -237,3 +237,33 @@
   font-size: 0.6em;
   color: var(--muted);
 }
+
+/* Bàn phím ảo đang mở trong khung Hỏi AI (điện thoại): ẩn thanh điều hướng đáy và tab, khung chiếm phần còn thấy. */
+html[data-keyboard="open"] [data-bottom-nav],
+html[data-keyboard="open"] [data-ai-tab] {
+  display: none;
+}
+
+/*
+ * Bảng Markdown trong câu trả lời AI: cuộn ngang trong khung riêng (trang không tràn ngang),
+ * cột tối thiểu 96px, chữ Nhật không xuống dòng giữa từ (tiếng Việt vẫn xuống dòng ở dấu cách).
+ * Điện thoại: cột đầu dính bên trái khi cuộn ngang.
+ */
+[data-md-table] th,
+[data-md-table] td {
+  min-width: 6rem;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+@media (max-width: 767.98px) {
+  [data-md-table] tr > :first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--surface);
+    box-shadow: 1px 0 0 var(--line);
+  }
+  [data-md-table] tr > th:first-child {
+    background: var(--sunken);
+  }
+}

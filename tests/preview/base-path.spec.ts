@@ -45,20 +45,23 @@ test('khung AI mở: chuyển qua Chữ Hán, Ngữ pháp, bài từ vựng, S�
   await openDock(page)
 
   const visited: string[] = []
-  const go = async (name: RegExp, expected: string | RegExp) => {
+  // Desktop: khung giữ nguyên khi chuyển trang. Điện thoại: bấm điều hướng thì khung thu gọn trong cùng lần bấm
+  // (mở lại để kiểm tra lần chuyển trang kế tiếp cũng với khung đang mở).
+  const go = async (name: RegExp, expected: string | RegExp, reopen = true) => {
     await nav(page, phone).getByRole('link', { name }).click()
     await expectPage(page, expected)
-    expect(await dockState(page)).toBe('open')
+    if (phone) {
+      await expect(page.locator('[data-ai-dock]')).toHaveAttribute('data-ai-dock', 'closed')
+      if (reopen) await openDock(page)
+    } else expect(await dockState(page)).toBe('open')
     visited.push(path(page))
   }
 
   await go(/Chữ Hán/, `${BASE}kanji`)
   await go(/Ngữ pháp/, /^\/JapaneseLearnApp\/grammar(\/n5)?$/)
   if (phone) {
-    // Điện thoại: khung che nội dung trang, đi tới bài từ vựng qua Trang chủ → thẻ N5 sau khi thu gọn tạm.
-    await go(/Trang chủ/, BASE)
-    await page.locator('[data-ai-panel]').getByRole('button', { name: 'Thu gọn' }).click()
-    await expect(page.locator('[data-ai-dock]')).toHaveAttribute('data-ai-dock', 'closed')
+    // Điện thoại: sheet che nội dung trang, đi tới bài từ vựng qua Trang chủ → thẻ N5 khi khung đã thu gọn.
+    await go(/Trang chủ/, BASE, false)
     await page.getByRole('link', { name: /Từ vựng N5|N5/ }).first().click()
     await expectPage(page, `${BASE}vocab/n5`)
     await page.getByRole('link', { name: /^Bài 1,/ }).first().click()

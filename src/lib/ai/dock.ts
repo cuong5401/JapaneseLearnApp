@@ -81,6 +81,17 @@ aiSession.onFinish(() => {
   if (!state.open) set({ unread: true })
 })
 
+/**
+ * Chữ đang gõ dở và vị trí cuộn danh sách tin: chỉ giữ trong bộ nhớ (không ghi localStorage), để còn nguyên
+ * khi khung thu gọn / mở lại hay khi khung bị gỡ tạm (vào trang /ai) rồi gắn lại.
+ */
+export const dockMemory = { draft: '', scrollTop: -1 }
+
+/** Dấu của khung trên mục lịch sử hiện tại (React Router lưu state người dùng ở history.state.usr). */
+export type DockMark = 'own' | 'mark'
+export const historyUsr = () => (window.history.state as { usr?: Record<string, unknown> | null } | null)?.usr ?? null
+export const historyMark = () => historyUsr()?.aiDock as DockMark | undefined
+
 export const useAiDock = () => useSyncExternalStore(aiDock.subscribe, aiDock.getSnapshot)
 
 /** Màn học cần tập trung (vuốt thẻ, vẽ chữ, luyện kana): tab "Hỏi AI" thu nhỏ và mờ đi khi màn này mở. */

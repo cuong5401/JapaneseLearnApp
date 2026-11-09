@@ -1,4 +1,4 @@
-import type { FormEvent, KeyboardEvent, ReactNode, Ref } from 'react'
+import { useLayoutEffect, useRef, type FormEvent, type KeyboardEvent, type ReactNode, type RefObject } from 'react'
 import { Link } from 'react-router-dom'
 import { useDetailStack } from '../../hooks/useDetailStack'
 import type { Conversation, LocalHit, StoredMessage } from '../../lib/ai/history'
@@ -175,8 +175,11 @@ export function ChatThread({ active, mode, live, busy, onRetry, footnote }: {
   )
 }
 
-/** Ô soạn câu hỏi: Enter gửi, Shift+Enter xuống dòng; đang trả lời thì hiện nút Dừng. */
-export function Composer({ draft, setDraft, onSend, busy, onStop, placeholder, className = '', inputRef, before }: {
+/**
+ * Ô soạn câu hỏi: Enter gửi, Shift+Enter xuống dòng; đang trả lời thì hiện nút Dừng.
+ * Textarea tự giãn theo nội dung, tối đa `maxRows` dòng (quá thì cuộn trong ô); chữ 16px để iOS không phóng to.
+ */
+export function Composer({ draft, setDraft, onSend, busy, onStop, placeholder, className = '', inputRef, before, maxRows = 5, onFocus, inputClassName = '' }: {
   draft: string
   setDraft: (s: string) => void
   onSend: () => void
@@ -184,9 +187,25 @@ export function Composer({ draft, setDraft, onSend, busy, onStop, placeholder, c
   onStop: () => void
   placeholder: string
   className?: string
-  inputRef?: Ref<HTMLTextAreaElement>
+  inputRef?: RefObject<HTMLTextAreaElement | null>
   before?: ReactNode
+  maxRows?: number
+  onFocus?: () => void
+  inputClassName?: string
 }) {
+  const ownRef = useRef<HTMLTextAreaElement>(null)
+  const ref = inputRef ?? ownRef
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const cs = getComputedStyle(el)
+    const line = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.5
+    const pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom)
+    const max = Math.round(line * maxRows + pad)
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight, max)}px`
+    el.style.overflowY = el.scrollHeight > max ? 'auto' : 'hidden'
+  }, [draft, maxRows, ref])
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
     onSend()
@@ -204,14 +223,16 @@ export function Composer({ draft, setDraft, onSend, busy, onStop, placeholder, c
         <label className="min-w-0 flex-1">
           <span className="sr-only">Câu hỏi</span>
           <textarea
-            ref={inputRef}
+            ref={ref}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={onKey}
-            rows={Math.min(5, Math.max(1, draft.split('\n').length))}
+            onFocus={onFocus}
+            rows={1}
+            enterKeyHint="send"
             placeholder={placeholder}
             data-ai-input
-            className="block max-h-40 w-full resize-none bg-transparent px-2 py-2 outline-none placeholder:text-muted"
+            className={`block w-full resize-none bg-transparent px-2 py-2 text-base outline-none placeholder:text-muted ${inputClassName}`}
           />
         </label>
         {busy ? (

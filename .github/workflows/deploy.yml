@@ -49,9 +49,10 @@ jobs:
           grep -q 'name="robots" content="noindex, nofollow"' dist/index.html
 
       # E2E trên chính bản build sắp deploy (vite preview, base /JapaneseLearnApp/ như GitHub Pages):
-      # điều hướng khi khung chat AI mở không được lặp basename. Lỗi thì không deploy.
-      - name: Cài Chromium cho Playwright
-        run: npx playwright install --with-deps chromium
+      # điều hướng khi khung chat AI mở không được lặp basename; khung Hỏi AI trên điện thoại (Android + iPhone WebKit).
+      # Lỗi thì không deploy.
+      - name: Cài Chromium và WebKit cho Playwright
+        run: npx playwright install --with-deps chromium webkit
       - name: E2E trên bản build (base /JapaneseLearnApp/)
         run: npm run test:e2e:preview
         env:
