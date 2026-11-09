@@ -102,6 +102,10 @@ Trang `/ai`: chat bằng tiếng Việt ở 4 chế độ (Tra từ, Giải thí
 - Chữ Hán thuộc từng bộ thủ: `src/data/radical-kanji.json`, sinh bằng `node scripts/build-radical-kanji.mjs <Unihan_IRGSources.txt>` từ trường `kRSUnicode` của [Unicode Unihan](https://www.unicode.org/charts/unihan.html) (© Unicode, Inc., [Unicode License](https://www.unicode.org/license.txt)). Mỗi chữ thuộc đúng một bộ chính.
 - Nhận dạng chữ viết tay: [KanjiCanvas](https://github.com/asdfjkl/kanjicanvas) (Copyright (c) 2019 Dominik Klein, Kanji Canvas, MIT) trong `src/vendor/kanjicanvas/`; mẫu nét đã rút gọn bằng `scripts/compact-ref-patterns.mjs` (xem README trong thư mục). Chạy trong Web Worker, chỉ tải khi mở bảng vẽ. Ứng viên có trong kanji.json được xếp trước (giữ thứ tự của thư viện trong từng nhóm), vì vài mẫu chữ hiếm như 曰 lấn các chữ dạng hộp như 日, 目.
 - Sổ tay chỉ lưu id mục (localStorage `jla:v1:notebooks`) và có trong Xuất / Nhập tiến độ.
+- **Dữ liệu thứ tự nét: [KanjiVG](https://kanjivg.tagaini.net) (Ulrich Apel), [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).**
+  `public/data/strokes/<hex>.json` (chữ Hán trong kanji.json, bộ thủ, hiragana, katakana) sinh bằng
+  `py scripts/import-strokes.py` (tải bản release `*-main.zip` mới nhất) hoặc `--zip <file>`; báo cáo ở
+  `public/data/import-report-strokes.md`. App đọc `strokes/index.json` trước, chữ không có dữ liệu thì không tải.
 
 ## Kiểm tra
 

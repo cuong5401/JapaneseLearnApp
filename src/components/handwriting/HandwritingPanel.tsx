@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { StrokeOrderToggle } from '../strokes/StrokeOrder'
 import { useKanjiIndex } from '../../hooks/useData'
 import { useKanjiCanvas } from '../../hooks/useKanjiCanvas'
 import { strokesToPng } from '../../lib/handwriting/png'
@@ -102,6 +103,8 @@ export default function HandwritingPanel({ onPick, onView, onClose, onAskAi }: P
           </button>
         )}
       </div>
+      {/* Ứng viên đã chọn: xem cách viết đúng (thứ tự nét KanjiVG) ngay trong bảng vẽ. */}
+      {picked && <StrokeOrderToggle key={picked} char={picked} label={`Xem cách viết đúng ${picked}`} />}
       {onAskAi && pad.strokes.length > 0 && pad.candidates.length > 0 && <p className="-mt-1 text-xs text-muted">Không thấy chữ đúng? Bấm "Nhờ AI đoán" để gửi ảnh khung vẽ cho AI.</p>}
     </section>
   )

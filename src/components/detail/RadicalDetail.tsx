@@ -8,6 +8,7 @@ import { GridCell } from '../GridCell'
 import { Skeleton } from '../LoadState'
 import { Button } from '../Pressable'
 import { BookmarkButton } from '../notebook/BookmarkButton'
+import { StrokeSection } from '../strokes/StrokeOrder'
 
 /** Chi tiết bộ thủ: tên, nghĩa và các chữ Hán (trong dữ liệu của bạn) thuộc bộ này. */
 export function RadicalDetail({ item, onPush }: { item: RadicalItem; onPush: (f: Frame) => void }) {
@@ -40,6 +41,7 @@ export function RadicalDetail({ item, onPush }: { item: RadicalItem; onPush: (f:
           ) : null}
         </div>
       </div>
+      <StrokeSection key={item.no} char={item.radical} />
       <Button
         onClick={() => (learned ? progress.forget(item.id) : progress.markLearned(item.id))}
         className={`mt-5 min-h-11 w-full rounded-lg px-3 font-semibold ${learned ? 'border border-matsu bg-matsu-soft text-matsu' : 'border border-line hover:bg-sunken'}`}

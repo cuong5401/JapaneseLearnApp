@@ -9,6 +9,7 @@ import { LoadError, Skeleton, SkeletonRows } from '../LoadState'
 import { AskAiLink } from '../ai/AskAiLink'
 import { kanjiQuestion } from '../../lib/ai/questions'
 import { BookmarkButton } from '../notebook/BookmarkButton'
+import { StrokeSection } from '../strokes/StrokeOrder'
 
 const PATHS = VOCAB_DECKS.map((k) => VOCAB_DECK_INFO[k].path)
 const LIMIT = 50
@@ -53,6 +54,7 @@ export function CharDetail({ ch, onPush }: { ch: string; onPush: (f: Frame) => v
           )}
         </div>
       </div>
+      <StrokeSection key={ch} char={ch} />
       <AskAiLink question={kanjiQuestion(ch)} className="mt-4 w-full" />
       <h3 className="mt-6 mb-1 text-sm font-semibold text-muted">
         Từ chứa chữ {ch}

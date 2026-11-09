@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { STROKE_CREDIT } from '../lib/strokes'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
 import { Segmented } from '../components/Segmented'
@@ -189,6 +190,26 @@ export function Settings() {
         <Link to="/progress" className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-line px-4 font-medium hover:bg-sunken">
           Mở Tiến độ
         </Link>
+      </section>
+      <section aria-labelledby="about-title" className="rounded-2xl border border-line bg-surface p-5 sm:p-6" data-about>
+        <h2 id="about-title" className="text-lg font-bold">
+          Giới thiệu
+        </h2>
+        <p className="mt-1 text-sm text-muted">Kotonoha – web học tiếng Nhật dùng cá nhân. Nguồn dữ liệu bên ngoài:</p>
+        <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm">
+          <li>
+            {STROKE_CREDIT} 3.0 –{' '}
+            <a href="https://kanjivg.tagaini.net" target="_blank" rel="noreferrer" className="font-medium text-ai hover:underline">
+              kanjivg.tagaini.net
+            </a>
+            ,{' '}
+            <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noreferrer" className="font-medium text-ai hover:underline">
+              giấy phép
+            </a>
+          </li>
+          <li>Bộ thủ của chữ: Unicode Unihan (© Unicode, Inc.)</li>
+          <li>Nhận dạng chữ viết tay: KanjiCanvas (Dominik Klein, MIT)</li>
+        </ul>
       </section>
     </div>
   )

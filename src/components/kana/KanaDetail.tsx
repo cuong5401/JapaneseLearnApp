@@ -4,6 +4,7 @@ import { speak } from '../../lib/speech'
 import type { KanaChar } from '../../types'
 import { GridCell } from '../GridCell'
 import { SpeakButton } from '../SpeakButton'
+import { StrokeSection } from '../strokes/StrokeOrder'
 import { LEVEL_CELL, LEVEL_LABEL } from './levels'
 
 function MiniChar({ k, onPick }: { k: KanaChar; onPick: (k: KanaChar) => void }) {
@@ -40,6 +41,9 @@ export function KanaDetail({ k, stat, onPick }: { k: KanaChar; stat?: KanaStat; 
       </div>
 
       {note && <p className="mt-4 rounded-lg bg-sunken px-3 py-2 text-sm">{note}</p>}
+
+      {/* Âm ghép (きゃ) gồm hai chữ: thứ tự nét chỉ cho chữ đơn. */}
+      {[...k.kana].length === 1 && <StrokeSection key={k.id} char={k.kana} />}
 
       <div className={`mt-4 rounded-xl border px-4 py-3 text-sm ${LEVEL_CELL[level]}`}>
         <p className="font-semibold">{LEVEL_LABEL[level]}</p>

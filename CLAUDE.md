@@ -27,8 +27,12 @@
 | `npm run icons` | Sinh icon PWA trong `public/icons/` |
 | `python scripts/convert_xlsx.py <file.xlsx> public/data` | Sinh lại dữ liệu từ Excel (cần `openpyxl`) |
 | `python scripts/convert_xlsx.py --check` | Kiểm tra ngữ pháp tự soạn, không cần Excel |
+| `py scripts/import-strokes.py [--zip file]` | Sinh lại thứ tự nét từ KanjiVG (tải release `*-main.zip` mới nhất) |
 
-- Windows: lệnh `python` có thể không có, dùng `py`. Lần đầu e2e: `npx playwright install chromium webkit`.
+- Windows: lệnh `python` có thể không có, dùng `py`.
+- Máy này bật **Smart App Control**: chặn chromium/webkit tải về của Playwright và binding `.node` của oxlint.
+  Chạy e2e bằng Chrome đã cài: `PW_CHANNEL=chrome` (PowerShell: `$env:PW_CHANNEL='chrome'`) với project
+  `desktop`, `android`, `preview-desktop`, `preview-phone`. Lint và WebKit để CI kiểm tra. Lần đầu e2e: `npx playwright install chromium webkit`.
 - E2E đầy đủ nặng: máy này nên chạy `--workers=4` (8 worker bị timeout ngẫu nhiên).
 - Mã mở khóa: `VITE_UNLOCK_CODE=1234 npm run build` (4 số; bundle chỉ chứa SHA-256). Không đặt thì không hỏi mã.
 
@@ -56,6 +60,10 @@
 - ID = tiền tố + 8 ký tự SHA-1 của chữ + cách đọc (`n5-1a2b3c4d`, `kj-…`, `gn4-…`): ổn định, là **khóa của SRS,
   sổ tay, URL** → không đổi cách sinh ID.
 - `kanji.json`: `firstLevel` = cấp từ vựng đầu tiên có chữ đó, **không phải** cấp kanji JLPT.
+- **Thứ tự nét**: KanjiVG (Ulrich Apel), **CC BY-SA 3.0** – phải ghi nguồn (README, Cài đặt > Giới thiệu, chữ nhỏ dưới
+  khung). `public/data/strokes/<hex>.json` `{ char, strokes: [{ d, n, x, y }] }` + `strokes/index.json` (danh sách chữ có
+  dữ liệu; app đọc trước, không fetch chữ thiếu → không 404). Không nằm trong manifest; SW cache runtime `/data/*.json`.
+  Component `src/components/strokes/StrokeOrder.tsx` (SVG tự vẽ, không thư viện), store `src/lib/strokes.ts`.
 - `radicals.json`: đúng **214 bộ, `no` = số Khang Hy** (khối Unicode U+2F00–U+2FD5, NFKC), có `strokes`, `variants`
   (亻 của 人, 阝 ấp = 163 / 阝 phụ = 170 theo tên). Bộ thiếu trong Excel lấy từ `data-source/radicals-extra.json`
   (`auto: true`). `src/data/radical-kanji.json` (Unihan) cũng theo số Khang Hy. Script ghi
@@ -125,6 +133,8 @@
 - Chữ Hán: chia bài theo cấp xuất hiện, flashcard, quiz âm Hán Việt, chi tiết dạng ngăn xếp theo URL
   (`?k=` chữ gốc, `?xem=w:…~k:…~r:…`; desktop là panel/drawer, điện thoại là bottom sheet). Bộ thủ + chữ thuộc bộ.
 - Ngữ pháp N5–N1 (N5/N3 có mẫu tự soạn), lọc nhóm, đánh dấu đã kiểm tra.
+- Thứ tự nét (KanjiVG): panel chi tiết chữ Hán / bộ thủ / kana (tự phát 1 lần), mặt sau flashcard chữ Hán và kana
+  (nút "Xem cách viết"), bảng vẽ tay ("Xem cách viết đúng"). Reduced motion: không tự phát.
 - Luyện kana: bảng chữ, flashcard (dùng chung `FlashcardSession` với `grader` ghi mức thuộc kana), gõ romaji,
   trắc nghiệm, nghe.
 - Sổ tay (nhiều sổ, màu; nhấn giữ nút đánh dấu để lưu nhanh). Tìm kiếm toàn cục (phím `/`), vẽ tay tìm kanji.

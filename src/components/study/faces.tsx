@@ -4,6 +4,7 @@ import { counterpart } from '../../data/kana'
 import type { KanaChar, KanjiEntry, RadicalItem, StudyEntry, VocabItem } from '../../types'
 import { GridCell } from '../GridCell'
 import { SpeakButton } from '../SpeakButton'
+import { StrokeOrderToggle } from '../strokes/StrokeOrder'
 import { Flip } from './Flip'
 import { CardFaces } from './VocabCardFaces'
 
@@ -40,6 +41,7 @@ export function kanjiFaces(words: Map<string, StudyEntry>): FacesRenderer<KanjiE
                 <p className="text-sm text-muted">{k.wordCount} từ chứa chữ này</p>
               </div>
             </div>
+            <StrokeOrderToggle char={k.kanji} />
             {samples.length > 0 && (
               <ul className="mt-4 divide-y divide-line border-t border-line">
                 {samples.map((w) => (
@@ -194,7 +196,7 @@ export function kanaFaces(examples: Map<string, VocabItem>): FacesRenderer<KanaC
           </span>
         }
         back={
-          <div className="flex h-full flex-col items-center justify-center gap-4 text-center" data-kana-back={k.id}>
+          <div className="flex min-h-full flex-col items-center justify-center gap-4 text-center" data-kana-back={k.id}>
             <div className="flex items-center gap-4">
               <GridCell className="w-24 shrink-0">{k.kana}</GridCell>
               <div className="text-left">
@@ -211,6 +213,7 @@ export function kanaFaces(examples: Map<string, VocabItem>): FacesRenderer<KanaC
             <span onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
               <SpeakButton text={k.kana} label={`Nghe ${k.kana}`} />
             </span>
+            {[...k.kana].length === 1 && <StrokeOrderToggle char={k.kana} />}
             {ex && (
               <p className="max-w-full border-t border-line pt-3 text-sm">
                 <span className="text-muted">Ví dụ: </span>
