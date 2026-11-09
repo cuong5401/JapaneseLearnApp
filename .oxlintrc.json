@@ -12,9 +12,39 @@
       {
         "allowConstantExport": true
       }
+    ],
+    "eslint-core/no-restricted-syntax": [
+      "error",
+      {
+        "selector": "CallExpression[callee.name='navigate'] MemberExpression[object.name='window'][property.name='location']",
+        "message": "Không truyền window.location.* hay BASE_URL vào điều hướng: React Router tự thêm basename (/JapaneseLearnApp/), ghép thêm sẽ lặp đường dẫn. Dùng useLocation() và đường dẫn trong app ('/kanji')."
+      },
+      {
+        "selector": "CallExpression[callee.name='navigate'] MemberExpression[property.name='BASE_URL']",
+        "message": "Không truyền window.location.* hay BASE_URL vào điều hướng: React Router tự thêm basename (/JapaneseLearnApp/), ghép thêm sẽ lặp đường dẫn. Dùng useLocation() và đường dẫn trong app ('/kanji')."
+      },
+      {
+        "selector": "JSXAttribute[name.name='to'] MemberExpression[object.name='window'][property.name='location']",
+        "message": "Không truyền window.location.* hay BASE_URL vào điều hướng: React Router tự thêm basename (/JapaneseLearnApp/), ghép thêm sẽ lặp đường dẫn. Dùng useLocation() và đường dẫn trong app ('/kanji')."
+      },
+      {
+        "selector": "JSXAttribute[name.name='to'] MemberExpression[property.name='BASE_URL']",
+        "message": "Không truyền window.location.* hay BASE_URL vào điều hướng: React Router tự thêm basename (/JapaneseLearnApp/), ghép thêm sẽ lặp đường dẫn. Dùng useLocation() và đường dẫn trong app ('/kanji')."
+      },
+      {
+        "selector": "TemplateLiteral > MemberExpression[object.object.name='window'][object.property.name='location'][property.name='pathname']",
+        "message": "Không tự ghép URL từ window.location.pathname (đã gồm basename). Không truyền window.location.* hay BASE_URL vào điều hướng: React Router tự thêm basename (/JapaneseLearnApp/), ghép thêm sẽ lặp đường dẫn. Dùng useLocation() và đường dẫn trong app ('/kanji')."
+      },
+      {
+        "selector": "BinaryExpression[operator='+'] > MemberExpression[object.object.name='window'][object.property.name='location'][property.name='pathname']",
+        "message": "Không tự ghép URL từ window.location.pathname (đã gồm basename). Không truyền window.location.* hay BASE_URL vào điều hướng: React Router tự thêm basename (/JapaneseLearnApp/), ghép thêm sẽ lặp đường dẫn. Dùng useLocation() và đường dẫn trong app ('/kanji')."
+      }
     ]
   },
   "ignorePatterns": [
     "src/vendor/**"
+  ],
+  "jsPlugins": [
+    "./lint/eslint-core.mjs"
   ]
 }

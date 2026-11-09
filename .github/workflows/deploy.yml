@@ -48,6 +48,17 @@ jobs:
           test -f dist/robots.txt
           grep -q 'name="robots" content="noindex, nofollow"' dist/index.html
 
+      # E2E trên chính bản build sắp deploy (vite preview, base /JapaneseLearnApp/ như GitHub Pages):
+      # điều hướng khi khung chat AI mở không được lặp basename. Lỗi thì không deploy.
+      - name: Cài Chromium cho Playwright
+        run: npx playwright install --with-deps chromium
+      - name: E2E trên bản build (base /JapaneseLearnApp/)
+        run: npm run test:e2e:preview
+        env:
+          CI: 'true'
+          # Test đặt sẵn mã băm (như đã nhập đúng mã) để qua màn mở khóa của bản build.
+          VITE_UNLOCK_CODE: ${{ secrets.VITE_UNLOCK_CODE }}
+
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:

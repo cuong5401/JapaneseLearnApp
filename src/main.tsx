@@ -6,8 +6,13 @@ import './index.css'
 import { Layout } from './components/Layout'
 import { LegacyLevel } from './components/LegacyLevel'
 import { UnlockGate } from './components/UnlockGate'
+import { fixDuplicateBase } from './lib/basePath'
 // Bắt sự kiện beforeinstallprompt sớm, trước khi trang nào kịp render.
 import './lib/install'
+
+// Link / bookmark hỏng do lỗi cũ (basename bị lặp: /JapaneseLearnApp/JapaneseLearnApp/…): sửa URL trước khi router đọc.
+const fixedPath = fixDuplicateBase(window.location.pathname, import.meta.env.BASE_URL)
+if (fixedPath) window.history.replaceState(window.history.state, '', fixedPath + window.location.search + window.location.hash)
 
 // Mỗi trang tách thành chunk riêng, tải khi điều hướng tới.
 const router = createBrowserRouter([

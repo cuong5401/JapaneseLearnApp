@@ -109,6 +109,9 @@ Trang `/ai`: chat bằng tiếng Việt ở 4 chế độ (Tra từ, Giải thí
 npm test          # Vitest: dataStore, chia bài, tìm kiếm, xuất/nhập tiến độ, phiên luyện kana
 npm run test:e2e  # Playwright: bố cục 390–1440px, chữ không tràn ô GridCell, luyện kana, chữ Hán ngẫu nhiên,
                   # điện thoại (iPhone/WebKit, Android): không zoom khi nhập/chạm đúp, không cuộn cao su
+npm run build && npm run test:e2e:preview
+                  # Playwright trên bản build (vite preview, base /JapaneseLearnApp/ như GitHub Pages):
+                  # điều hướng khi khung chat AI mở không lặp basename. CI chạy bước này trước khi deploy.
 ```
 
 Lần đầu chạy e2e: `npx playwright install chromium webkit`.

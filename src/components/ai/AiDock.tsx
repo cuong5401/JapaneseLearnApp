@@ -83,7 +83,6 @@ type DockMark = 'own' | 'mark'
 /** State người dùng của mục lịch sử hiện tại (React Router lưu ở history.state.usr). */
 const historyUsr = () => (window.history.state as { usr?: Record<string, unknown> | null } | null)?.usr ?? null
 const historyMark = () => historyUsr()?.aiDock as DockMark | undefined
-const currentUrl = () => `${window.location.pathname}${window.location.search}${window.location.hash}`
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
 
@@ -101,6 +100,8 @@ export function AiDock() {
   const vp = useViewport()
   const g = dockGeometry(vp)
   const location = useLocation()
+  // Đường dẫn trong app theo router (KHÔNG gồm basename /JapaneseLearnApp/): navigate() tự thêm basename.
+  const here = `${location.pathname}${location.search}${location.hash}`
   const navigate = useNavigate()
   const navType = useNavigationType()
   const panelRef = useRef<HTMLDivElement>(null)
@@ -135,7 +136,7 @@ export function AiDock() {
   useEffect(() => {
     const first = firstRun.current
     firstRun.current = false
-    if (dock.open && !(first && historyMark())) navigate(currentUrl(), { state: withMark('own') })
+    if (dock.open && !(first && historyMark())) navigate(here, { state: withMark('own') })
   }, [dock.open]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Back / Forward sang mục không có dấu → thu gọn.
@@ -156,16 +157,16 @@ export function AiDock() {
     prev.current = { key: location.key, pathname: location.pathname, mark }
     if (p.key === location.key || !dock.open || mark || navType === 'POP') return
     // Sang trang khác: thêm một mục để Back thu gọn khung trước.
-    if (navType === 'PUSH' && location.pathname !== p.pathname) navigate(currentUrl(), { state: withMark('own') })
+    if (navType === 'PUSH' && location.pathname !== p.pathname) navigate(here, { state: withMark('own') })
     // Trang thay mục hiện tại (replace) hoặc mở chi tiết cùng trang: gắn dấu, giữ "own" nếu mục bị thay là của khung.
-    else navigate(currentUrl(), { replace: true, state: withMark(navType === 'REPLACE' && p.mark === 'own' ? 'own' : 'mark') })
+    else navigate(here, { replace: true, state: withMark(navType === 'REPLACE' && p.mark === 'own' ? 'own' : 'mark') })
   }, [location.key]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const collapse = () => {
     const mark = historyMark()
     aiDock.close()
     if (mark === 'own') navigate(-1)
-    else if (mark) navigate(currentUrl(), { replace: true, state: withMark(undefined) })
+    else if (mark) navigate(here, { replace: true, state: withMark(undefined) })
     tabRef.current?.focus({ preventScroll: true })
   }
 
