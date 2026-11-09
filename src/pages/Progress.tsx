@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { BackupPanel } from '../components/BackupPanel'
+import { SrsStats } from '../components/SrsStats'
 import { InstallApp } from '../components/InstallApp'
 import { Skeleton } from '../components/LoadState'
 import { PageHeader } from '../components/PageHeader'
@@ -120,9 +121,11 @@ export function Progress() {
           <span className="h-1.5 w-4 rounded-full bg-cell-line" aria-hidden /> Đã học
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-1.5 w-4 rounded-full bg-ai" aria-hidden /> Đã thuộc (giãn cách từ {MASTERED_INTERVAL} ngày)
+          <span className="h-1.5 w-4 rounded-full bg-ai" aria-hidden /> Đã thuộc (khoảng cách ôn từ {MASTERED_INTERVAL} ngày)
         </span>
       </div>
+
+      <SrsStats />
 
       {!m ? (
         <div className="mt-8 grid gap-4 lg:grid-cols-2">

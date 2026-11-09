@@ -1,13 +1,13 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useEntries, useKanjiIndex } from '../../hooks/useData'
-import { useCards } from '../../hooks/useProgress'
+import { useCards, useNow } from '../../hooks/useProgress'
 import { aiWords, isAiWordId } from '../../lib/aiWords'
 import type { Frame } from '../../lib/detailStack'
 import { webWords } from '../../lib/webWords'
 import { progress } from '../../lib/progress'
 import { speechText } from '../../lib/speech'
-import { formatInterval } from '../../lib/srs'
+import { formatDelay, STATE } from '../../lib/srs'
 import type { VocabItem } from '../../types'
 import { GridCell } from '../GridCell'
 import { LoadError, Skeleton, SkeletonRows } from '../LoadState'
@@ -100,6 +100,7 @@ export function KanjiBreakdown({ word, onPush }: { word: string; onPush: Push })
  */
 export function WordDetail({ item, onPush, inPanel = false }: { item: VocabItem; onPush: Push; inPanel?: boolean }) {
   const card = useCards()[item.id]
+  const now = useNow()
   const keepWebWord = () => {
     const w = isAiWordId(item.id) && !aiWords.get(item.id) ? webWords.get(item.id) : undefined
     if (w) aiWords.save({ word: w.word, reading: w.reading, meaning: w.meaning, hanViet: w.hanViet })
@@ -147,7 +148,11 @@ export function WordDetail({ item, onPush, inPanel = false }: { item: VocabItem;
           >
             {card ? 'Đã học, bỏ đánh dấu' : 'Đánh dấu đã học'}
           </Button>
-          {card && <span className="text-sm text-muted">Giãn cách ôn: {formatInterval(card.interval)}</span>}
+          {card && (
+            <span className="text-sm text-muted">
+              {card.state === STATE.new ? 'Đang chờ ở trang Ôn tập' : card.due <= now ? 'Đến hạn ôn' : `Ôn lại sau ${formatDelay(card.due - now)}`}
+            </span>
+          )}
           <AskAiLink question={wordQuestion(item)} />
           {inPanel && (
             <Link to={`/word/${item.id}`} className="ml-auto inline-flex min-h-11 items-center text-sm font-medium text-ai hover:underline">

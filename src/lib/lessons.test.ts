@@ -1,15 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import type { SrsCard } from '../types'
 import { continueLesson, lessonCount, lessonIndexOf, lessonProgress, splitLessons } from './lessons'
+import { fsrsCard } from './testCards'
 
-const card = (id: string, interval: number, lastReviewed: number): SrsCard => ({
-  id,
-  ease: 2.5,
-  interval,
-  repetitions: 1,
-  due: 0,
-  lastReviewed,
-})
+// "đã thuộc" = thẻ Ôn tập có khoảng cách ≥ 21 ngày
+const card = (id: string, interval: number, lastReviewed: number) => fsrsCard(id, { scheduled_days: interval, stability: interval, last_review: lastReviewed })
 
 describe('splitLessons', () => {
   const items = Array.from({ length: 45 }, (_, i) => i)

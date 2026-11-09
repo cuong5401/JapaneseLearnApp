@@ -16,6 +16,7 @@ import { BookmarkButton } from '../notebook/BookmarkButton'
 import { shuffle } from '../../lib/answer'
 import { isInteractiveTarget } from '../../lib/keyboard'
 import { progress } from '../../lib/progress'
+import { flashcardGrade } from '../../lib/srs'
 import { readJSON, writeJSON } from '../../lib/storage'
 import type { SrsCard, VocabItem } from '../../types'
 import { useDockQuiet } from '../../lib/ai/dock'
@@ -47,11 +48,8 @@ export interface FlashcardGrader {
 }
 
 const srsGrader: FlashcardGrader = {
-  grade: (id, known) => {
-    const prev = progress.getSnapshot()[id]
-    progress.grade(id, known ? 4 : 1)
-    return prev
-  },
+  // vuốt trái "Chưa nhớ" = Quên (Again), vuốt phải "Đã nhớ" = Nhớ (Good); trả bản trước để hoàn tác
+  grade: (id, known) => progress.grade(id, flashcardGrade(known)),
   restore: (id, prev) => progress.restore(id, prev as SrsCard | undefined),
 }
 

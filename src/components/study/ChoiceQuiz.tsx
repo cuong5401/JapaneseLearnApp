@@ -7,6 +7,7 @@ import { SessionPanel, StudyLayout } from '../StudyLayout'
 import { shuffle } from '../../lib/answer'
 import { isInteractiveTarget } from '../../lib/keyboard'
 import { progress } from '../../lib/progress'
+import { quizGrade } from '../../lib/srs'
 
 const SHAKE = { x: [0, -8, 8, -8, 8, -8, 8, 0] }
 
@@ -66,10 +67,33 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
   const [index, setIndex] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
   const [right, setRight] = useState(0)
+  // Gợi ý: bỏ bớt 2 đáp án sai; đúng sau khi xem gợi ý thì chấm Khó (Hard)
+  const [removed, setRemoved] = useState<string[]>([])
+  const [hintedCount, setHintedCount] = useState(0)
+  const hinted = removed.length > 0
 
   const q = questions[index]
   const finished = index >= questions.length
   const answered = picked !== null
+
+  const choose = (option: string) => {
+    if (!q || answered) return
+    const ok = option === cfg.answer(q.item)
+    setPicked(option)
+    if (ok) setRight((r) => r + 1)
+    if (hinted) setHintedCount((c) => c + 1)
+    progress.grade(q.item.id, quizGrade(ok, hinted))
+  }
+  const hint = () => {
+    if (!q || answered || hinted) return
+    const right = cfg.answer(q.item)
+    setRemoved(q.options.filter((o) => o !== right).slice(0, Math.max(0, q.options.length - 2)))
+  }
+  const next = () => {
+    setPicked(null)
+    setRemoved([])
+    setIndex((i) => i + 1)
+  }
 
   // Phím 1–4 và Enter: dùng ref-less closure mới mỗi lần render qua effect phụ thuộc.
   useEffect(() => {
@@ -77,36 +101,19 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
     const onKey = (e: KeyboardEvent) => {
       if (isInteractiveTarget(e)) return
       const n = Number(e.key)
-      if (!answered && n >= 1 && n <= q.options.length) {
-        const option = q.options[n - 1]
-        const ok = option === cfg.answer(q.item)
-        setPicked(option)
-        if (ok) setRight((r) => r + 1)
-        progress.grade(q.item.id, ok ? 4 : 1)
-      } else if (answered && e.key === 'Enter') {
+      if (!answered && n >= 1 && n <= q.options.length && !removed.includes(q.options[n - 1])) choose(q.options[n - 1])
+      else if (!answered && e.key.toLowerCase() === 'h') hint()
+      else if (answered && e.key === 'Enter') {
         e.preventDefault()
-        setPicked(null)
-        setIndex((i) => i + 1)
+        next()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [finished, answered, q, cfg])
+  })
 
   if (questions.length === 0 || questions.some((x) => x.options.length < 2))
     return <p className="rounded-2xl border border-line bg-surface p-6 text-center text-muted">Chưa đủ mục khác nhau để làm quiz. Cần ít nhất 2 đáp án khác nhau.</p>
-
-  const choose = (option: string) => {
-    if (!q || answered) return
-    const ok = option === cfg.answer(q.item)
-    setPicked(option)
-    if (ok) setRight((r) => r + 1)
-    progress.grade(q.item.id, ok ? 4 : 1)
-  }
-  const next = () => {
-    setPicked(null)
-    setIndex((i) => i + 1)
-  }
 
   if (finished) {
     const perfect = right === questions.length
@@ -118,12 +125,16 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
           <AnimatedNumber value={right} className={perfect ? 'text-matsu' : ''} />
           <span className="text-2xl text-muted">/{questions.length}</span>
         </p>
-        <p className="mt-2 text-muted">Mục trả lời sai đã vào lịch ôn sớm hơn.</p>
+        <p className="mt-2 text-muted">
+          Mục trả lời sai đã vào lịch ôn sớm hơn.
+          {hintedCount > 0 && ` ${hintedCount} câu có dùng gợi ý (chấm "Khó").`}
+        </p>
         <Button
           onClick={() => {
             setQuestions(buildChoiceQuestions(items, pool, cfg, length))
             setIndex(0)
             setRight(0)
+            setHintedCount(0)
           }}
           className="mt-6 min-h-12 rounded-lg bg-ai px-6 font-semibold text-on-ai hover:opacity-90"
         >
@@ -146,6 +157,7 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
           ]}
           shortcuts={[
             { keys: ['1–4'], label: cfg.shortcut ?? 'Chọn đáp án' },
+            { keys: ['H'], label: 'Gợi ý (bỏ 2 đáp án sai)' },
             { keys: ['Enter'], label: 'Câu tiếp theo' },
           ]}
         />
@@ -169,13 +181,15 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
           </div>
           <ul className="mt-4 grid grid-cols-2 gap-2">
             {q.options.map((o, i) => {
-              const state = !answered ? 'idle' : o === correct ? 'right' : o === picked ? 'wrong' : 'dim'
+              const out = removed.includes(o)
+              const state = !answered ? (out ? 'dim' : 'idle') : o === correct ? 'right' : o === picked ? 'wrong' : 'dim'
               return (
                 <li key={o}>
                   <motion.button
                     type="button"
-                    disabled={answered}
+                    disabled={answered || out}
                     data-option={o}
+                    data-removed={out || undefined}
                     onClick={() => choose(o)}
                     whileTap={answered ? undefined : { scale: 0.97 }}
                     animate={state === 'right' ? { scale: 1.03, x: 0 } : state === 'wrong' ? SHAKE : { scale: 1, x: 0 }}
@@ -201,6 +215,17 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
         </motion.div>
       </AnimatePresence>
       <div aria-live="polite" className="mt-4 flex min-h-12 flex-wrap items-center gap-3">
+        {!answered && (
+          <button
+            type="button"
+            onClick={hint}
+            disabled={hinted}
+            data-quiz-hint
+            className="min-h-11 rounded-lg border border-line px-4 text-sm font-medium text-muted hover:border-ai hover:text-ink disabled:opacity-50"
+          >
+            {hinted ? 'Đã dùng gợi ý (đúng sẽ tính "Khó")' : 'Gợi ý'}
+          </button>
+        )}
         {answered && (
           <>
             <p className={`font-semibold ${picked === correct ? 'text-matsu' : 'text-beni'}`}>

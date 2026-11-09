@@ -89,8 +89,9 @@
   `core.autocrlf=true`: script sửa file nên đọc rồi ghi LF (`\r\n` → `\n`), nếu không chuỗi tìm-thay sẽ không khớp.
 - **API key AI** chỉ nằm trong localStorage của từng máy (`jla:ai-key:<provider>`); không có trong code, repo, log,
   file xuất tiến độ. Provider `mock` chỉ có ở bản dev (dùng cho test).
-- **Dữ liệu người dùng** (localStorage, `jla:v1:*`): `cards` (SRS), `lesson-size`, `kana`, `notebooks`,
-  `grammar-checked`, `ai-words` → **có** trong Xuất/Nhập tiến độ (`src/lib/backup.ts`).
+- **Dữ liệu người dùng** (localStorage, `jla:v1:*`): `cards` (SRS FSRS), `review-log`, `srs-settings`, `lesson-size`,
+  `kana`, `notebooks`, `grammar-checked`, `ai-words` → **có** trong Xuất/Nhập tiến độ (`src/lib/backup.ts`, version 2;
+  file version 1 = SM-2 tự đổi sang FSRS khi nhập).
   `ai-chats` (tối đa 10 cuộc, cuộc ghim không bị xóa), `ai-settings`, `ai-dock`, `jla:theme` hiện **chưa** có
   trong file xuất. Thêm loại dữ liệu học mới thì thêm vào `backup.ts` (kèm sanitize + test).
 - **Mỗi lần xong việc:** lint, build, test (unit + e2e liên quan), commit, push, kiểm tra workflow deploy xanh
@@ -98,6 +99,26 @@
   đã thay đổi gì, kết quả test, ảnh chụp (đường dẫn), điều người dùng cần tự làm.
 - CI (`.github/workflows/deploy.yml`, push `main`): `npm ci` → lint → test → build (secret `VITE_UNLOCK_CODE`) →
   check:secrets → kiểm tra dist → e2e preview → deploy Pages. Bước nào lỗi thì không deploy.
+
+## Ôn tập: FSRS (ts-fsrs 5.x)
+
+- `src/lib/srs.ts` bọc **ts-fsrs 5.x** (không dùng 6.x: đổi API sang `dueAt`/`learningStep`, bỏ `elapsed_days`).
+  Learning steps [1m, 10m], relearning [10m]. Hàm thuần nhận `SchedulerSettings` + `now` (test tắt fuzz).
+- `SrsCard` (`jla:v1:cards`) = các trường `Card` ts-fsrs, ngày bằng ms: `id, due, stability, difficulty, elapsed_days,
+  scheduled_days, reps, lapses, state (0 Mới/1 Đang học/2 Ôn tập/3 Học lại), last_review (0 = chưa), learning_steps`.
+  "Đã thuộc" = state Ôn tập và `scheduled_days ≥ 21`. Kẹp `scheduled_days ≤ maxInterval` (ts-fsrs cho Easy vượt vài ngày).
+- **Ánh xạ thao tác → rating** (`flashcardGrade`, `quizGrade`): flashcard Chưa nhớ/Đã nhớ = Again/Good; quiz sai = Again,
+  đúng sau Gợi ý = Hard, đúng = Good; trang Ôn tập 4 nút Quên/Khó/Nhớ/Dễ (phím 1–4), nhãn thời gian từ `preview()`.
+- "Đánh dấu đã học" / "Thêm cả sổ vào lịch ôn" tạo thẻ **Mới** (`progress.addNew`), chờ ở trang Ôn tập theo giới hạn
+  thẻ mới/ngày. Hàng đợi `src/lib/reviewQueue.ts`: đang học → ôn tập (retrievability thấp trước, giới hạn lượt ôn/ngày)
+  → mới. `useReviewQueue` hẹn giờ đúng lúc thẻ sớm nhất đến hạn + mỗi phút + khi app quay lại. Trang Ôn tập: hết thẻ mà
+  còn thẻ đến hạn trong 20 phút thì đếm ngược + "Ôn luôn bây giờ".
+- `src/lib/reviewLog.ts`: lịch sử ôn nén `{v,ids,rows}` (6 số/lượt), tối đa 20.000 lượt; dùng cho giới hạn ngày,
+  thống kê (trang Tiến độ), sau này tối ưu tham số `w` (để sẵn trong `srsSettings`). Hoàn tác flashcard bỏ log cuối.
+- Cài đặt `src/lib/srsSettings.ts` (`jla:v1:srs-settings`): retention 0.80–0.95, maxInterval, fuzz, newPerDay,
+  reviewsPerDay, `w?`. Migration `fsrs` (`src/lib/migrations.ts`, chạy 1 lần): SM-2 đã ôn → Ôn tập (stability ≈ interval,
+  tối thiểu 0.5; difficulty từ ease 1.3→9, 2.5→5, ≥3→3; giữ due/reps/last_review; lapses 0), chưa ôn → Mới.
+- Kana dùng kho riêng `kanaProgress` (không phải SRS).
 
 ## Không layout shift (bắt buộc)
 
@@ -136,7 +157,8 @@
 
 - Từ vựng N5–N1, từ ghép, từ láy, phó từ, thuật ngữ chuyên ngành: chia bài (cỡ bài tùy chọn), flashcard vuốt,
   quiz, đánh dấu đã học.
-- Ôn tập SRS (thẻ đến hạn, trang Tiến độ).
+- Ôn tập FSRS (4 mức chấm, bước học lại trong ngày, giới hạn mỗi ngày, Cài đặt → Ôn tập; trang Tiến độ: tỷ lệ nhớ
+  30 ngày, dự báo 30 ngày, số thẻ theo trạng thái). Quiz có nút Gợi ý (trắc nghiệm bỏ 2 đáp án sai, gõ: chữ đầu).
 - Chữ Hán: chia bài theo cấp xuất hiện, flashcard, quiz âm Hán Việt, chi tiết dạng ngăn xếp theo URL
   (`?k=` chữ gốc, `?xem=w:…~k:…~r:…`; desktop là panel/drawer, điện thoại là bottom sheet). Bộ thủ + chữ thuộc bộ.
 - Ngữ pháp N5–N1 (N5/N3 có mẫu tự soạn), lọc nhóm, đánh dấu đã kiểm tra.

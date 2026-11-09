@@ -37,7 +37,7 @@ export function lessonProgress(ids: readonly string[], cards: Record<string, Srs
     if (!c) continue
     learned++
     if (isMastered(c)) mastered++
-    lastReviewed = Math.max(lastReviewed, c.lastReviewed)
+    lastReviewed = Math.max(lastReviewed, c.last_review)
   }
   const state: LessonState = learned === 0 ? 'new' : mastered === ids.length ? 'mastered' : 'learning'
   return { total: ids.length, learned, mastered, state, lastReviewed }

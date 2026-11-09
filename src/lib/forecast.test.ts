@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import type { SrsCard } from '../types'
 import { dueForecast, forecastLabels } from './forecast'
 import { mergeKanjiWords, type CardWord } from './randomKanji'
+import { fsrsCard } from './testCards'
 
 const DAY = 86_400_000
-const card = (due: number): SrsCard => ({ id: String(due), ease: 2.5, interval: 1, repetitions: 1, due, lastReviewed: 0 })
+const card = (due: number) => fsrsCard(String(due), { due })
 
 describe('dự báo thẻ đến hạn', () => {
   const now = new Date(2026, 10, 9, 15).getTime()

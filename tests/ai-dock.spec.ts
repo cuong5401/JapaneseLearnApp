@@ -232,6 +232,9 @@ for (const width of WIDTHS) {
         await expect(tab(page)).toHaveAttribute('data-quiet', 'true')
         await expect.poll(async () => Math.round((await box(page, '[data-ai-tab]')).width)).toBe(16)
         expect(Number(await tab(page).evaluate((el) => getComputedStyle(el).opacity))).toBeCloseTo(0.5, 1)
+        // chờ hiệu ứng co tab (28 → 16px) dừng hẳn rồi mới đo, tránh lệch dưới 1px
+        await settled(page, '[data-ai-tab]')
+        await expect.poll(async () => (await box(page, '[data-ai-tab]')).width).toBeLessThanOrEqual(16.01)
         const t = await box(page, '[data-ai-tab]')
         const card = page.locator('.flip').first()
         await expect(card).toBeVisible()

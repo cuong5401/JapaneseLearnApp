@@ -10,6 +10,7 @@ import { Stagger, StaggerItem } from '../Stagger'
 import { readingMatches, shuffle } from '../../lib/answer'
 import { isInteractiveTarget } from '../../lib/keyboard'
 import { progress } from '../../lib/progress'
+import { quizGrade } from '../../lib/srs'
 import { speechText } from '../../lib/speech'
 import type { VocabItem } from '../../types'
 import type { SessionLink } from './FlashcardSession'
@@ -99,7 +100,7 @@ function Result({
   back,
   next,
 }: {
-  answers: { item: VocabItem; correct: boolean }[]
+  answers: { item: VocabItem; correct: boolean; hinted?: boolean }[]
   onRestart: () => void
   back: SessionLink
   next?: SessionLink
@@ -116,7 +117,8 @@ function Result({
         <span className="text-2xl text-muted">/{answers.length}</span>
       </p>
       <p className="mt-2 text-muted">
-        {perfect ? 'Đúng hết. Các từ này sẽ được giãn lịch ôn.' : 'Các câu sai đã được đưa vào lịch ôn ngày mai.'}
+        {perfect ? 'Đúng hết. Các từ này sẽ được giãn lịch ôn.' : 'Các câu sai sẽ quay lại sớm trong lịch ôn.'}
+        {answers.some((a) => a.hinted) && ` ${answers.filter((a) => a.hinted).length} câu có dùng gợi ý (chấm "Khó").`}
       </p>
 
       {wrong.length > 0 && (
@@ -176,7 +178,9 @@ export function QuizSession({
   const [index, setIndex] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
   const [typed, setTyped] = useState('')
-  const [answers, setAnswers] = useState<{ item: VocabItem; correct: boolean }[]>([])
+  const [answers, setAnswers] = useState<{ item: VocabItem; correct: boolean; hinted?: boolean }[]>([])
+  // Gợi ý: trắc nghiệm bỏ 2 đáp án sai, gõ cách đọc hiện chữ đầu; đúng sau khi xem gợi ý thì chấm Khó (Hard)
+  const [hinted, setHinted] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const finished = index >= questions.length
@@ -187,15 +191,19 @@ export function QuizSession({
   const record = (correct: boolean, choice: string) => {
     if (!q || answered) return
     setPicked(choice)
-    setAnswers((a) => [...a, { item: q.item, correct }])
-    progress.grade(q.item.id, correct ? 4 : 1)
+    setAnswers((a) => [...a, { item: q.item, correct, hinted }])
+    progress.grade(q.item.id, quizGrade(correct, hinted))
   }
 
   const next = () => {
     setIndex((i) => i + 1)
     setPicked(null)
     setTyped('')
+    setHinted(false)
   }
+
+  // Trắc nghiệm: 2 đáp án sai đầu tiên bị bỏ khi đã dùng gợi ý
+  const removed = mode === 'choice' && hinted && q ? q.options.filter((o) => o.id !== q.item.id).slice(0, Math.max(0, q.options.length - 2)).map((o) => o.id) : []
 
   // Phím tắt trắc nghiệm: 1–4 chọn, Enter sang câu.
   useEffect(() => {
@@ -203,21 +211,18 @@ export function QuizSession({
     const onKey = (e: KeyboardEvent) => {
       if (isInteractiveTarget(e)) return
       const n = Number(e.key)
-      if (!answered && n >= 1 && n <= q.options.length) {
+      if (!answered && n >= 1 && n <= q.options.length && !removed.includes(q.options[n - 1].id)) {
         const o = q.options[n - 1]
-        setPicked(o.id)
-        setAnswers((a) => [...a, { item: q.item, correct: o.id === q.item.id }])
-        progress.grade(q.item.id, o.id === q.item.id ? 4 : 1)
-      } else if (answered && e.key === 'Enter') {
+        record(o.id === q.item.id, o.id)
+      } else if (!answered && e.key.toLowerCase() === 'h') setHinted(true)
+      else if (answered && e.key === 'Enter') {
         e.preventDefault()
-        setIndex((i) => i + 1)
-        setPicked(null)
-        setTyped('')
+        next()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [mode, finished, answered, q])
+  })
 
   if (!mode)
     return (
@@ -264,6 +269,7 @@ export function QuizSession({
         mode === 'choice'
           ? [
               { keys: ['1–4'], label: 'Chọn đáp án' },
+              { keys: ['H'], label: 'Gợi ý (bỏ 2 đáp án sai)' },
               { keys: ['Enter'], label: 'Câu tiếp theo' },
             ]
           : [
@@ -323,7 +329,8 @@ export function QuizSession({
                 <ul className="mt-4 grid gap-2 @md:grid-cols-2">
                   {q.options.map((o, i) => {
                     const isAnswer = o.id === q.item.id
-                    const state = !answered ? 'idle' : isAnswer ? 'right' : picked === o.id ? 'wrong' : 'dim'
+                    const out = removed.includes(o.id)
+                    const state = !answered ? (out ? 'dim' : 'idle') : isAnswer ? 'right' : picked === o.id ? 'wrong' : 'dim'
                     const cls = {
                       idle: 'border-line bg-surface hover:border-ai',
                       right: 'border-matsu bg-matsu-soft text-matsu',
@@ -334,7 +341,9 @@ export function QuizSession({
                       <li key={o.id}>
                         <motion.button
                           type="button"
-                          disabled={answered}
+                          disabled={answered || out}
+                          data-option={o.id}
+                          data-removed={out || undefined}
                           onClick={() => record(isAnswer, o.id)}
                           whileTap={answered ? undefined : { scale: 0.97 }}
                           animate={state === 'right' ? { scale: 1.03, x: 0 } : state === 'wrong' ? SHAKE : { scale: 1, x: 0 }}
@@ -365,6 +374,14 @@ export function QuizSession({
                     {q.item.word}
                   </p>
                   <p className="mt-3 text-muted">{q.item.meaning}</p>
+                  {hinted && !answered && (
+                    <p className="mt-2 text-sm text-muted" data-hint-text>
+                      Gợi ý: bắt đầu bằng{' '}
+                      <span lang="ja" className="font-jp text-lg text-ink">
+                        {[...q.item.reading][0]}
+                      </span>
+                    </p>
+                  )}
                 </div>
                 <label htmlFor="quiz-answer" className="sr-only">
                   Cách đọc
@@ -400,6 +417,17 @@ export function QuizSession({
         </AnimatePresence>
 
         <div aria-live="polite" className="mt-4 flex min-h-12 flex-wrap items-center gap-3">
+          {!answered && (
+            <button
+              type="button"
+              onClick={() => setHinted(true)}
+              disabled={hinted}
+              data-quiz-hint
+              className="min-h-11 rounded-lg border border-line px-4 text-sm font-medium text-muted hover:border-ai hover:text-ink disabled:opacity-50"
+            >
+              {hinted ? 'Đã dùng gợi ý (đúng sẽ tính "Khó")' : 'Gợi ý'}
+            </button>
+          )}
           {answered && (
             <>
               <p className={`font-semibold ${lastCorrect ? 'text-matsu' : 'text-beni'}`}>

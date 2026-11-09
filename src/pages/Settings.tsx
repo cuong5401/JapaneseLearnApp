@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SrsSettingsSection } from '../components/SrsSettingsSection'
 import { STROKE_CREDIT } from '../lib/strokes'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
@@ -184,6 +185,7 @@ export function Settings() {
         <p className="mt-1 mb-3 text-sm text-muted">AI chọn từ vựng, ví dụ và độ sâu giải thích theo trình độ này.</p>
         <Segmented label="Trình độ JLPT" value={s.level} onChange={aiSettings.setLevel} options={LEVELS.map((l) => ({ value: l, label: l }))} />
       </section>
+      <SrsSettingsSection />
       <section className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
         <h2 className="text-lg font-bold">Tiến độ và sao lưu</h2>
         <p className="mt-1 text-sm text-muted">Xem tiến độ, xuất / nhập tiến độ sang máy khác (không kèm API key).</p>

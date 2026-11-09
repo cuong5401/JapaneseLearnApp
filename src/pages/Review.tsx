@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Celebration } from '../components/Celebration'
 import { GridCell } from '../components/GridCell'
@@ -14,16 +14,19 @@ import { HanViet, WordMeta } from '../components/VocabBits'
 import { speechText } from '../lib/speech'
 import { isInteractiveTarget } from '../lib/keyboard'
 import { progress } from '../lib/progress'
-import { formatInterval, review } from '../lib/srs'
-import { useCards, useDueIds } from '../hooks/useProgress'
+import { LEARN_AHEAD_MS, nextDue } from '../lib/reviewQueue'
+import { formatDelay, preview } from '../lib/srs'
+import { useSrsSettings } from '../lib/srsSettings'
+import { useCards, useNow, useReviewQueue } from '../hooks/useProgress'
 import { kanjiOfRadical } from '../data/radicalKanji'
-import type { Quality, StudyEntry } from '../types'
+import type { Grade, StudyEntry } from '../types'
 
-const GRADES: { q: Quality; label: string; cls: string }[] = [
+/** 4 mức chấm FSRS: Quên (Again) / Khó (Hard) / Nhớ (Good) / Dễ (Easy), phím 1–4. */
+const GRADES: { q: Grade; label: string; cls: string }[] = [
   { q: 1, label: 'Quên', cls: 'border-beni text-beni hover:bg-beni-soft' },
-  { q: 3, label: 'Khó', cls: 'border-line hover:bg-sunken' },
-  { q: 4, label: 'Nhớ', cls: 'border-line hover:bg-sunken' },
-  { q: 5, label: 'Dễ', cls: 'border-matsu text-matsu hover:bg-matsu-soft' },
+  { q: 2, label: 'Khó', cls: 'border-line hover:bg-sunken' },
+  { q: 3, label: 'Nhớ', cls: 'border-line hover:bg-sunken' },
+  { q: 4, label: 'Dễ', cls: 'border-matsu text-matsu hover:bg-matsu-soft' },
 ]
 
 const gradeList = {
@@ -148,15 +151,42 @@ const SHORTCUTS = [
   { keys: ['4'], label: 'Dễ' },
 ]
 
+const clock = (ms: number) => {
+  const s = Math.max(0, Math.ceil(ms / 1000))
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+}
+
+/** Hết thẻ đến hạn ngay nhưng còn thẻ đang học sắp đến hạn: đếm ngược, có nút ôn luôn. */
+function Countdown({ due, onNow }: { due: number; onNow: () => void }) {
+  const now = useNow(1000)
+  return (
+    <div className="flex flex-col items-center rounded-2xl border border-line bg-surface px-6 py-12 text-center" data-review-countdown>
+      <GridCell className="size-24 text-ai">待</GridCell>
+      <h2 className="mt-5 text-xl font-semibold">
+        Thẻ tiếp theo sau <span className="tabular-nums">{clock(due - now)}</span>
+      </h2>
+      <p className="mt-2 max-w-sm text-muted">Thẻ vừa học đang ở bước nhắc lại ngắn. Chờ một chút để nhớ chắc hơn, hoặc ôn luôn.</p>
+      <Button onClick={onNow} className="mt-6 min-h-11 rounded-lg bg-ai px-5 font-semibold text-on-ai hover:opacity-90">
+        Ôn luôn bây giờ
+      </Button>
+    </div>
+  )
+}
+
 export function Review() {
-  const dueIds = useDueIds()
+  const { ids: dueIds, now, newWaiting, reviewWaiting } = useReviewQueue()
   const cards = useCards()
-  // Chốt danh sách lúc mở trang: thẻ "Quên" bị dời hạn sang mai vẫn tra được khi quay lại cuối hàng.
-  const [sessionIds] = useState(dueIds)
-  const lookup = useEntries(sessionIds)
-  // Hàng đợi dựng khi dữ liệu tải xong; thẻ có ID không còn tồn tại (bộ mẫu cũ, từ đã xoá) bị bỏ qua.
-  const [queue, setQueue] = useState<string[] | null>(null)
-  if (queue === null && lookup.status === 'ready') setQueue(sessionIds.filter((id) => lookup.entries.has(id)))
+  const settings = useSrsSettings()
+  // Thẻ được đưa lên ôn sớm ("Ôn luôn bây giờ")
+  const [early, setEarly] = useState<string | null>(null)
+  const order = early && !dueIds.includes(early) ? [early, ...dueIds] : dueIds
+  // Nạp dữ liệu cho mọi id từng vào hàng đợi trong phiên (thẻ Quên quay lại sau 1 phút không phải tải lại).
+  const [known, setKnown] = useState<string[]>(order)
+  const missing = order.filter((x) => !known.includes(x))
+  if (missing.length) setKnown([...known, ...missing])
+  const lookup = useEntries(known)
+  // Thẻ có ID không còn tồn tại (bộ mẫu cũ, từ đã xoá) bị bỏ qua.
+  const queue = lookup.status === 'ready' ? order.filter((x) => lookup.entries.has(x)) : null
   const [shown, setShown] = useState(false)
   const [done, setDone] = useState(0)
   const [lapses, setLapses] = useState(0)
@@ -167,29 +197,30 @@ export function Review() {
   const entry = id ? lookup.entries.get(id) : undefined
   const card = id ? cards[id] : undefined
 
-  const previews = useMemo(
-    () => (card ? GRADES.map((g) => (g.q < 3 ? 'lát nữa' : formatInterval(review(card, g.q).interval))) : []),
-    [card],
-  )
+  // Nhãn thời gian tới lần ôn tiếp theo trên 4 nút (xem trước bằng scheduler.repeat)
+  const previews = useMemo(() => {
+    if (!card) return []
+    const p = preview(card, now, settings)
+    return GRADES.map((g) => formatDelay(p[g.q].due - now))
+  }, [card, now, settings])
 
-  const nextDue = useMemo(() => {
-    const upcoming = Object.values(cards)
-      .filter((c) => isCurrentId(c.id))
-      .sort((a, b) => a.due - b.due)[0]
-    return upcoming ? new Date(upcoming.due) : null
-  }, [cards])
+  const upcoming = useMemo(() => nextDue(cards, now, isCurrentId), [cards, now])
 
-  const grade = (q: Quality) => {
+  const grade = (q: Grade) => {
     if (!id) return
     progress.grade(id, q)
     setShown(false)
     setTurn((t) => t + 1)
-    // Quên thì đưa xuống cuối hàng để gặp lại trong phiên này.
-    setQueue((qs) => (qs ? (q < 3 ? [...qs.slice(1), qs[0]] : qs.slice(1)) : qs))
-    if (q >= 3) setDone((d) => d + 1)
-    else setLapses((l) => l + 1)
+    if (id === early) setEarly(null)
+    if (q === 1) setLapses((l) => l + 1)
+    else setDone((d) => d + 1)
   }
 
+  // Phím 1–4 gọi đúng hàm chấm của lần render mới nhất
+  const gradeRef = useRef(grade)
+  useEffect(() => {
+    gradeRef.current = grade
+  })
   useEffect(() => {
     if (!id) return
     const onKey = (e: KeyboardEvent) => {
@@ -197,15 +228,7 @@ export function Review() {
       if (!shown && (e.key === ' ' || e.key === 'Enter')) {
         e.preventDefault()
         setShown(true)
-      } else if (shown && ['1', '2', '3', '4'].includes(e.key)) {
-        const g = GRADES[Number(e.key) - 1]
-        progress.grade(id, g.q)
-        setShown(false)
-        setTurn((t) => t + 1)
-        setQueue((qs) => (qs ? (g.q < 3 ? [...qs.slice(1), qs[0]] : qs.slice(1)) : qs))
-        if (g.q >= 3) setDone((d) => d + 1)
-        else setLapses((l) => l + 1)
-      }
+      } else if (shown && ['1', '2', '3', '4'].includes(e.key)) gradeRef.current(GRADES[Number(e.key) - 1].q)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -215,24 +238,31 @@ export function Review() {
   if (queue === null) return <PageSkeleton header rows={4} />
 
   if (!entry || !card) {
+    const soon = upcoming && upcoming.due - now <= LEARN_AHEAD_MS ? upcoming : null
+    const waiting = newWaiting + reviewWaiting
     return (
       <div className="mx-auto max-w-[560px]">
-        {done > 0 && <Celebration />}
+        {done > 0 && !soon && <Celebration />}
         <PageHeader title="Ôn tập" />
-        <div className="flex flex-col items-center rounded-2xl border border-line bg-surface px-6 py-12 text-center">
-          <GridCell className="size-24 text-matsu">済</GridCell>
-          <h2 className="mt-5 text-xl font-semibold">
-            {done > 0 ? `Xong ${done} thẻ. Hết thẻ cần ôn.` : 'Chưa có thẻ nào đến hạn'}
-          </h2>
-          <p className="mt-2 max-w-sm text-muted">
-            {nextDue
-              ? `Thẻ tiếp theo đến hạn lúc ${nextDue.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}.`
-              : 'Học từ mới bằng flashcard hoặc làm quiz để tạo lịch ôn.'}
-          </p>
-          <ButtonLink to="/" className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-ai px-5 font-semibold text-on-ai">
-            Chọn bài học
-          </ButtonLink>
-        </div>
+        {soon ? (
+          <Countdown due={soon.due} onNow={() => setEarly(soon.id)} />
+        ) : (
+          <div className="flex flex-col items-center rounded-2xl border border-line bg-surface px-6 py-12 text-center" data-review-done>
+            <GridCell className="size-24 text-matsu">済</GridCell>
+            <h2 className="mt-5 text-xl font-semibold">
+              {done > 0 ? `Xong ${done} thẻ. Hết thẻ cần ôn.` : 'Chưa có thẻ nào đến hạn'}
+            </h2>
+            <p className="mt-2 max-w-sm text-muted">
+              {upcoming
+                ? `Thẻ tiếp theo đến hạn lúc ${new Date(upcoming.due).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}.`
+                : 'Học từ mới bằng flashcard hoặc làm quiz để tạo lịch ôn.'}
+              {waiting > 0 && ` Còn ${waiting} thẻ chờ ngày mai do giới hạn mỗi ngày (đổi trong Cài đặt).`}
+            </p>
+            <ButtonLink to="/" className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-ai px-5 font-semibold text-on-ai">
+              Chọn bài học
+            </ButtonLink>
+          </div>
+        )}
       </div>
     )
   }
@@ -291,10 +321,13 @@ export function Review() {
                   variants={gradeItem}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => grade(g.q)}
+                  data-grade={g.q}
                   className={`flex min-h-14 flex-col items-center justify-center rounded-lg border-2 bg-surface font-semibold ${g.cls}`}
                 >
                   {g.label}
-                  <span className="text-[11px] font-normal text-muted">{previews[i]}</span>
+                  <span className="text-[11px] font-normal text-muted" data-grade-delay>
+                    {previews[i]}
+                  </span>
                 </motion.button>
               ))}
             </motion.div>

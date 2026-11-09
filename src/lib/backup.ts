@@ -4,17 +4,27 @@ import { sanitizeChecked, type CheckedMap } from './grammarChecked'
 import { isKanaStat, type KanaStat } from './kanaProgress'
 import { sanitizeState, type NotebookState } from './notebooks'
 import { LESSON_SIZES, type LessonSize } from './lessons'
-import { migrateCards, migrateNotebooks } from './migrations'
+import { cardsToFsrs, migrateCards, migrateNotebooks } from './migrations'
+import { sanitizeLog, type PackedLog } from './reviewLog'
+import { sanitizeSrsSettings, type SrsSettings } from './srsSettings'
 
 /**
  * Xuất / nhập tiến độ ra file .json để chuyển giữa các máy (máy tính ↔ điện thoại).
  * Định dạng có `app` và `version` để sau này đổi cấu trúc vẫn đọc được bản cũ.
+ *  - version 1: thẻ SM-2 (ease / interval / repetitions) → khi nhập tự đổi sang FSRS.
+ *  - version 2: thẻ FSRS + lịch sử ôn (`reviewLog`) + cài đặt ôn tập (`srsSettings`).
  */
+export const BACKUP_VERSION = 2
+
 export interface Backup {
   app: 'kotonoha'
-  version: 1
+  version: 2
   exportedAt: string
   cards: Record<string, SrsCard>
+  /** Lịch sử ôn dạng nén (src/lib/reviewLog.ts) */
+  reviewLog?: PackedLog
+  /** Cài đặt ôn tập FSRS */
+  srsSettings?: SrsSettings
   lessonSize?: LessonSize
   /** Mức thuộc kana (từ bản có Luyện kana mới; file cũ không có) */
   kana?: Record<string, KanaStat>
@@ -36,8 +46,22 @@ export function createBackup(
   notebooks?: NotebookState,
   grammarChecked?: CheckedMap,
   aiWords?: Record<string, AiWordItem>,
+  extra: { reviewLog?: PackedLog; srsSettings?: SrsSettings } = {},
 ): Backup {
-  return { app: 'kotonoha', version: 1, exportedAt: now.toISOString(), cards, lessonSize, kana, notebooks, grammarChecked, aiWords, radicalIds: 'kangxi' }
+  return {
+    app: 'kotonoha',
+    version: BACKUP_VERSION,
+    exportedAt: now.toISOString(),
+    cards,
+    lessonSize,
+    kana,
+    notebooks,
+    grammarChecked,
+    aiWords,
+    radicalIds: 'kangxi',
+    reviewLog: extra.reviewLog,
+    srsSettings: extra.srsSettings,
+  }
 }
 
 export function backupFileName(now = new Date()): string {
@@ -50,15 +74,28 @@ const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFin
 function toCard(id: string, v: unknown): SrsCard | null {
   if (!v || typeof v !== 'object') return null
   const c = v as Partial<SrsCard>
-  if (c.id !== id || !isNum(c.ease) || !isNum(c.interval) || !isNum(c.repetitions) || !isNum(c.due)) return null
+  const nums = [c.due, c.stability, c.difficulty, c.elapsed_days, c.scheduled_days, c.reps, c.lapses, c.learning_steps]
+  if (c.id !== id || !nums.every(isNum) || ![0, 1, 2, 3].includes(c.state as number)) return null
   return {
     id,
-    ease: c.ease,
-    interval: c.interval,
-    repetitions: c.repetitions,
-    due: c.due,
-    lastReviewed: isNum(c.lastReviewed) ? c.lastReviewed : 0,
+    due: c.due!,
+    stability: c.stability!,
+    difficulty: c.difficulty!,
+    elapsed_days: c.elapsed_days!,
+    scheduled_days: c.scheduled_days!,
+    reps: c.reps!,
+    lapses: c.lapses!,
+    state: c.state!,
+    last_review: isNum(c.last_review) ? c.last_review : 0,
+    learning_steps: c.learning_steps!,
   }
+}
+
+/** Thẻ SM-2 của file version 1: đủ trường thì đổi sang FSRS (migrations.sm2ToFsrs), hỏng thì bỏ. */
+function toSm2(id: string, v: unknown): boolean {
+  if (!v || typeof v !== 'object') return false
+  const c = v as Record<string, unknown>
+  return c.id === id && [c.ease, c.interval, c.repetitions, c.due].every(isNum)
 }
 
 export type ParseResult = { ok: true; backup: Backup; skipped: number } | { ok: false; error: string }
@@ -74,18 +111,28 @@ export function parseBackup(text: string): ParseResult {
   if (!raw || typeof raw !== 'object' || (raw as Backup).app !== 'kotonoha') {
     return { ok: false, error: 'Đây không phải file tiến độ của Kotonoha.' }
   }
-  const b = raw as Partial<Backup>
-  if (b.version !== 1) return { ok: false, error: `Không đọc được file tiến độ phiên bản ${String(b.version)}.` }
+  const b = raw as Omit<Partial<Backup>, 'version'> & { version?: number }
+  if (b.version !== 1 && b.version !== 2) return { ok: false, error: `Không đọc được file tiến độ phiên bản ${String(b.version)}.` }
   if (!b.cards || typeof b.cards !== 'object' || Array.isArray(b.cards)) {
     return { ok: false, error: 'File tiến độ không có danh sách thẻ.' }
   }
 
-  const cards: Record<string, SrsCard> = {}
+  let cards: Record<string, SrsCard> = {}
   let skipped = 0
-  for (const [id, v] of Object.entries(b.cards)) {
-    const card = toCard(id, v)
-    if (card) cards[id] = card
-    else skipped++
+  if (b.version === 1) {
+    // file SM-2 cũ: đổi sang FSRS như migration trên máy
+    const sm2: Record<string, unknown> = {}
+    for (const [id, v] of Object.entries(b.cards)) {
+      if (toSm2(id, v)) sm2[id] = { lastReviewed: 0, ...(v as object) }
+      else skipped++
+    }
+    cards = cardsToFsrs(sm2)
+  } else {
+    for (const [id, v] of Object.entries(b.cards)) {
+      const card = toCard(id, v)
+      if (card) cards[id] = card
+      else skipped++
+    }
   }
   const kana: Record<string, KanaStat> = {}
   if (b.kana && typeof b.kana === 'object' && !Array.isArray(b.kana)) {
@@ -101,7 +148,9 @@ export function parseBackup(text: string): ParseResult {
   return {
     ok: true,
     skipped,
-    backup: { app: 'kotonoha', version: 1, exportedAt: String(b.exportedAt ?? ''),
+    backup: { app: 'kotonoha', version: 2, exportedAt: String(b.exportedAt ?? ''),
+      reviewLog: sanitizeLog(b.reviewLog) ?? undefined,
+      srsSettings: b.srsSettings ? sanitizeSrsSettings(b.srsSettings) : undefined,
       cards: old ? migrateCards(cards) : cards, lessonSize, kana,
       notebooks: old && notebooks ? migrateNotebooks(notebooks) : notebooks,
       radicalIds: 'kangxi',
@@ -119,7 +168,7 @@ export interface MergeResult {
   updated: number
 }
 
-/** Gộp: mỗi thẻ giữ bản được ôn gần nhất (lastReviewed lớn hơn). Không xóa thẻ đang có. */
+/** Gộp: mỗi thẻ giữ bản được ôn gần nhất (last_review lớn hơn). Không xóa thẻ đang có. */
 export function mergeCards(current: Record<string, SrsCard>, incoming: Record<string, SrsCard>): MergeResult {
   const cards = { ...current }
   let added = 0
@@ -129,7 +178,7 @@ export function mergeCards(current: Record<string, SrsCard>, incoming: Record<st
     if (!mine) {
       cards[id] = card
       added++
-    } else if (card.lastReviewed > mine.lastReviewed) {
+    } else if (card.last_review > mine.last_review) {
       cards[id] = card
       updated++
     }

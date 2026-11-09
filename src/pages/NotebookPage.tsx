@@ -234,11 +234,9 @@ export function NotebookPage() {
   const groups = KIND_ORDER.map((k) => ({ k, items: shown.filter((c) => c.entry.kind === k) })).filter((g) => g.items.length > 0)
 
   const addAllToSrs = () => {
-    const have = progress.getSnapshot()
-    // Chữ ngoài kanji.json không có dữ liệu để ôn.
-    const fresh = cards.filter((c) => !have[c.id] && c.entry.kind !== 'char')
-    fresh.forEach((c) => progress.markLearned(c.id))
-    showToast(fresh.length ? `Đã thêm ${fresh.length} mục vào lịch ôn` : 'Mọi mục đã có trong lịch ôn')
+    // Chữ ngoài kanji.json không có dữ liệu để ôn. Thẻ Mới chờ ở trang Ôn tập theo giới hạn thẻ mới mỗi ngày.
+    const added = progress.addNew(cards.filter((c) => c.entry.kind !== 'char').map((c) => c.id))
+    showToast(added ? `Đã thêm ${added} thẻ mới vào trang Ôn tập` : 'Mọi mục đã có trong lịch ôn')
   }
 
   return (

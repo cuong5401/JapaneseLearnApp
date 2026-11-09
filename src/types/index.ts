@@ -62,19 +62,29 @@ export type StudyEntry =
   | { kind: 'grammar'; item: GrammarEntry }
   | { kind: 'char'; item: CharItem }
 
-/** Thẻ ôn tập ngắt quãng (SM-2 rút gọn). */
+/**
+ * Thẻ ôn tập ngắt quãng FSRS (ts-fsrs 5.x): đúng các trường của `Card` ts-fsrs, ngày lưu bằng ms để JSON gọn.
+ * Lưu ở localStorage `jla:v1:cards`, khóa = id mục học.
+ */
 export interface SrsCard {
   id: string
-  /** Hệ số dễ (>= 1.3) */
-  ease: number
-  /** Khoảng cách ôn tiếp theo, tính bằng ngày */
-  interval: number
-  /** Số lần trả lời đúng liên tiếp */
-  repetitions: number
-  /** Thời điểm đến hạn (ms since epoch) */
+  /** Thời điểm đến hạn (ms) */
   due: number
-  lastReviewed: number
+  /** Độ ổn định trí nhớ (ngày để khả năng nhớ giảm còn 90%) */
+  stability: number
+  /** Độ khó 1–10 */
+  difficulty: number
+  elapsed_days: number
+  scheduled_days: number
+  reps: number
+  lapses: number
+  /** 0 Mới, 1 Đang học, 2 Ôn tập, 3 Học lại (State của ts-fsrs) */
+  state: 0 | 1 | 2 | 3
+  /** Lần ôn gần nhất (ms), 0 = chưa ôn */
+  last_review: number
+  /** Bước học (lại) hiện tại trong ngày */
+  learning_steps: number
 }
 
-/** Mức đánh giá khi ôn: 0–5 theo SM-2. */
-export type Quality = 0 | 1 | 2 | 3 | 4 | 5
+/** Mức chấm FSRS: 1 Quên (Again), 2 Khó (Hard), 3 Nhớ (Good), 4 Dễ (Easy). */
+export type Grade = 1 | 2 | 3 | 4

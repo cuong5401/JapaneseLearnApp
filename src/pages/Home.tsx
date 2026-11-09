@@ -250,7 +250,7 @@ function Forecast({ counts, labels }: { counts: number[]; labels: string[] }) {
 /** Bộ từ đang học: bộ của thẻ ôn gần nhất (mặc định N5). */
 function activeDeck(cards: Record<string, SrsCard>): VocabDeckKey {
   let best: SrsCard | undefined
-  for (const c of Object.values(cards)) if (isCurrentId(c.id) && (!best || c.lastReviewed > best.lastReviewed)) best = c
+  for (const c of Object.values(cards)) if (isCurrentId(c.id) && (!best || c.last_review > best.last_review)) best = c
   const prefix = best?.id.split('-')[0]
   return (Object.keys(DECK_ID_PREFIX) as VocabDeckKey[]).find((k) => DECK_ID_PREFIX[k] === prefix) ?? 'n5'
 }

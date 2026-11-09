@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import radicals from '../../public/data/kanji/radicals.json'
-import type { SrsCard } from '../types'
-import { migrateCards, migrateNotebooks, migrateRadicalId } from './migrations'
+import { cardsToFsrs, easeToDifficulty, migrateCards, migrateNotebooks, migrateRadicalId, sm2ToFsrs, type Sm2Card } from './migrations'
+import { fsrsCard } from './testCards'
 
-const card = (id: string, lastReviewed: number): SrsCard => ({ id, ease: 2.5, interval: 1, repetitions: 1, due: 0, lastReviewed })
+const card = (id: string, lastReviewed: number): Sm2Card => ({ id, ease: 2.5, interval: 1, repetitions: 1, due: 0, lastReviewed })
 
 describe('bộ thủ theo số Khang Hy', () => {
   it('radicals.json có đủ 214 bộ, đúng số', () => {
@@ -43,5 +43,31 @@ describe('bộ thủ theo số Khang Hy', () => {
       items: { a: [{ ref: 'rd-036', addedAt: 1 }, { ref: 'rd-037', addedAt: 2 }, { ref: 'rd-009', addedAt: 3 }, { ref: 'rd-010', addedAt: 4 }, { ref: 'rd-204', addedAt: 5 }] },
     })
     expect(s.items.a.map((i) => i.ref)).toEqual(['rd-037', 'rd-036', 'rd-009'])
+  })
+})
+
+describe('SM-2 → FSRS', () => {
+  const t = new Date(2026, 10, 1).getTime()
+  it('thẻ đã ôn → Ôn tập: giữ due, số lượt, lần ôn; stability ≈ interval; difficulty theo ease', () => {
+    const c = sm2ToFsrs({ id: 'n5-1', ease: 2.5, interval: 12, repetitions: 4, due: t + 5 * 86_400_000, lastReviewed: t - 7 * 86_400_000 })
+    expect(c).toMatchObject({ id: 'n5-1', state: 2, due: t + 5 * 86_400_000, reps: 4, lapses: 0, last_review: t - 7 * 86_400_000, stability: 12, difficulty: 5, scheduled_days: 12, learning_steps: 0 })
+  })
+  it('ánh xạ ease → difficulty: 1.3→9, 2.5→5, ≥3.0→3, nội suy', () => {
+    expect(easeToDifficulty(1.3)).toBe(9)
+    expect(easeToDifficulty(1.9)).toBe(7)
+    expect(easeToDifficulty(2.5)).toBe(5)
+    expect(easeToDifficulty(2.75)).toBe(4)
+    expect(easeToDifficulty(3.4)).toBe(3)
+  })
+  it('stability tối thiểu 0.5; thẻ chưa ôn → Mới', () => {
+    expect(sm2ToFsrs({ id: 'a', ease: 2.5, interval: 0, repetitions: 0, due: t, lastReviewed: t - 1000 }).stability).toBe(0.5)
+    expect(sm2ToFsrs({ id: 'b', ease: 2.5, interval: 0, repetitions: 0, due: t, lastReviewed: 0 })).toMatchObject({ state: 0, stability: 0, difficulty: 0, due: t })
+  })
+  it('cả kho: thẻ SM-2 đổi, thẻ FSRS giữ nguyên, rác bỏ', () => {
+    const f = fsrsCard('kj-2', { due: 123 })
+    const out = cardsToFsrs({ 'kj-1': card('kj-1', 5), 'kj-2': f, x: { foo: 1 } })
+    expect(Object.keys(out).sort()).toEqual(['kj-1', 'kj-2'])
+    expect(out['kj-1'].state).toBe(2)
+    expect(out['kj-2']).toEqual(f)
   })
 })

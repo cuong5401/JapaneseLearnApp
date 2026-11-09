@@ -6,6 +6,8 @@ import { aiWords, mergeAiWords } from '../lib/aiWords'
 import { grammarChecked, mergeChecked } from '../lib/grammarChecked'
 import { mergeNotebooks, notebooks } from '../lib/notebooks'
 import { progress } from '../lib/progress'
+import { mergeLogs, reviewLog } from '../lib/reviewLog'
+import { srsSettings } from '../lib/srsSettings'
 import { setLessonSize, useLessonSize } from '../lib/settings'
 
 type Pending = { name: string; backup: Backup; skipped: number; added: number; updated: number; kana: number; notes: number }
@@ -23,7 +25,7 @@ export function BackupPanel() {
   const kanaTotal = Object.keys(kanaStats).length
 
   const exportFile = () => {
-    const blob = new Blob([JSON.stringify(createBackup(cards, lessonSize, kanaStats, new Date(), notebooks.getSnapshot(), grammarChecked.getSnapshot(), aiWords.getSnapshot()), null, 1)], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify(createBackup(cards, lessonSize, kanaStats, new Date(), notebooks.getSnapshot(), grammarChecked.getSnapshot(), aiWords.getSnapshot(), { reviewLog: reviewLog.packed(), srsSettings: srsSettings.getSnapshot() }), null, 1)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -75,6 +77,8 @@ export function BackupPanel() {
     const aw = mergeAiWords(aiWords.getSnapshot(), pending.backup.aiWords ?? {})
     if (aw.added) aiWords.replace(aw.map)
     if (pending.backup.lessonSize) setLessonSize(pending.backup.lessonSize)
+    if (pending.backup.reviewLog) reviewLog.replace(mergeLogs(reviewLog.packed(), pending.backup.reviewLog))
+    if (pending.backup.srsSettings) srsSettings.replace(pending.backup.srsSettings)
     setPending(null)
     setNotice({ tone: 'ok', text: `Đã nhập: ${m.added} thẻ mới, ${m.updated} thẻ được cập nhật${k.changed ? `, ${k.changed} chữ kana` : ''}${nb && nb.addedItems + nb.addedBooks ? `, ${nb.addedBooks} sổ tay mới, ${nb.addedItems} mục sổ tay` : ''}${gc.added ? `, ${gc.added} mẫu ngữ pháp đã kiểm tra` : ''}.` })
   }
