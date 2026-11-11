@@ -14,7 +14,7 @@ import { useEntries, useKanjiIndex } from '../hooks/useData'
 import { useDetailStack } from '../hooks/useDetailStack'
 import { useCards } from '../hooks/useProgress'
 import { splitLessons } from '../lib/lessons'
-import { notebooks, useNotebooks } from '../lib/notebooks'
+import { notebooks, useNotebooks, type SavedExample } from '../lib/notebooks'
 import { progress } from '../lib/progress'
 import { hasJapanese, normalizeKana, normalizeVi } from '../lib/search'
 import { useLessonSize } from '../lib/settings'
@@ -65,7 +65,7 @@ function searchKeys(e: StudyEntry): { ja: string[]; vi: string[] } {
   return { ja: [normalizeKana(e.item.title)], vi: [normalizeVi(`${e.item.title} ${e.item.meaning ?? ''}`)] }
 }
 
-function EntryRow({ card, onOpen, onRemove }: { card: EntryCard; onOpen: () => void; onRemove: () => void }) {
+function EntryRow({ card, onOpen, onRemove, examples }: { card: EntryCard; onOpen: () => void; onRemove: () => void; examples?: SavedExample[] }) {
   const { entry } = card
   const learned = Boolean(useCards()[card.id])
   const glyph = entry.kind === 'kanji' ? entry.item.kanji : entry.kind === 'radical' ? entry.item.radical : entry.kind === 'char' ? entry.item.char : null
@@ -93,7 +93,7 @@ function EntryRow({ card, onOpen, onRemove }: { card: EntryCard; onOpen: () => v
     </>
   )
   return (
-    <li className="flex items-center gap-1" data-notebook-item={card.id}>
+    <li className="flex flex-wrap items-center gap-1" data-notebook-item={card.id}>
       {entry.kind === 'grammar' ? (
         <Link to={`/grammar/${entry.item.level.toLowerCase()}/${entry.item.id}`} className="flex min-h-14 min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2 hover:bg-sunken">
           {content}
@@ -114,6 +114,22 @@ function EntryRow({ card, onOpen, onRemove }: { card: EntryCard; onOpen: () => v
           <path d="M6 6l12 12M18 6 6 18" />
         </svg>
       </button>
+      {/* Câu ví dụ đã lưu kèm từ này (từ khối "Ví dụ" của chi tiết từ). */}
+      {examples && examples.length > 0 && (
+        <ul className="basis-full space-y-1.5 pr-12 pb-2 pl-3" data-saved-examples>
+          {examples.map((ex) => (
+            <li key={ex.ja} className="border-l-2 border-cell-line pl-3 text-sm">
+              <span lang="ja" className="block font-jp">
+                {ex.ja}
+              </span>
+              <span className="block text-muted">
+                {ex.tr}
+                {ex.src === 'ai' && <span className="ml-1.5 text-xs">(AI tạo)</span>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </li>
   )
 }
@@ -137,6 +153,7 @@ export function NotebookPage() {
   const book = state.books.find((b) => b.id === id)
   const refs = useMemo(() => (state.items[id] ?? []).map((it) => it.ref), [state.items, id])
   const { status, entries, error, retry } = useEntries(refs)
+  const examplesOf = (ref: string) => (state.items[id] ?? []).find((it) => it.ref === ref)?.examples
   const stack = useDetailStack()
   const size = useLessonSize()
   const [filter, setFilter] = useState<Filter>('all')
@@ -211,7 +228,7 @@ export function NotebookPage() {
         {mode === 'list' && (
           <ul className="divide-y divide-line rounded-2xl border border-line bg-surface p-1">
             {lesson.map((c) => (
-              <EntryRow key={c.id} card={c} onOpen={() => open(c)} onRemove={() => remove(c.id)} />
+              <EntryRow key={c.id} card={c} examples={examplesOf(c.id)} onOpen={() => open(c)} onRemove={() => remove(c.id)} />
             ))}
           </ul>
         )}
@@ -292,7 +309,7 @@ export function NotebookPage() {
                 </h3>
                 <ul className="divide-y divide-line rounded-2xl border border-line bg-surface p-1">
                   {g.items.map((c) => (
-                    <EntryRow key={c.id} card={c} onOpen={() => open(c)} onRemove={() => remove(c.id)} />
+                    <EntryRow key={c.id} card={c} examples={examplesOf(c.id)} onOpen={() => open(c)} onRemove={() => remove(c.id)} />
                   ))}
                 </ul>
               </div>

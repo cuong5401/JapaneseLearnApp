@@ -16,9 +16,24 @@ export interface Notebook {
   updatedAt: number
 }
 
+/** Câu ví dụ lưu kèm một từ trong sổ tay (Tatoeba hoặc AI tạo). */
+export interface SavedExample {
+  ja: string
+  /** Câu dịch (tiếng Việt, hoặc tiếng Anh nếu chưa có) */
+  tr: string
+  src: 'tatoeba' | 'ai'
+  /** Id câu Tatoeba (để ghi nguồn / mở câu gốc) */
+  tid?: number
+}
+
+/** Mỗi từ giữ tối đa chừng này câu ví dụ. */
+export const MAX_SAVED_EXAMPLES = 5
+
 export interface NotebookItem {
   ref: string
   addedAt: number
+  /** Câu ví dụ người dùng lưu kèm từ này */
+  examples?: SavedExample[]
 }
 
 export interface NotebookState {
@@ -95,6 +110,34 @@ export function moveBook(s: NotebookState, id: string, delta: -1 | 1): NotebookS
 
 export const hasItem = (s: NotebookState, bookId: string, ref: string) => (s.items[bookId] ?? []).some((it) => it.ref === ref)
 
+const sameExample = (a: SavedExample, b: SavedExample) => a.ja === b.ja
+
+/** Gắn câu ví dụ vào từ trong sổ (thêm từ vào sổ nếu chưa có). Trùng câu thì giữ nguyên; tối đa MAX_SAVED_EXAMPLES. */
+export function addExample(s: NotebookState, bookId: string, ref: string, ex: SavedExample, now: number): NotebookState {
+  const withItem = addItem(s, bookId, ref, now)
+  const list = withItem.items[bookId] ?? []
+  return {
+    ...withItem,
+    items: {
+      ...withItem.items,
+      [bookId]: list.map((it) => {
+        if (it.ref !== ref || it.examples?.some((x) => sameExample(x, ex))) return it
+        return { ...it, examples: [...(it.examples ?? []), ex].slice(-MAX_SAVED_EXAMPLES) }
+      }),
+    },
+  }
+}
+
+function sanitizeExamples(v: unknown): SavedExample[] | undefined {
+  if (!Array.isArray(v)) return undefined
+  const out: SavedExample[] = []
+  for (const e of v) {
+    if (!e || typeof e.ja !== 'string' || !e.ja.trim() || typeof e.tr !== 'string') continue
+    out.push({ ja: e.ja.slice(0, 300), tr: e.tr.slice(0, 500), src: e.src === 'ai' ? 'ai' : 'tatoeba', ...(Number.isInteger(e.tid) ? { tid: e.tid } : {}) })
+  }
+  return out.length ? out.slice(-MAX_SAVED_EXAMPLES) : undefined
+}
+
 export function addItem(s: NotebookState, bookId: string, ref: string, now: number): NotebookState {
   if (!s.books.some((b) => b.id === bookId) || hasItem(s, bookId, ref)) return { ...s, lastUsed: bookId }
   return {
@@ -152,7 +195,10 @@ export function sanitizeState(v: unknown): NotebookState | null {
       if (!it || typeof it.ref !== 'string' || seen.has(it.ref)) return false
       seen.add(it.ref)
       return true
-    }).map((it) => ({ ref: it.ref, addedAt: isNum(it.addedAt) ? it.addedAt : 0 }))
+    }).map((it) => {
+      const examples = sanitizeExamples((it as NotebookItem).examples)
+      return { ref: it.ref, addedAt: isNum(it.addedAt) ? it.addedAt : 0, ...(examples ? { examples } : {}) }
+    })
   }
   return { books, items, lastUsed: typeof raw.lastUsed === 'string' ? raw.lastUsed : undefined }
 }
@@ -182,7 +228,13 @@ export function mergeNotebooks(current: NotebookState, incoming: NotebookState) 
       if (!have) {
         mine.set(it.ref, it)
         addedItems++
-      } else if (it.addedAt < have.addedAt) mine.set(it.ref, it)
+      } else {
+        // Hợp câu ví dụ của hai bên (không trùng câu), giữ ngày thêm sớm hơn.
+        const examples = [...(have.examples ?? [])]
+        for (const ex of it.examples ?? []) if (!examples.some((x) => sameExample(x, ex))) examples.push(ex)
+        const base = it.addedAt < have.addedAt ? it : have
+        mine.set(it.ref, examples.length ? { ...base, examples: examples.slice(-MAX_SAVED_EXAMPLES) } : base)
+      }
     }
     items[b.id] = [...mine.values()].sort((a, c) => a.addedAt - c.addedAt)
   }
@@ -227,6 +279,12 @@ export const notebooks = {
   quickSave(ref: string): Notebook {
     const target = quickSaveTarget(state)
     commit(addItem(state, target.id, ref, Date.now()))
+    return target
+  },
+  /** Lưu câu ví dụ kèm từ vào sổ dùng gần nhất; trả sổ đã lưu. */
+  saveExample(ref: string, ex: SavedExample): Notebook {
+    const target = quickSaveTarget(state)
+    commit(addExample(state, target.id, ref, ex, Date.now()))
     return target
   },
   replace: (next: NotebookState) => commit(next),

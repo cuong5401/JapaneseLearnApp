@@ -47,6 +47,19 @@ export const mock: AiProvider & { delay: number } = {
     if (last.includes('#401')) throw new AiError('auth', 'mock', 401)
     if (last.includes('#429')) throw new AiError('quota', 'mock', 429)
     if (last.includes('#offline')) throw new AiError('network')
+    // Gọi một lần (lib/ai/complete.ts): câu ví dụ / bản dịch giả cho test.
+    if (last.includes('[kotonoha-examples]')) {
+      yield JSON.stringify([
+        { ja: 'AIが作った例文その一です。', vi: 'Câu ví dụ AI tạo số một.' },
+        { ja: 'AIが作った二つ目の文です。', vi: 'Câu thứ hai AI tạo.' },
+        { ja: 'これは三つ目の例文です。', vi: 'Đây là câu ví dụ thứ ba.' },
+      ])
+      return
+    }
+    if (last.includes('[kotonoha-translate]')) {
+      yield 'Bản dịch tiếng Việt (AI).'
+      return
+    }
     for (const part of last.includes('#table') ? MOCK_TABLE : MOCK_REPLY) {
       if (req.signal?.aborted) throw new AiError('aborted')
       yield part

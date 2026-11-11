@@ -11,8 +11,8 @@ const UNLOCK_HASH = UNLOCK ? createHash('sha256').update(`kotonoha-unlock:${UNLO
 
 const PAGES = ['', 'kanji', 'kanji?bai=1', 'kanji?tab=radicals&bai=2', 'vocab/n5', 'vocab/n5/1', 'vocab/n5/1?tab=flashcards', 'grammar', 'kana', 'review', 'progress', 'notebooks', 'settings', 'ai']
 
-/** Trình duyệt tự báo khi mạng ngoài bị chặn / offline (font Google, Mazii): không phải lỗi của app. */
-const EXTERNAL = /fonts\.googleapis|fonts\.gstatic|mazii\.net/
+/** Trình duyệt tự báo khi mạng ngoài bị chặn / offline (font Google, Mazii, Tatoeba): không phải lỗi của app. */
+const EXTERNAL = /fonts\.googleapis|fonts\.gstatic|mazii\.net|api\.tatoeba\.org/
 
 function collect(page: Page) {
   const errors: string[] = []

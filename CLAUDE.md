@@ -64,9 +64,23 @@
   khung). `public/data/strokes/<hex>.json` `{ char, strokes: [{ d, n, x, y }] }` + `strokes/index.json` (danh sách chữ có
   dữ liệu; app đọc trước, không fetch chữ thiếu → không 404). Không nằm trong manifest; SW cache runtime `/data/*.json`.
   Component `src/components/strokes/StrokeOrder.tsx` (SVG tự vẽ, không thư viện), store `src/lib/strokes.ts`.
-  Số thứ tự nét (bật mặc định, `jla:v1:stroke-numbers`): chỉ nét hiện tại có vòng `--beni` (+ chấm đặt bút, mũi tên
+  **Không có thanh điều khiển** (đã bỏ ‹ ▶ › ↻, "Nét x/y", tốc độ, nút Số nét / Nét mờ): tốc độ cố định, luôn có số
+  thứ tự nét và nét mờ. Tự phát 1 lần khi mở chữ; khung là `<button aria-label="Vẽ lại thứ tự nét chữ X">` (chạm /
+  Enter / Space = vẽ lại từ đầu), icon ↻ mờ góc dưới phải. Reduced motion: hiện ngay đủ nét, mỗi lần chạm thêm 1 nét.
+  Test đọc `data-step` / `data-total` / `data-playing`. Chỉ nét hiện tại có vòng `--beni` (+ chấm đặt bút, mũi tên
   cuối nét), nét đã vẽ là số xám nhỏ không nền, nét chưa vẽ không có số; vị trí theo `labelPositions` (không chồng).
-  Nét mờ: mảnh, `--cell-line`, opacity thấp. Không có dải hình nhỏ, không ghi nguồn dưới khung (ở Cài đặt + README).
+  Nét mờ: mảnh, `--cell-line`, opacity thấp. Không ghi nguồn dưới khung (ở Cài đặt + README).
+- **Câu ví dụ (Tatoeba)** trong chi tiết từ vựng (`WordExamples` dưới nghĩa, trang và panel / sheet):
+  `https://api.tatoeba.org/v1/sentences` (public, không key, CORS `*`; `sort` bắt buộc; `showtrans:lang=vie,eng`,
+  `include=audios`, thêm 1 request `trans:lang=vie` nếu ít câu tiếng Việt). Câu **CC BY 2.0 FR**: ghi nguồn bằng link
+  "Tatoeba" tới câu gốc; audio có giấy phép riêng từng file (tác giả trong `title`), phát ở `/v1/audios/{id}/file`
+  (`download_url` API trả về bị sai). Logic thuần `src/lib/examples/tatoeba.ts` (chuẩn hóa từ, gốc để khớp dạng chia,
+  xếp hạng: có dịch Việt > 8–40 ký tự > có audio, bỏ câu gần giống), hook `useWordExamples`.
+  **Thứ tự nguồn:** cache IndexedDB (`kotonoha`/`examples`, theo id từ, 30 ngày, tối đa 2.000 từ, xóa cũ nhất) →
+  Tatoeba (chỉ khi mở chi tiết, timeout 6 giây mỗi request, hủy khi đóng panel) → không có câu / lỗi: **AI tạo 3 câu**
+  nếu có key (nhãn "AI tạo", `src/lib/ai/complete.ts`) → không key: "Chưa tìm thấy ví dụ". Offline không cache: ẩn
+  khối. Câu chỉ có tiếng Anh: nhãn EN + "Dịch sang tiếng Việt" (AI, có key). Khối giữ chỗ 3 câu (skeleton cùng chiều
+  cao). Lưu câu vào sổ tay = `NotebookItem.examples` của từ (tối đa 5, có trong Xuất / Nhập tiến độ).
 - **Nén path SVG (`scripts/import-strokes.py`)**: tách token đúng ngữ pháp SVG (số dính nhau "1.5.5", "14.62-0.02");
   giữa hai số LUÔN có dấu phẩy, chỉ bỏ khi số sau âm SAU khi làm tròn; không bao giờ ra "-0"; làm tròn theo tọa độ
   tuyệt đối (lệnh tương đối = round(abs) − round(điểm đầu đoạn)) để không cộng dồn sai số. `verify_path` bắt buộc
@@ -163,7 +177,9 @@
   (`?k=` chữ gốc, `?xem=w:…~k:…~r:…`; desktop là panel/drawer, điện thoại là bottom sheet). Bộ thủ + chữ thuộc bộ.
 - Ngữ pháp N5–N1 (N5/N3 có mẫu tự soạn), lọc nhóm, đánh dấu đã kiểm tra.
 - Thứ tự nét (KanjiVG): panel chi tiết chữ Hán / bộ thủ / kana (tự phát 1 lần), mặt sau flashcard chữ Hán và kana
-  (nút "Xem cách viết"), bảng vẽ tay ("Xem cách viết đúng"). Reduced motion: không tự phát.
+  (nút "Xem cách viết"), bảng vẽ tay ("Xem cách viết đúng"). Chạm khung để vẽ lại. Reduced motion: không tự phát.
+- Câu ví dụ trong chi tiết từ vựng: Tatoeba (dịch Việt / Anh, nghe, nguồn), "Ví dụ khác", lưu câu vào sổ tay;
+  fallback AI tạo câu khi có key.
 - Luyện kana: bảng chữ, flashcard (dùng chung `FlashcardSession` với `grader` ghi mức thuộc kana), gõ romaji,
   trắc nghiệm, nghe.
 - Sổ tay (nhiều sổ, màu; nhấn giữ nút đánh dấu để lưu nhanh). Tìm kiếm toàn cục (phím `/`), vẽ tay tìm kanji.

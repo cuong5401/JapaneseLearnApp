@@ -34,6 +34,8 @@ test('bấm 30 bộ thủ trong danh sách: URL chỉ có 1 khung, Back không �
 })
 
 test('bấm 12 lần trong panel: tối đa 8 khung, ‹ lùi đúng khung trước', async ({ page }) => {
+  // 12 lần chuyển khung (mỗi khung có hiệu ứng, khung từ còn tải câu ví dụ): chậm khi chạy song song nhiều worker.
+  test.setTimeout(60_000)
   await page.goto('/kanji?k=日')
   await settle(page)
   const panel = page.getByRole('complementary', { name: 'Chi tiết chữ Hán' })

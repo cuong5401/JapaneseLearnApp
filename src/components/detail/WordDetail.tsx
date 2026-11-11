@@ -15,6 +15,7 @@ import { Button } from '../Pressable'
 import { SpeakButton } from '../SpeakButton'
 import { HanViet, WordMeta } from '../VocabBits'
 import { AskAiLink } from '../ai/AskAiLink'
+import { WordExamples } from './WordExamples'
 import { wordQuestion } from '../../lib/ai/questions'
 import { BookmarkButton } from '../notebook/BookmarkButton'
 
@@ -130,6 +131,8 @@ export function WordDetail({ item, onPush, inPanel = false }: { item: VocabItem;
         </div>
         <p className="mt-5 text-2xl font-semibold">{item.meaning}</p>
         {!item.reading && <p className="mt-1 text-sm text-muted">Từ này chưa có cách đọc trong dữ liệu; nút nghe đọc theo chữ viết.</p>}
+        {/* Câu ví dụ thật (Tatoeba) hoặc AI tạo, dưới nghĩa của từ. */}
+        <WordExamples key={item.id} item={item} />
         <div className="mt-5">
           <WordMeta item={{ ...item, related: undefined, parent: undefined }} />
         </div>
