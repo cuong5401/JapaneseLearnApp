@@ -1,8 +1,8 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
 
 /**
- * Thứ tự nét (KanjiVG): hoạt ảnh tự phát khi mở chi tiết chữ Hán, điều khiển từng nét,
- * chữ không có dữ liệu không lỗi, reduced motion không tự phát, kana có thứ tự nét.
+ * Thứ tự nét (KanjiVG): hoạt ảnh tự phát một lần khi mở chi tiết chữ Hán, không có thanh điều khiển,
+ * chạm khung (là nút) để vẽ lại; reduced motion hiện đủ nét, chạm để thêm từng nét; chữ thiếu dữ liệu không lỗi.
  */
 const WIDTHS = [390, 1280]
 
@@ -19,32 +19,43 @@ function trackErrors(page: Page) {
   return errors
 }
 
+/** Khung thứ tự nét (là một nút) và SVG của khung. */
+const frame = (page: Page, width: number, ch: string) => detail(page, width).locator(`[data-stroke-order="${ch}"]`)
+const svgOf = (box: Locator) => box.locator('> svg').first()
+const step = async (box: Locator) => Number(await box.getAttribute('data-step'))
+
 for (const width of WIDTHS) {
   test.describe(`${width}px`, () => {
     test.use({ viewport: { width, height: width < 768 ? 844 : 900 } })
 
-    test('日: hoạt ảnh tự phát, bấm › tới "Nét 4/4"', async ({ page }) => {
+    test('上: không còn nút điều khiển; tự phát xong đủ 3 nét có số; bấm khung thì vẽ lại', async ({ page }) => {
       const errors = trackErrors(page)
-      await page.goto('/kanji?k=日')
-      const box = detail(page, width).locator('[data-stroke-order="日"]')
+      await page.goto(`/kanji?k=${encodeURIComponent('上')}`)
+      const box = frame(page, width, '上')
       await expect(box).toBeVisible()
+      await expect(box).toHaveAttribute('aria-label', 'Vẽ lại thứ tự nét chữ 上')
+      // Không còn thanh điều khiển, chữ "Nét x/y", tốc độ, Số nét, Nét mờ: khối chỉ có đúng một nút là khung.
+      const section = detail(page, width).locator('section[aria-label="Thứ tự nét chữ 上"]')
+      await expect(section.getByRole('button')).toHaveCount(1)
+      await expect(section).not.toContainText(/Nét \d|0\.5×|Số nét|Nét mờ/)
+      // Tự phát rồi dừng ở đủ 3 nét, đủ 3 số.
+      await expect(box).toHaveAttribute('data-playing', 'false', { timeout: 5000 })
+      await expect(box).toHaveAttribute('data-step', '3')
+      await expect(svgOf(box).locator('[data-stroke-num]')).toHaveCount(3)
+      // Bấm khung → vẽ lại từ đầu; bấm lần nữa khi đang vẽ dở cũng về nét 0.
+      const before = await box.boundingBox()
+      await box.click()
       await expect(box).toHaveAttribute('data-playing', 'true')
-      // đang vẽ: số nét tăng dần
-      await expect(box.locator('[data-stroke-step]')).not.toHaveText('Nét 0/4', { timeout: 5000 })
-      await box.getByRole('button', { name: 'Tạm dừng' }).click()
-      await expect(box).toHaveAttribute('data-playing', 'false')
-      // về đầu rồi đi từng nét
-      await toFirst(box)
-      await expect(box.locator('[data-stroke-step]')).toHaveText('Nét 1/4')
-      for (const n of [2, 3, 4]) {
-        await box.getByRole('button', { name: 'Nét sau' }).click()
-        await expect(box.locator('[data-stroke-step]')).toHaveText(`Nét ${n}/4`)
-      }
-      await expect(box.getByRole('button', { name: 'Nét sau' })).toBeDisabled()
-      // không còn dải hình nhỏ, không còn dòng ghi nguồn dưới khung (đã chuyển sang Cài đặt)
-      await expect(box.locator('[data-stroke-strip]')).toHaveCount(0)
-      await expect(box).not.toContainText('KanjiVG')
-      // khung không tràn ngang
+      expect(await step(box)).toBeLessThan(3)
+      await box.click()
+      expect(await step(box)).toBe(0)
+      await expect(box).toHaveAttribute('data-step', '3', { timeout: 5000 })
+      // Enter cũng vẽ lại; khung không đổi kích thước.
+      await box.press('Enter')
+      await expect(box).toHaveAttribute('data-playing', 'true')
+      const after = await box.boundingBox()
+      expect(Math.round(after!.width)).toBe(Math.round(before!.width))
+      expect(Math.round(after!.height)).toBe(Math.round(before!.height))
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
       expect(errors).toEqual([])
     })
@@ -52,21 +63,25 @@ for (const width of WIDTHS) {
     test('chữ không có dữ liệu: hiện thông báo, không lỗi console', async ({ page }) => {
       const errors = trackErrors(page)
       await page.goto('/kanji?k=鬱')
-      const box = detail(page, width).locator('[data-stroke-order="鬱"]')
+      const box = frame(page, width, '鬱')
       await expect(box).toHaveAttribute('data-stroke-missing')
       await expect(box).toContainText('Chưa có dữ liệu thứ tự nét')
       expect(errors).toEqual([])
     })
 
-    test('reduced motion: không tự phát, vẫn có nút từng nét', async ({ page }) => {
+    test('reduced motion: hiện ngay đủ nét có số; mỗi lần chạm thêm một nét, hết thì quay lại', async ({ page }) => {
       await page.emulateMedia({ reducedMotion: 'reduce' })
       await page.goto('/kanji?k=日')
-      const box = detail(page, width).locator('[data-stroke-order="日"]')
+      const box = frame(page, width, '日')
       await expect(box).toHaveAttribute('data-playing', 'false')
-      await expect(box.locator('[data-stroke-step]')).toHaveText('Nét 4/4')
-      await expect(box.getByRole('button', { name: 'Phát' })).toHaveCount(0)
-      await box.getByRole('button', { name: 'Nét trước' }).click()
-      await expect(box.locator('[data-stroke-step]')).toHaveText('Nét 3/4')
+      await expect(box).toHaveAttribute('data-step', '4')
+      await expect(svgOf(box).locator('[data-stroke-num]')).toHaveCount(4)
+      for (const n of [1, 2, 3, 4, 1]) {
+        await box.click()
+        await expect(box).toHaveAttribute('data-step', String(n))
+        await expect(box).toHaveAttribute('data-playing', 'false')
+        await expect(svgOf(box).locator('[data-stroke-num]')).toHaveCount(n)
+      }
     })
 
     test('kana: chạm ô あ trong bảng chữ có thứ tự nét', async ({ page }) => {
@@ -84,10 +99,11 @@ for (const width of WIDTHS) {
         ['曜', 18],
       ] as const) {
         await page.goto(`/kanji?k=${encodeURIComponent(ch)}`)
-        const box = detail(page, width).locator(`[data-stroke-order="${ch}"]`)
-        await expect(box.locator('[data-stroke-step]')).toHaveText(`Nét ${n}/${n}`)
-        // các path nét (không tính nét mờ / mũi tên): stroke-width mặc định, có màu
-        const lengths = await box.locator('> svg path[data-stroke]').evaluateAll((els) => els.map((e) => (e as SVGPathElement).getTotalLength()))
+        const box = frame(page, width, ch)
+        await expect(box).toHaveAttribute('data-step', String(n))
+        const lengths = await svgOf(box)
+          .locator('path[data-stroke]')
+          .evaluateAll((els) => els.map((e) => (e as SVGPathElement).getTotalLength()))
         expect(lengths).toHaveLength(n)
         for (const [i, l] of lengths.entries()) expect(l, `${ch} nét ${i + 1}`).toBeGreaterThan(5)
       }
@@ -100,16 +116,9 @@ for (const width of WIDTHS) {
   })
 }
 
-/** Về nét 1: lùi hết rồi tiến một nét. */
-async function toFirst(box: ReturnType<Page['locator']>) {
-  const prev = box.getByRole('button', { name: 'Nét trước' })
-  while (await prev.isEnabled()) await prev.click()
-  await box.getByRole('button', { name: 'Nét sau' }).click()
-}
-
 /** Tâm các số (đơn vị viewBox) + bán kính vòng của nét hiện tại. */
-const numCenters = (page: Page, ch: string) =>
-  page.locator(`[data-stroke-order="${ch}"] > svg`).evaluate((svg) => ({
+const numCenters = (box: Locator) =>
+  svgOf(box).evaluate((svg) => ({
     r: Number(svg.querySelector('[data-stroke-num] circle')?.getAttribute('r') ?? 0),
     pts: [...svg.querySelectorAll('[data-stroke-num]')].map((g) => [Number(g.getAttribute('data-cx')), Number(g.getAttribute('data-cy'))]),
   }))
@@ -122,20 +131,21 @@ for (const width of WIDTHS) {
       await page.emulateMedia({ reducedMotion: 'reduce' })
       for (const ch of ['合', '書', '曜', '議']) {
         await page.goto(`/kanji?k=${encodeURIComponent(ch)}`)
-        const box = detail(page, width).locator(`[data-stroke-order="${ch}"]`)
-        await expect(box.locator('[data-stroke-step]')).toHaveText(/Nét (\d+)\/\1/)
-        const n = Number((await box.locator('[data-stroke-step]').textContent())!.match(/\/(\d+)/)![1])
+        const box = frame(page, width, ch)
+        await expect(box).toHaveAttribute('data-playing', 'false')
+        const n = Number(await box.getAttribute('data-total'))
+        await expect(box).toHaveAttribute('data-step', String(n))
         if (ch === '合') expect(n).toBe(6)
-        await expect(box.locator('> svg [data-stroke-num]')).toHaveCount(n)
+        await expect(svgOf(box).locator('[data-stroke-num]')).toHaveCount(n)
         // chỉ nét hiện tại (nét cuối) có vòng tròn đỏ
-        await expect(box.locator('> svg [data-stroke-num] circle')).toHaveCount(1)
-        await expect(box.locator(`> svg [data-stroke-num="${n}"] circle`)).toHaveAttribute('fill', 'var(--beni)')
-        const { r, pts } = await numCenters(page, ch)
+        await expect(svgOf(box).locator('[data-stroke-num] circle')).toHaveCount(1)
+        await expect(svgOf(box).locator(`[data-stroke-num="${n}"] circle`)).toHaveAttribute('fill', 'var(--beni)')
+        const { r, pts } = await numCenters(box)
         for (let i = 0; i < pts.length; i++)
           for (let j = i + 1; j < pts.length; j++)
             expect(Math.hypot(pts[i][0] - pts[j][0], pts[i][1] - pts[j][1]), `${ch} số ${i + 1}–${j + 1}`).toBeGreaterThan(2 * r)
         // cỡ chữ thật trong vòng = fontSize (đơn vị viewBox) × tỉ lệ khung
-        const px = await box.locator('> svg').evaluate((svg) => {
+        const px = await svgOf(box).evaluate((svg) => {
           const t = svg.querySelector('[data-stroke-num][data-state="current"] text')!
           return Number(t.getAttribute('font-size')) * (svg.getBoundingClientRect().width / 109)
         })
@@ -143,21 +153,21 @@ for (const width of WIDTHS) {
       }
     })
 
-    test('bấm › từng nét: số của nét đó đổi màu đỏ (current), các số trước là done', async ({ page }) => {
+    test('reduced motion, chạm từng nét: số của nét đó màu đỏ (current), số trước là done, nét sau chưa có số', async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' })
       await page.goto('/kanji?k=合')
-      const box = detail(page, width).locator('[data-stroke-order="合"]')
-      await box.getByRole('button', { name: 'Tạm dừng' }).click()
-      await toFirst(box)
+      const box = frame(page, width, '合')
+      await expect(box).toHaveAttribute('data-step', '6')
       for (let k = 1; k <= 6; k++) {
-        if (k > 1) await box.getByRole('button', { name: 'Nét sau' }).click()
-        await expect(box.locator(`> svg [data-stroke-num="${k}"]`)).toHaveAttribute('data-state', 'current')
-        await expect(box.locator(`> svg [data-stroke-num="${k}"] circle`)).toHaveAttribute('fill', 'var(--beni)')
+        await box.click()
+        await expect(box).toHaveAttribute('data-step', String(k))
+        await expect(svgOf(box).locator(`[data-stroke-num="${k}"]`)).toHaveAttribute('data-state', 'current')
+        await expect(svgOf(box).locator(`[data-stroke-num="${k}"] circle`)).toHaveAttribute('fill', 'var(--beni)')
         if (k > 1) {
-          await expect(box.locator(`> svg [data-stroke-num="${k - 1}"]`)).toHaveAttribute('data-state', 'done')
-          await expect(box.locator(`> svg [data-stroke-num="${k - 1}"] circle`)).toHaveCount(0)
+          await expect(svgOf(box).locator(`[data-stroke-num="${k - 1}"]`)).toHaveAttribute('data-state', 'done')
+          await expect(svgOf(box).locator(`[data-stroke-num="${k - 1}"] circle`)).toHaveCount(0)
         }
-        // nét chưa vẽ không có số
-        if (k < 6) await expect(box.locator(`> svg [data-stroke-num="${k + 1}"]`)).toHaveCount(0)
+        if (k < 6) await expect(svgOf(box).locator(`[data-stroke-num="${k + 1}"]`)).toHaveCount(0)
         await expect(box.locator('[data-stroke-arrow]')).toHaveCount(1)
       }
     })
@@ -167,12 +177,11 @@ for (const width of WIDTHS) {
         await page.addInitScript((t) => localStorage.setItem('jla:theme', t), theme)
         await page.emulateMedia({ reducedMotion: 'reduce' })
         await page.goto('/kanji?k=事')
-        const box = detail(page, width).locator('[data-stroke-order="事"]')
-        await expect(box.locator('[data-stroke-step]')).toHaveText('Nét 8/8')
-        // giữa chừng (nét 5/8) để thấy cả nét mờ
-        await box.getByRole('button', { name: 'Nét trước' }).click({ clickCount: 1 })
-        for (let i = 0; i < 2; i++) await box.getByRole('button', { name: 'Nét trước' }).click()
-        await expect(box.locator('[data-stroke-step]')).toHaveText('Nét 5/8')
+        const box = frame(page, width, '事')
+        await expect(box).toHaveAttribute('data-step', '8')
+        // nét 5/8 để thấy cả nét mờ: chạm 5 lần (1 → 5)
+        for (let i = 0; i < 5; i++) await box.click()
+        await expect(box).toHaveAttribute('data-step', '5')
         await box.screenshot({ path: `test-results/strokes-${width}-${theme}.png` })
       })
     }
