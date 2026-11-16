@@ -3,10 +3,11 @@ import { resolve } from 'node:path'
 import JSZip from 'jszip'
 import { describe, expect, it } from 'vitest'
 import type { KanjiEntry } from '../../types'
-import { displayKun, formatKun, kunParts, parseReadings } from '../readings'
+import { displayKun, kunParts, kunSegments, parseReadings } from '../readings'
 import { parseStrokeData, pathErrors, type StrokeData } from '../strokes'
 import { buildDocx, type CellPng } from './docx'
-import { buildScene, fileName, fitText, geometry, headerCells, headerSplit, paginate, slug, splitRuns, type Sheet } from './layout'
+import { GRAY, NUMBER_SIZE, buildScene, fileName, fitText, geometry, headerCells, headerSplit, paginate, slug, splitRuns, type Sheet } from './layout'
+import { MIN_NUMBER_PT, numberLabels, numberSize } from './numbers'
 import { DEFAULT_OPTIONS, fadeCount, sanitizeOptions, type WritingOptions } from './options'
 import { buildPdf } from './pdf'
 import { kanaRowChars, makeItem, notebookChars, parseCustom, parseSource, sourceTitle } from './sources'
@@ -49,19 +50,65 @@ async function pdfText(bytes: Uint8Array): Promise<{ pages: number; text: string
   return { pages: doc.numPages, text }
 }
 
-const TWELVE = [...'一二三四五六七八九十事曜']
+async function pdfItems(bytes: Uint8Array): Promise<{ items: string[] }> {
+  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
+  const doc = await pdfjs.getDocument({ data: bytes.slice(), useSystemFonts: false }).promise
+  const items: string[] = []
+  for (let i = 1; i <= doc.numPages; i++) {
+    const content = await (await doc.getPage(i)).getTextContent()
+    for (const it of content.items) if ('str' in it) items.push(it.str)
+  }
+  return { items }
+}
+
+describe('số thứ tự nét trên ô chữ mẫu', () => {
+  // Hộp chữ số xấp xỉ (cùng công thức với numbers.ts): rộng 0.58 em mỗi chữ số, cao 0.72 em.
+  const box = (l: { n: number; x: number; y: number }, f: number) => ({ x0: l.x, x1: l.x + 0.58 * f * String(l.n).length, y0: l.y - 0.72 * f, y1: l.y })
+  const overlap = (a: ReturnType<typeof box>, b: ReturnType<typeof box>) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1
+
+  it('cỡ số không nhỏ hơn mức đọc được khi in', () => {
+    expect(numberSize(200)).toBe(NUMBER_SIZE)
+    for (const cellPt of [60, 74.7, 87.1]) expect((numberSize(cellPt) * cellPt) / 109).toBeGreaterThanOrEqual(MIN_NUMBER_PT - 1e-9)
+  })
+
+  it('không có hai số đè nhau; 想: số 5–9 không dồn sát nhau, nằm trong ô', () => {
+    const f = numberSize(87.1)
+    for (const ch of '想曜事書働聞鬱議') {
+      const d = strokeOf(ch)
+      if (!d) continue
+      const labels = numberLabels(d.strokes, f)
+      expect(labels.map((l) => l.n), ch).toEqual(d.strokes.map((s) => s.n))
+      const boxes = labels.map((l) => box(l, f))
+      for (let i = 0; i < boxes.length; i++) {
+        expect(boxes[i].x0, `${ch} ${i + 1}`).toBeGreaterThanOrEqual(0)
+        expect(boxes[i].x1, `${ch} ${i + 1}`).toBeLessThanOrEqual(109)
+        for (let j = 0; j < i; j++) expect(overlap(boxes[i], boxes[j]), `${ch}: ${j + 1} và ${i + 1}`).toBe(false)
+      }
+    }
+    // Đường dẫn chỉ có khi số đặt xa điểm đặt bút.
+    const so = numberLabels(strokeOf('想')!.strokes, f)
+    for (const l of so) if (l.leader) expect(Math.hypot(l.leader[2] - l.leader[0], l.leader[3] - l.leader[1])).toBeGreaterThan(f * 0.4)
+  })
+})
+
+const TWELVE =[...'一二三四五六七八九十事曜']
 
 describe('âm đọc KANJIDIC2', () => {
-  it('định dạng âm Kun: okurigana, tiền tố / hậu tố', () => {
-    expect(formatKun('ひと.つ')).toBe('ひとつ')
-    expect(formatKun('ひと-')).toBe('ひと-')
-    expect(formatKun('-う')).toBe('-う')
+  it('âm Kun giữ ký hiệu KANJIDIC2: "." ngăn okurigana, "-" tiền tố / hậu tố', () => {
+    expect(displayKun(readings.get('想')!.kun)).toEqual(['おも.う'])
+    expect(displayKun(readings.get('上')!.kun)).toEqual(expect.arrayContaining(['あ.げる', 'うえ', '-あ.がる']))
+    expect(displayKun(readings.get('一')!.kun)).toEqual(['ひと-', 'ひと.つ'])
+    expect(displayKun(['う.まれ', 'う.まれ', 'うまれ'])).toEqual(['う.まれ', 'うまれ'])
     expect(kunParts('つか.える')).toEqual({ before: '', stem: 'つか', okurigana: 'える', after: '' })
-    expect(displayKun(['うまれ', 'う.まれ', 'ひと-'])).toEqual(['うまれ', 'ひと-'])
-    // Dạng "-" bị bỏ khi đã có dạng thường cùng gốc; không có thì giữ (人: -り, -と).
-    expect(displayKun(readings.get('合')!.kun).slice(0, 4)).toEqual(['あう', 'あい', 'あわす', 'あわせる'])
-    expect(displayKun(readings.get('人')!.kun)).toEqual(['ひと', '-り', '-と'])
-    expect(displayKun(readings.get('一')!.kun)).toEqual(['ひと-', 'ひとつ'])
+    expect(kunSegments('おも.う')).toEqual([
+      { text: 'おも.', okurigana: false },
+      { text: 'う', okurigana: true },
+    ])
+    expect(kunSegments('-あ.がる')).toEqual([
+      { text: '-あ.', okurigana: false },
+      { text: 'がる', okurigana: true },
+    ])
+    expect(kunSegments('ひと-')).toEqual([{ text: 'ひと-', okurigana: false }])
   })
 
   it('dữ liệu có cho chữ cơ bản, bỏ mục sai định dạng', () => {
@@ -114,7 +161,11 @@ describe('bố cục phiếu', () => {
   it('hàng tiêu đề chữ Hán và kana', () => {
     const [ichi] = sheetOf(['一']).items
     const cells = headerCells(ichi, 1, DEFAULT_OPTIONS)
-    expect(cells.map((c) => c.parts.join(c.joiner))).toEqual(['NHẤT: Số 1', 'イチ、イツ', 'ひと-、ひとつ'])
+    expect(cells.map((c) => c.parts.join(c.joiner))).toEqual(['NHẤT: Số 1', 'イチ、イツ', 'ひと-、ひと.つ'])
+    // Ô Kun: okurigana sau dấu "." là run xám riêng, dấu chấm vẫn ở phần đậm.
+    const fit = fitText(cells[2], 200, 11, 7, (t, _f, s) => [...t].length * s)
+    expect(fit.runs.map((r) => r.text).join('')).toBe('ひと-、ひと.つ')
+    expect(fit.runs.filter((r) => r.gray === GRAY.okurigana).map((r) => r.text)).toEqual(['つ'])
     const a = makeItem('あ', { kanji: byChar, examples: 0 })
     expect(headerCells(a, 3, DEFAULT_OPTIONS).map((c) => c.parts[0])).toEqual(['a', 'ア'])
     expect(headerCells(ichi, 1, { ...DEFAULT_OPTIONS, showOn: false }).length).toBe(2)
@@ -204,6 +255,15 @@ describe('xuất file', () => {
     const bytes = await buildPdf(sheetOf(chars), DEFAULT_OPTIONS, strokesFor(chars), FONTS)
     console.log(`PDF 20 chữ N5: ${(bytes.length / 1024).toFixed(0)} KB`)
     expect(bytes.length).toBeLessThan(400 * 1024)
+  }, 30_000)
+
+  it('PDF: âm Kun đúng ký hiệu "おも.う" (想), "ひと.つ" (一)', async () => {
+    const chars = ['想', '一']
+    const bytes = await buildPdf(sheetOf(chars), DEFAULT_OPTIONS, strokesFor(chars), FONTS)
+    const { items } = await pdfItems(bytes)
+    const joined = items.join('')
+    expect(joined).toContain('おも.う')
+    expect(joined).toContain('ひと.つ')
   }, 30_000)
 
   it('chữ không có nét KanjiVG vẫn xuất (font Klee One / Noto Sans JP)', async () => {

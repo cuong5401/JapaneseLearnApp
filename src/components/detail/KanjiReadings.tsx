@@ -1,8 +1,8 @@
-import { Fragment } from 'react'
-import { kunParts, uniqueKun, useReadings } from '../../lib/readings'
+import { useReadings } from '../../lib/readings'
+import { KunText } from './KunText'
 
 /**
- * Âm On / Kun (KANJIDIC2) trong panel chi tiết chữ Hán. Kun: phần okurigana (sau dấu "." của KANJIDIC2) in nhạt.
+ * Âm On / Kun (KANJIDIC2) trong panel chi tiết chữ Hán. Kun giữ ký hiệu gốc (おも.う), okurigana in nhạt.
  * Lúc chờ dữ liệu giữ đúng 2 dòng để panel không đổi chiều cao.
  */
 export function KanjiReadings({ ch }: { ch: string }) {
@@ -10,7 +10,7 @@ export function KanjiReadings({ ch }: { ch: string }) {
   const entry = r.status === 'ready' ? r.map.get(ch) : undefined
   const loading = r.status === 'loading'
   const row = 'min-h-6 leading-6'
-  const kun = uniqueKun(entry?.kun ?? [])
+  const kun = entry?.kun ?? []
   return (
     <dl className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm" data-kanji-readings>
       <dt className={`${row} text-muted`}>Âm On</dt>
@@ -30,20 +30,7 @@ export function KanjiReadings({ ch }: { ch: string }) {
         {loading ? (
           <span className="inline-block h-4 w-32 animate-pulse rounded bg-sunken align-middle" />
         ) : kun.length ? (
-          <span lang="ja" className="font-jp">
-            {kun.map((k, i) => {
-              const p = kunParts(k)
-              return (
-                <Fragment key={k}>
-                  {i > 0 && '、'}
-                  {p.before}
-                  {p.stem}
-                  {p.okurigana && <span className="text-muted">{p.okurigana}</span>}
-                  {p.after}
-                </Fragment>
-              )
-            })}
-          </span>
+          <KunText kun={kun} />
         ) : (
           <span className="text-muted">—</span>
         )}
@@ -58,5 +45,30 @@ export function KanjiReadings({ ch }: { ch: string }) {
         </>
       ) : null}
     </dl>
+  )
+}
+
+/**
+ * Âm On / Kun gọn (mặt sau flashcard chữ Hán, chữ Hán ngẫu nhiên ở trang chủ). Luôn giữ 2 dòng (kể cả lúc chờ dữ
+ * liệu) để không đổi chiều cao; `truncate`: mỗi dòng một hàng, dài thì cắt (trang chủ, chống layout shift).
+ */
+export function KanjiReadingsCompact({ ch, truncate = false, className = '' }: { ch: string; truncate?: boolean; className?: string }) {
+  const r = useReadings()
+  const entry = r.status === 'ready' ? r.map.get(ch) : undefined
+  const loading = r.status === 'loading'
+  const line = `min-h-6 leading-6 ${truncate ? 'truncate' : ''}`
+  const skeleton = (w: string) => <span className={`inline-block h-4 ${w} animate-pulse rounded bg-sunken align-middle`} />
+  const dash = <span className="text-muted">—</span>
+  return (
+    <div className={`text-sm ${className}`} data-kanji-readings-compact>
+      <p className={line} data-compact-on>
+        <span className="mr-2 text-muted">On</span>
+        {loading ? skeleton('w-20') : entry?.on.length ? <span lang="ja" className="font-jp">{entry.on.join('、')}</span> : dash}
+      </p>
+      <p className={line} data-compact-kun title={entry?.kun.length && truncate ? entry.kun.join('、') : undefined}>
+        <span className="mr-2 text-muted">Kun</span>
+        {loading ? skeleton('w-28') : entry?.kun.length ? <KunText kun={entry.kun} /> : dash}
+      </p>
+    </div>
   )
 }

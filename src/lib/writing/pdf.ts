@@ -1,7 +1,8 @@
 import fontkit from '@pdf-lib/fontkit'
 import { LineCapStyle, LineJoinStyle, PDFDocument, grayscale, setLineJoin, type PDFFont, type PDFPage } from 'pdf-lib'
 import type { StrokeData } from '../strokes'
-import { FALLBACK_SCALE, GRAY, NUMBER_SIZE, STROKE_WIDTH, VIEWBOX, buildScene, glyphParts, pageTitle, type FontKey, type Prim, type Sheet } from './layout'
+import { FALLBACK_SCALE, GRAY, STROKE_WIDTH, VIEWBOX, buildScene, glyphParts, pageTitle, type FontKey, type Prim, type Sheet } from './layout'
+import { LEADER_WIDTH, numberLabels, numberSize } from './numbers'
 import type { WritingOptions } from './options'
 
 /**
@@ -71,7 +72,7 @@ export async function buildPdf(sheet: Sheet, o: WritingOptions, strokes: Readonl
       const width = p.runs.reduce((s, r) => s + measure(r.text, r.font, p.size), 0)
       let x = p.anchor === 'middle' ? p.x - width / 2 : p.anchor === 'end' ? p.x - width : p.x
       for (const r of p.runs) {
-        page.drawText(r.text, { x, y: h - p.y, size: p.size, font: fonts[r.font], color: grayscale(p.gray) })
+        page.drawText(r.text, { x, y: h - p.y, size: p.size, font: fonts[r.font], color: grayscale(r.gray ?? p.gray) })
         x += measure(r.text, r.font, p.size)
       }
       return
@@ -91,11 +92,22 @@ export async function buildPdf(sheet: Sheet, o: WritingOptions, strokes: Readonl
           })
         }
         if (p.numbers) {
-          for (const s of data.strokes) {
-            page.drawText(String(s.n), {
-              x: part.x + s.x * scale,
-              y: h - (part.y + s.y * scale),
-              size: NUMBER_SIZE * scale,
+          const f = numberSize(part.size)
+          for (const l of numberLabels(data.strokes, f)) {
+            if (l.leader) {
+              const [x1, y1, x2, y2] = l.leader
+              page.drawLine({
+                start: { x: part.x + x1 * scale, y: h - (part.y + y1 * scale) },
+                end: { x: part.x + x2 * scale, y: h - (part.y + y2 * scale) },
+                thickness: LEADER_WIDTH,
+                color: grayscale(GRAY.number),
+                lineCap: LineCapStyle.Round,
+              })
+            }
+            page.drawText(String(l.n), {
+              x: part.x + l.x * scale,
+              y: h - (part.y + l.y * scale),
+              size: f * scale,
               font: vi,
               color: grayscale(GRAY.number),
             })

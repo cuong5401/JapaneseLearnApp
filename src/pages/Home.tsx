@@ -1,3 +1,4 @@
+import { KanjiReadingsCompact } from '../components/detail/KanjiReadings'
 import { AnimatePresence, motion } from 'motion/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -95,6 +96,7 @@ function RandomKanji({ kanji, onOpenWord }: { kanji: KanjiEntry; onOpenWord: (id
         <div className="min-w-0">
           <p className="text-[clamp(1.5rem,8cqw,2.5rem)] leading-tight font-bold tracking-wide">{kanji.hanViet}</p>
           {kanji.hanVietAlt?.length ? <p className="mt-1 text-muted">Âm khác: {kanji.hanVietAlt.join(', ')}</p> : null}
+          <KanjiReadingsCompact ch={kanji.kanji} truncate className="mt-1" />
           <p className="mt-2 text-sm text-muted" data-word-total={total}>
             <span className="inline-block min-w-[2ch] text-right tabular-nums">{total}</span> từ chứa chữ này
             {kanji.firstLevel && `, xuất hiện từ ${kanji.firstLevel}`}

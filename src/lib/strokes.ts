@@ -46,7 +46,57 @@ export function firstPoint(d: string): [number, number] {
   return [x, y]
 }
 
-type Pt = [number, number]
+export type Pt = [number, number]
+
+/**
+ * Các điểm rải dọc path (cách nhau khoảng `step` đơn vị viewBox), gồm cả đường cong (c/C/s/S) và đoạn thẳng:
+ * dùng để kiểm tra số thứ tự nét có đè lên nét không.
+ */
+export function samplePath(d: string, step = 1.5): Pt[] {
+  const out: Pt[] = []
+  let x = 0
+  let y = 0
+  let ctrl: Pt | null = null // điểm điều khiển thứ hai của đoạn cong trước (cho lệnh s/S)
+  for (const seg of d.match(/[MmCcSsLlHhVvZz][^MmCcSsLlHhVvZz]*/g) ?? []) {
+    const cmd = seg[0]
+    const lc = cmd.toLowerCase()
+    const n = (seg.slice(1).match(NUM) ?? []).map(Number)
+    const rel = cmd === lc
+    const size = { m: 2, l: 2, c: 6, s: 4, h: 1, v: 1, z: 0 }[lc as 'm']
+    for (let i = 0; size && i + size <= n.length; i += size) {
+      const g = n.slice(i, i + size)
+      const abs = (j: number): Pt => (rel ? [x + g[j], y + g[j + 1]] : [g[j], g[j + 1]])
+      if (lc === 'm') {
+        ;[x, y] = abs(0)
+        out.push([x, y])
+        ctrl = null
+        continue
+      }
+      const p0: Pt = [x, y]
+      let p1: Pt, p2: Pt, p3: Pt
+      if (lc === 'c') [p1, p2, p3] = [abs(0), abs(2), abs(4)]
+      else if (lc === 's') [p1, p2, p3] = [ctrl ? [2 * x - ctrl[0], 2 * y - ctrl[1]] : p0, abs(0), abs(2)]
+      else {
+        const end: Pt = lc === 'l' ? abs(0) : lc === 'h' ? [rel ? x + g[0] : g[0], y] : [x, rel ? y + g[0] : g[0]]
+        ;[p1, p2, p3] = [p0, end, end]
+      }
+      const len = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]) + Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) + Math.hypot(p3[0] - p2[0], p3[1] - p2[1])
+      const k = Math.max(1, Math.ceil(len / step))
+      for (let j = 1; j <= k; j++) {
+        const t = j / k
+        const u = 1 - t
+        const a = u * u * u
+        const b = 3 * u * u * t
+        const c = 3 * u * t * t
+        const e = t * t * t
+        out.push([a * p0[0] + b * p1[0] + c * p2[0] + e * p3[0], a * p0[1] + b * p1[1] + c * p2[1] + e * p3[1]])
+      }
+      ctrl = lc === 'c' || lc === 's' ? p2 : null
+      ;[x, y] = p3
+    }
+  }
+  return out
+}
 
 /**
  * Đi qua path dạng KanjiVG (M + c/C/s/S/l/L/h/v): trả về điểm đầu, điểm cuối, tiếp tuyến đầu và cuối.

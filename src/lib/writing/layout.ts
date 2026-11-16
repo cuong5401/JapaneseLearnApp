@@ -1,4 +1,4 @@
-import { displayKun } from '../readings'
+import { displayKun, kunSegments } from '../readings'
 import { fadeCount, type WritingOptions } from './options'
 
 /**
@@ -44,7 +44,8 @@ export const PAPER_SIZE: Record<WritingOptions['paper'], [number, number]> = {
 export const MARGIN = { side: 36, top: 54, bottom: 46 }
 /** Đường kẻ: khung khối chữ, đường kẻ ô, đường hướng dẫn (nét đứt). */
 export const LINE = { frame: 0.75, cell: 0.5, guide: 0.3 }
-export const GRAY = { frame: 0, cell: 0.25, guide: 0.6, number: 0.45, fadeFrom: 0.62, fadeTo: 0.88, fade: 0.72, meta: 0.35 }
+/** okurigana: phần sau dấu "." của âm Kun, xám đậm vừa phải (vẫn rõ khi in đen trắng). */
+export const GRAY = { frame: 0, cell: 0.25, guide: 0.6, number: 0.45, fadeFrom: 0.62, fadeTo: 0.88, fade: 0.72, meta: 0.35, okurigana: 0.42 }
 export const GUIDE_DASH: [number, number] = [2, 2]
 /** Nét chữ KanjiVG: độ dày 3 trên khung 109 (như file gốc). */
 export const STROKE_WIDTH = 3
@@ -128,6 +129,8 @@ export type FontKey = 'vi' | 'vi-bold' | 'jp'
 export interface TextRun {
   text: string
   font: FontKey
+  /** Độ xám riêng của đoạn (mặc định theo cả dòng text) */
+  gray?: number
 }
 /** Đo độ rộng (pt) của một đoạn text với font và cỡ chữ cho trước. */
 export type Measure = (text: string, font: FontKey, size: number) => number
@@ -135,13 +138,26 @@ export type Measure = (text: string, font: FontKey, size: number) => number
 const JP_CHAR = /[⺀-鿿豈-﫿＀-￯　-〿]/
 
 /** Tách text thành các đoạn theo font: chữ Nhật dùng Noto Sans JP, còn lại Be Vietnam Pro. */
-export function splitRuns(text: string, font: 'vi' | 'vi-bold'): TextRun[] {
+export function splitRuns(text: string, font: 'vi' | 'vi-bold', gray?: number): TextRun[] {
   const out: TextRun[] = []
   for (const ch of text.normalize('NFC')) {
     const f: FontKey = JP_CHAR.test(ch) ? 'jp' : font
     const last = out[out.length - 1]
     if (last && last.font === f) last.text += ch
-    else out.push({ text: ch, font: f })
+    else out.push(gray === undefined ? { text: ch, font: f } : { text: ch, font: f, gray })
+  }
+  return out
+}
+
+/** Nối các đoạn (text + độ xám riêng) thành run; gộp đoạn liền nhau cùng font và độ xám. */
+function segmentRuns(segs: readonly { text: string; gray?: number }[], font: 'vi' | 'vi-bold'): TextRun[] {
+  const out: TextRun[] = []
+  for (const seg of segs) {
+    for (const r of splitRuns(seg.text, font, seg.gray)) {
+      const last = out[out.length - 1]
+      if (last && last.font === r.font && last.gray === r.gray) last.text += r.text
+      else out.push(r)
+    }
   }
   return out
 }
@@ -165,6 +181,8 @@ export interface HeaderCell {
   parts: string[]
   joiner: string
   font: 'vi' | 'vi-bold'
+  /** Âm Kun theo ký hiệu KANJIDIC2: phần okurigana (sau dấu ".") in xám */
+  kun?: boolean
 }
 
 /** Nội dung hàng tiêu đề của chữ thứ `n` (1…). */
@@ -180,7 +198,7 @@ export function headerCells(item: WritingItem, n: number, o: WritingOptions): He
   if (o.showOn) cells.push({ parts: item.on?.length ? item.on : ['—'], joiner: '、', font: 'vi-bold' })
   if (o.showKun) {
     const kun = displayKun(item.kun ?? [])
-    cells.push({ parts: kun.length ? kun : ['—'], joiner: '、', font: 'vi-bold' })
+    cells.push(kun.length ? { parts: kun, joiner: '、', font: 'vi-bold', kun: true } : { parts: ['—'], joiner: '、', font: 'vi-bold' })
   }
   return cells
 }
@@ -190,7 +208,10 @@ export function headerCells(item: WritingItem, n: number, o: WritingOptions): He
  * (thêm "…"), cuối cùng cắt ký tự.
  */
 export function fitText(cell: HeaderCell, maxW: number, size: number, min: number, m: Measure): { runs: TextRun[]; size: number } {
-  const build = (parts: string[], more: boolean) => splitRuns(parts.join(cell.joiner) + (more ? '…' : ''), cell.font)
+  const segs = (part: string) =>
+    cell.kun ? kunSegments(part).map((s) => (s.okurigana ? { text: s.text, gray: GRAY.okurigana } : { text: s.text })) : [{ text: part }]
+  const build = (parts: string[], more: boolean) =>
+    segmentRuns([...parts.flatMap((part, i) => (i ? [{ text: cell.joiner }, ...segs(part)] : segs(part))), ...(more ? [{ text: '…' }] : [])], cell.font)
   for (let s = size; s >= min - 1e-9; s -= 0.5) {
     const runs = build(cell.parts, false)
     if (runsWidth(runs, s, m) <= maxW) return { runs, size: s }

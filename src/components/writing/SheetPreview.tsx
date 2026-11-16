@@ -5,13 +5,13 @@ import { FAMILY } from '../../lib/writing/measure'
 import {
   FALLBACK_SCALE,
   GRAY,
-  NUMBER_SIZE,
   STROKE_WIDTH,
   VIEWBOX,
   glyphParts,
   type Prim,
   type ScenePage,
 } from '../../lib/writing/layout'
+import { LEADER_WIDTH, numberLabels, numberSize } from '../../lib/writing/numbers'
 
 /** Dữ liệu nét cho bản xem trước: undefined = đang tải, null = không có (vẽ bằng font). */
 export type PreviewStrokes = ReadonlyMap<string, StrokeData | null | undefined>
@@ -42,7 +42,13 @@ function PrimView({ p, strokes }: { p: Prim; strokes: PreviewStrokes }) {
     return (
       <text x={p.x} y={p.y} fontSize={p.size} fill={ink(p.gray)} textAnchor={p.anchor} xmlSpace="preserve">
         {p.runs.map((r, i) => (
-          <tspan key={i} fontFamily={FAMILY[r.font].family} fontWeight={FAMILY[r.font].weight} lang={r.font === 'jp' ? 'ja' : undefined}>
+          <tspan
+            key={i}
+            fontFamily={FAMILY[r.font].family}
+            fontWeight={FAMILY[r.font].weight}
+            fill={r.gray === undefined ? undefined : ink(r.gray)}
+            lang={r.font === 'jp' ? 'ja' : undefined}
+          >
             {r.text}
           </tspan>
         ))}
@@ -80,11 +86,14 @@ function PrimView({ p, strokes }: { p: Prim; strokes: PreviewStrokes }) {
               ))}
             </g>
             {p.numbers && (
-              <g fontSize={NUMBER_SIZE} fill={ink(GRAY.number)} fontFamily='"Be Vietnam Pro", sans-serif'>
-                {data.strokes.map((st) => (
-                  <text key={st.n} x={st.x} y={st.y}>
-                    {st.n}
-                  </text>
+              <g fontSize={numberSize(part.size)} fill={ink(GRAY.number)} stroke={ink(GRAY.number)} strokeWidth={LEADER_WIDTH / s} fontFamily='"Be Vietnam Pro", sans-serif'>
+                {numberLabels(data.strokes, numberSize(part.size)).map((l) => (
+                  <g key={l.n}>
+                    {l.leader && <line x1={l.leader[0]} y1={l.leader[1]} x2={l.leader[2]} y2={l.leader[3]} />}
+                    <text x={l.x} y={l.y} stroke="none">
+                      {l.n}
+                    </text>
+                  </g>
                 ))}
               </g>
             )}

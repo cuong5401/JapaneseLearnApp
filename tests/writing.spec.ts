@@ -108,7 +108,7 @@ test('nút "Tạo phiếu luyện viết" ở trang bài Chữ Hán và bảng k
   await page.goto(`/kanji?k=${encodeURIComponent('一')}`)
   const panel = page.getByRole('complementary', { name: 'Chi tiết chữ Hán' })
   await expect(panel.locator('[data-reading-on]')).toHaveText('イチ、イツ')
-  await expect(panel.locator('[data-reading-kun]')).toHaveText('ひと-、ひとつ')
+  await expect(panel.locator('[data-reading-kun]')).toHaveText('ひと-、ひと.つ')
 
   await page.goto('/kana')
   await page.locator('[data-writing-link]').click()

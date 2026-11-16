@@ -56,32 +56,27 @@ export function kunParts(kun: string): KunParts {
     : { before, stem: core.slice(0, dot), okurigana: core.slice(dot + 1), after }
 }
 
-/** Dạng hiển thị một âm Kun: "ひと.つ" → "ひとつ", giữ "-" của tiền tố / hậu tố ("ひと-"). */
-export const formatKun = (kun: string): string => {
+/**
+ * Các đoạn hiển thị một âm Kun, giữ nguyên ký hiệu: "おも.う" → [おも.] [う (okurigana)]; "-あ.がる" → [-あ.] [がる];
+ * "ひと-" → [ひと-]. Dấu "." vẫn hiện, chỉ phần okurigana sau dấu chấm được tô nhạt.
+ */
+export function kunSegments(kun: string): { text: string; okurigana: boolean }[] {
   const p = kunParts(kun)
-  return p.before + p.stem + p.okurigana + p.after
+  if (!p.okurigana) return [{ text: kun, okurigana: false }]
+  const out = [
+    { text: `${p.before}${p.stem}.`, okurigana: false },
+    { text: p.okurigana, okurigana: true },
+  ]
+  if (p.after) out.push({ text: p.after, okurigana: false })
+  return out
 }
 
 /**
- * Âm Kun gọn để hiển thị (giữ ký hiệu KANJIDIC2): bỏ âm trùng sau khi bỏ dấu "." (うまれ / う.まれ), và bỏ dạng
- * tiền tố / hậu tố "-" khi đã có dạng thường cùng gốc (合: あ.う, -あ.う, あい-, -あい → あ.う, あ.い).
+ * Âm Kun để hiển thị: đúng ký hiệu gốc KANJIDIC2 (想 → おも.う; 一 → ひと-, ひと.つ; 上 → … あ.がる, -あ.がる …),
+ * không gộp dạng tiền tố / hậu tố hay bỏ dấu chấm; chỉ bỏ mục trùng y hệt.
  */
-export function uniqueKun(kun: readonly string[]): string[] {
-  const core = (k: string) => k.replace(/[.-]/g, '')
-  const plain = new Set(kun.filter((k) => !k.includes('-')).map(core))
-  const seen = new Set<string>()
-  return kun.filter((k) => {
-    const c = core(k)
-    const key = k.includes('-') ? (plain.has(c) ? null : `-${c}`) : c
-    if (key === null || seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
-}
-
-/** Âm Kun đã gộp và định dạng: ["ひと-", "ひと.つ"] → ["ひと-", "ひとつ"]. */
 export function displayKun(kun: readonly string[]): string[] {
-  return uniqueKun(kun).map(formatKun)
+  return [...new Set(kun)]
 }
 
 /* ───────────── Store ───────────── */

@@ -82,7 +82,7 @@ function runsOf(runs: readonly SceneRun[], size: number, gray: number): TextRun[
         text: r.text,
         bold: r.font !== 'vi',
         size: Math.round(size * 2),
-        color: hex(gray),
+        color: hex(r.gray ?? gray),
         font: r.font === 'jp' ? JP_FONT : FONT,
       }),
   )

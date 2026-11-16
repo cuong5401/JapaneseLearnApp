@@ -1,7 +1,8 @@
 import type { StrokeData } from '../strokes'
 import type { CellPng, RenderPng } from './docx'
 import { KLEE_FAMILY, loadKleeFace } from './fonts'
-import { FALLBACK_SCALE, GRAY, GUIDE_DASH, LINE, NUMBER_SIZE, STROKE_WIDTH, VIEWBOX, glyphParts } from './layout'
+import { FALLBACK_SCALE, GRAY, GUIDE_DASH, LINE, STROKE_WIDTH, VIEWBOX, glyphParts } from './layout'
+import { LEADER_WIDTH, numberLabels, numberSize } from './numbers'
 
 const DPI = 300
 
@@ -46,9 +47,22 @@ export function pngRenderer(strokes: ReadonlyMap<string, StrokeData | null>): Re
           ctx.lineJoin = 'round'
           for (const st of data.strokes) ctx.stroke(new Path2D(st.d))
           if (spec.numbers) {
+            // Cỡ số theo kích thước in của ô (point), không theo pixel.
+            const partPt = (part.size / side) * spec.pt
+            const f = numberSize(partPt)
             ctx.fillStyle = gray(GRAY.number)
-            ctx.font = `${NUMBER_SIZE}px "Be Vietnam Pro", sans-serif`
-            for (const st of data.strokes) ctx.fillText(String(st.n), st.x, st.y)
+            ctx.strokeStyle = gray(GRAY.number)
+            ctx.lineWidth = (LEADER_WIDTH * VIEWBOX) / partPt
+            ctx.font = `${f}px "Be Vietnam Pro", sans-serif`
+            for (const l of numberLabels(data.strokes, f)) {
+              if (l.leader) {
+                ctx.beginPath()
+                ctx.moveTo(l.leader[0], l.leader[1])
+                ctx.lineTo(l.leader[2], l.leader[3])
+                ctx.stroke()
+              }
+              ctx.fillText(String(l.n), l.x, l.y)
+            }
           }
         } else {
           await loadKleeFace()

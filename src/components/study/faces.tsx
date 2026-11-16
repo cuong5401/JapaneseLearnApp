@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { kanjiOfRadical } from '../../data/radicalKanji'
+import { KanjiReadingsCompact } from '../detail/KanjiReadings'
 import { counterpart } from '../../data/kana'
 import type { KanaChar, KanjiEntry, RadicalItem, StudyEntry, VocabItem } from '../../types'
 import { GridCell } from '../GridCell'
@@ -41,6 +42,7 @@ export function kanjiFaces(words: Map<string, StudyEntry>): FacesRenderer<KanjiE
                 <p className="text-sm text-muted">{k.wordCount} từ chứa chữ này</p>
               </div>
             </div>
+            <KanjiReadingsCompact ch={k.kanji} truncate className="mt-3" />
             <StrokeOrderToggle char={k.kanji} />
             {samples.length > 0 && (
               <ul className="mt-4 divide-y divide-line border-t border-line">
