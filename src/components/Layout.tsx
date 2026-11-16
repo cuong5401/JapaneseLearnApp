@@ -1,11 +1,12 @@
-import { AnimatePresence, motion } from 'motion/react'
-import { Suspense, lazy, useEffect, useState, type MouseEvent } from 'react'
-import { Link, NavLink, useLocation, useOutlet } from 'react-router-dom'
+import { motion } from 'motion/react'
+import { Suspense, lazy, useEffect, useLayoutEffect, type MouseEvent } from 'react'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useTheme, type ThemeChoice } from '../hooks/useTheme'
 import { useDockNavClick } from '../hooks/useDockNavClick'
 import { useDueIds } from '../hooks/useProgress'
 import { isInteractiveTarget } from '../lib/keyboard'
 import { searchUi, useSearchUi } from '../lib/searchUi'
+import { MainErrorBoundary } from './ErrorPanel'
 import { InstallApp } from './InstallApp'
 import { UpdatePrompt } from './UpdatePrompt'
 import { Toaster } from './Toaster'
@@ -121,13 +122,6 @@ function DueBadge({ due, className = '' }: { due: number; className?: string }) 
   )
 }
 
-/** Giữ nguyên nội dung trang cũ trong lúc nó đang mờ đi. */
-function FrozenOutlet() {
-  const outlet = useOutlet()
-  const [frozen] = useState(outlet)
-  return frozen
-}
-
 export function Layout() {
   const { choice, cycle } = useTheme()
   const due = useDueIds().length
@@ -136,6 +130,12 @@ export function Layout() {
   const search = useSearchUi()
   // Điện thoại, khung Hỏi AI đang mở: bấm điều hướng thì thu gọn khung và chuyển trang trong một lần bấm.
   const dockNav = useDockNavClick()
+
+  // Đổi trang thì cuộn lên đầu. Layout effect: chạy trước useScrollMemory của trang mới (passive effect),
+  // nên Back vẫn khôi phục đúng vị trí cũ sau đó.
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
 
   // Phím "/" mở tìm kiếm (trừ khi đang gõ trong ô nhập).
   useEffect(() => {
@@ -296,20 +296,15 @@ export function Layout() {
 
       <main className="mx-auto w-full max-w-[900px] px-4 pt-6 md:px-6 md:pt-8 lg:max-w-[1200px] lg:px-10 lg:pt-10">
         {/*
-          Không đặt initial={false} ở đây: giá trị đó truyền xuống cả cây con và chặn
-          hiệu ứng mount của mọi motion component trong trang tải đầu tiên.
+          KHÔNG dùng AnimatePresence mode="wait" / exit / giữ trang cũ cho chuyển trang: trang đang thoát vẫn chạy
+          hook và hiệu ứng thoát lồng nhau, chỉ cần một cái không hoàn tất là trang mới không bao giờ mount
+          (main trắng). Trang mới render ngay, chỉ có hiệu ứng vào.
         */}
-        <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
-          <motion.div
-            key={pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-          >
-            <FrozenOutlet />
+        <MainErrorBoundary resetKey={pathname}>
+          <motion.div key={pathname} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: 'easeOut' }}>
+            <Outlet />
           </motion.div>
-        </AnimatePresence>
+        </MainErrorBoundary>
       </main>
 
       {/* Điện thoại: thanh điều hướng đáy */}

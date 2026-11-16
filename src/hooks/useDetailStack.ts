@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { useOwnPage } from './useOwnPage'
 import { parseStack, popFrame, pushFrame, serializeStack, type Frame } from '../lib/detailStack'
 
 /** Số bước đã push vào lịch sử trình duyệt cho ngăn xếp (lưu trong location.state). */
@@ -32,9 +33,23 @@ export interface DetailStack {
  *    lùi một khung hoặc đóng sheet thay vì rời trang.
  */
 export function useDetailStack(rootParam?: 'k'): DetailStack {
-  const [params, setParams] = useSearchParams()
+  const [params, setParamsRaw] = useSearchParams()
   const location = useLocation()
-  const navigate = useNavigate()
+  const navigateRaw = useNavigate()
+  // Trang riêng (có rootParam, vd. /kanji) chỉ ghi URL khi còn là trang đang hiển thị; GlobalDetail sống xuyên các trang.
+  const isOwn = useOwnPage(!rootParam)
+  const setParams = useCallback<typeof setParamsRaw>(
+    (...args) => {
+      if (isOwn()) setParamsRaw(...args)
+    },
+    [isOwn, setParamsRaw],
+  )
+  const navigate = useCallback(
+    (delta: number) => {
+      if (isOwn()) void navigateRaw(delta)
+    },
+    [isOwn, navigateRaw],
+  )
   const depth = (location.state as StackState | null)?.stack ?? 0
 
   const xem = params.get('xem')

@@ -210,8 +210,9 @@
   (`?k=` chữ gốc, `?xem=w:…~k:…~r:…`; desktop là panel/drawer, điện thoại là bottom sheet). Bộ thủ + chữ thuộc bộ.
 - Ngữ pháp N5–N1 (N5/N3 có mẫu tự soạn), lọc nhóm, đánh dấu đã kiểm tra.
 - Luyện viết: phiếu tập viết PDF / Word (xem mục riêng). Âm On/Kun (KANJIDIC2) trong panel chi tiết chữ Hán.
-- Thứ tự nét (KanjiVG): panel chi tiết chữ Hán / bộ thủ / kana (tự phát 1 lần), mặt sau flashcard chữ Hán và kana
-  (nút "Xem cách viết"), bảng vẽ tay ("Xem cách viết đúng"). Chạm khung để vẽ lại. Reduced motion: không tự phát.
+- Thứ tự nét (KanjiVG): panel chi tiết chữ Hán / bộ thủ / kana (tự phát 1 lần), bảng vẽ tay ("Xem cách viết đúng"),
+  phiếu Luyện viết. **Không** có ở mặt sau flashcard (đã bỏ; mặt sau giữ cỡ khung như mặt trước). Chạm khung để vẽ lại.
+  Reduced motion: không tự phát.
 - Câu ví dụ trong chi tiết từ vựng: Tatoeba (dịch Việt / Anh, nghe, nguồn), "Ví dụ khác", lưu câu vào sổ tay;
   fallback AI tạo câu khi có key.
 - Luyện kana: bảng chữ, flashcard (dùng chung `FlashcardSession` với `grader` ghi mức thuộc kana), gõ romaji,
@@ -231,6 +232,18 @@
 
 - Lặp basename khi `navigate()` với `window.location` (xem Quy tắc).
 - `AnimatePresence initial={false}` ở Layout truyền xuống cả cây con, chặn hiệu ứng mount của trang đầu tiên.
+- **Không dùng `AnimatePresence mode="wait"` (exit, giữ trang cũ bằng FrozenOutlet) cho chuyển trang.** Trang đang thoát
+  vẫn chạy hook (`useSearchParams`…) và hiệu ứng thoát lồng nhau; chỉ cần một cái không hoàn tất là trang mới không
+  bao giờ mount → vùng main trắng (sidebar vẫn còn, URL đã đổi). Layout giờ render `<Outlet />` trong `motion.div key={pathname}`
+  chỉ có hiệu ứng vào (opacity/y ~200ms), cuộn lên đầu bằng `useLayoutEffect` (chạy trước `useScrollMemory` của trang mới).
+  Vùng main bọc `MainErrorBoundary` + route `errorElement` (`src/components/ErrorPanel.tsx`: có lỗi + nút "Thử lại" / "Tải lại",
+  không bao giờ để trống).
+- **Trang đang rời đi không được ghi URL.** Mọi `setParams` / `navigate(-n)` của trang riêng (`/kanji`, `useDetailStack`)
+  đi qua `useOwnPage()` (`src/hooks/useOwnPage.ts`): chỉ ghi khi còn mount và `router.state.location.pathname` còn là trang
+  lúc mount; cleanup khi unmount không được gọi `navigate` / `setParams`. Cả hai vế so sánh phải lấy từ `router.state` (có
+  basename), không trộn với `useLocation()` (đã bỏ basename) → trộn thì luôn lệch ở bản production, dev (base `/`) không thấy.
+  Test: `tests/preview/page-transition.spec.ts` (bản build, desktop + Pixel 7: chọn chữ/bộ thủ/từ rồi chuyển trang, bấm nhanh
+  hai mục; main phải có nội dung, URL chỉ đổi đúng 1 lần mỗi lần bấm).
 - Phím tắt toàn trang phải bỏ qua khi focus ở button/a/input/textarea/select (`isInteractiveTarget`).
 - `GridCell`: cỡ chữ theo container (`cqw`), không theo viewport.
 - React Router cập nhật `location` trong transition: khi một component lười đang tải, `useLocation()` có thể

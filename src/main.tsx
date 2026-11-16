@@ -5,6 +5,7 @@ import { MotionConfig } from 'motion/react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
 import './index.css'
+import { RouteError } from './components/ErrorPanel'
 import { Layout } from './components/Layout'
 import { LegacyLevel } from './components/LegacyLevel'
 import { UnlockGate } from './components/UnlockGate'
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
     // Trang đầu tiên tải trong chớp mắt; nền giấy trống thay vì cảnh báo.
     hydrateFallbackElement: <div className="min-h-dvh bg-paper" />,
     children: [
+      // Lỗi tải trang (chunk lỗi sau khi cập nhật, mất mạng) hoặc lỗi render: báo trong vùng main, sidebar vẫn còn.
+      {
+        errorElement: <RouteError />,
+        children: [
       { path: '/', lazy: () => import('./pages/Home').then((m) => ({ Component: m.Home })) },
       { path: '/kana', lazy: () => import('./pages/Kana').then((m) => ({ Component: m.Kana })) },
       { path: '/vocab/:deck', lazy: () => import('./pages/VocabDeck').then((m) => ({ Component: m.VocabDeck })) },
@@ -67,6 +72,8 @@ const router = createBrowserRouter([
       { path: '/level/:level/*', element: <LegacyLevel /> },
       { path: '/level/:level', element: <LegacyLevel /> },
       { path: '*', lazy: () => import('./pages/NotFound').then((m) => ({ Component: m.NotFound })) },
+        ],
+      },
     ],
   },
 ], { basename: import.meta.env.BASE_URL })

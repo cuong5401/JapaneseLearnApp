@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useMemo, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { BottomSheet } from '../components/BottomSheet'
 import { GridCell } from '../components/GridCell'
@@ -20,6 +20,7 @@ import { STUDY_PAGE, TAB_AREA } from '../components/StudyLayout'
 import { kanjiOfRadical } from '../data/radicalKanji'
 import { useEntries, useKanjiIndex, useRadicals } from '../hooks/useData'
 import { useDetailStack } from '../hooks/useDetailStack'
+import { useOwnPage } from '../hooks/useOwnPage'
 import { WIDE_PANEL, useMediaQuery } from '../hooks/useMediaQuery'
 import { useCards } from '../hooks/useProgress'
 import { useScrollMemory } from '../hooks/useScrollMemory'
@@ -218,7 +219,14 @@ function EmptyPanel({ section }: { section: Section }) {
 /* ───────────── Trang ───────────── */
 
 export function Kanji() {
-  const [params, setParams] = useSearchParams()
+  const [params, setParamsRaw] = useSearchParams()
+  const isOwn = useOwnPage()
+  const setParams = useCallback<typeof setParamsRaw>(
+    (...args) => {
+      if (isOwn()) setParamsRaw(...args)
+    },
+    [isOwn, setParamsRaw],
+  )
   const section: Section = params.get('tab') === 'radicals' ? 'radicals' : 'chars'
   const level = (LEVEL_OPTIONS.some((o) => o.value === params.get('level')) ? params.get('level') : 'all') as LevelFilter
   const bai = Number(params.get('bai'))

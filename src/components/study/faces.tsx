@@ -5,7 +5,6 @@ import { counterpart } from '../../data/kana'
 import type { KanaChar, KanjiEntry, RadicalItem, StudyEntry, VocabItem } from '../../types'
 import { GridCell } from '../GridCell'
 import { SpeakButton } from '../SpeakButton'
-import { StrokeOrderToggle } from '../strokes/StrokeOrder'
 import { Flip } from './Flip'
 import { CardFaces } from './VocabCardFaces'
 
@@ -43,7 +42,6 @@ export function kanjiFaces(words: Map<string, StudyEntry>): FacesRenderer<KanjiE
               </div>
             </div>
             <KanjiReadingsCompact ch={k.kanji} truncate className="mt-3" />
-            <StrokeOrderToggle char={k.kanji} />
             {samples.length > 0 && (
               <ul className="mt-4 divide-y divide-line border-t border-line">
                 {samples.map((w) => (
@@ -215,7 +213,6 @@ export function kanaFaces(examples: Map<string, VocabItem>): FacesRenderer<KanaC
             <span onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
               <SpeakButton text={k.kana} label={`Nghe ${k.kana}`} />
             </span>
-            {[...k.kana].length === 1 && <StrokeOrderToggle char={k.kana} />}
             {ex && (
               <p className="max-w-full border-t border-line pt-3 text-sm">
                 <span className="text-muted">Ví dụ: </span>
