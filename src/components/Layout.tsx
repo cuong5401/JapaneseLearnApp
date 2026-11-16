@@ -24,6 +24,8 @@ interface NavItem {
   end: boolean
   /** Ẩn khỏi thanh đáy điện thoại (vẫn có trong sidebar và nav trên) */
   noBottom?: boolean
+  /** Ẩn khỏi nav trên của tablet (không đủ chỗ); vẫn có trong sidebar desktop */
+  noTop?: boolean
 }
 
 const NAV: NavItem[] = [
@@ -33,6 +35,8 @@ const NAV: NavItem[] = [
   { to: '/kana', glyph: 'あ', label: 'Luyện kana', short: 'Kana', end: false, noBottom: true },
   { to: '/review', glyph: '復', label: 'Ôn tập', end: false },
   { to: '/notebooks', glyph: '帳', label: 'Sổ tay', end: false },
+  // Vào từ nút "Tạo phiếu luyện viết" ở trang bài Chữ Hán, Sổ tay, bảng kana; desktop có thêm mục ở sidebar.
+  { to: '/writing', glyph: '書', label: 'Luyện viết', end: false, noBottom: true, noTop: true },
   // Điện thoại đã có tab "Hỏi AI" nổi ở lề phải: thanh đáy nhường chỗ này cho Tiến độ.
   { to: '/ai', glyph: '問', label: 'Hỏi AI', end: false, noBottom: true },
   { to: '/progress', glyph: '進', label: 'Tiến độ', end: false },
@@ -237,7 +241,7 @@ export function Layout() {
           <Logo onClick={dockNav('/')} />
           <nav className="ml-auto hidden items-center gap-0.5 md:flex" aria-label="Điều hướng chính">
             {/* Tablet: logo đã dẫn về trang chủ, bỏ mục Trang chủ cho vừa 6 mục. */}
-            {NAV.filter((n) => n.to !== '/').map((n) => (
+            {NAV.filter((n) => n.to !== '/' && !n.noTop).map((n) => (
               <NavLink
                 key={n.to}
                 to={n.to}

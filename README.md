@@ -79,6 +79,7 @@ Tiến độ lưu trong localStorage của từng trình duyệt. Ở trang **Ti
 | Thuật ngữ IT, điện tử, văn phòng | `/terms/it` |
 | Luyện kana: bảng 50 âm, âm đục, âm ghép (Hiragana/Katakana), chọn hàng để luyện, chữ yếu, ôn ngẫu nhiên; phiên có đầu có cuối (gõ romaji, trắc nghiệm, ngược lại, nghe, trộn), câu sai hỏi lại sau 3–5 câu; mức thuộc từng chữ | `/kana` |
 | Tiến độ: từ vựng, kanji, ngữ pháp, kana; xuất/nhập tiến độ | `/progress` |
+| Luyện viết: chọn bài Chữ Hán (một hoặc nhiều bài), sổ tay, hàng kana hoặc tự nhập chữ; tích / kéo đổi thứ tự; tùy chọn khổ giấy, số chữ/trang, số ô, chữ mờ để tô, số thứ tự nét, đường kẻ, hàng tiêu đề (Hán Việt, On, Kun), từ ví dụ; xem trước đúng bản in; tải PDF (vector, font nhúng subset), Word (.docx, sửa được tiêu đề), In / chia sẻ (iPhone). Nút "Tạo phiếu luyện viết" ở trang bài Chữ Hán, Sổ tay, bảng kana | `/writing?src=kanji&level=N5&bai=1` |
 
 ## Hỏi AI (Gemini | Claude)
 
@@ -106,6 +107,12 @@ Trang `/ai`: chat bằng tiếng Việt ở 4 chế độ (Tra từ, Giải thí
   `public/data/strokes/<hex>.json` (chữ Hán trong kanji.json, bộ thủ, hiragana, katakana) sinh bằng
   `py scripts/import-strokes.py` (tải bản release `*-main.zip` mới nhất) hoặc `--zip <file>`; báo cáo ở
   `public/data/import-report-strokes.md`. App đọc `strokes/index.json` trước, chữ không có dữ liệu thì không tải.
+
+- **Âm On / Kun, số nét, cấp JLPT cũ: [KANJIDIC2](https://www.edrdg.org/wiki/index.php/KANJIDIC_Project) (EDRDG), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).**
+  `public/data/kanji/kanji-readings.json` sinh bằng `py scripts/import-kanjidic.py` (tải `kanjidic2.xml.gz` mới nhất) hoặc
+  `--file <kanjidic2.xml.gz>`; báo cáo ở `public/data/import-report-kanjidic.md`. Hiện trong panel chi tiết chữ Hán và phiếu luyện viết.
+- Font nhúng phiếu luyện viết (`src/assets/fonts/`): Noto Sans JP, Be Vietnam Pro, Klee One ([SIL OFL 1.1](https://openfontlicense.org)),
+  subset sẵn bằng `node scripts/build-pdf-fonts.mjs` (chạy lại khi danh sách chữ đổi).
 
 ## Kiểm tra
 

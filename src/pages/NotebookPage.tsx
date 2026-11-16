@@ -20,6 +20,7 @@ import { hasJapanese, normalizeKana, normalizeVi } from '../lib/search'
 import { useLessonSize } from '../lib/settings'
 import { showToast } from '../lib/toast'
 import type { KanjiEntry, StudyEntry } from '../types'
+import { WritingSheetLink } from '../components/writing/WritingSheetLink'
 import { NotFound } from './NotFound'
 
 type Kind = StudyEntry['kind']
@@ -194,6 +195,7 @@ export function NotebookPage() {
         <BookColor color={book.color} className="size-5" />
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{lessonIndex === null ? book.name : `Bài ${lessonIndex + 1}`}</h1>
         <span className="text-sm text-muted">{lessonIndex === null ? `${refs.length} mục` : book.name}</span>
+        {lessonIndex === null && refs.length > 0 && <WritingSheetLink to={`/writing?src=notebook&id=${encodeURIComponent(book.id)}`} className="sm:ml-auto" />}
       </div>
     </div>
   )

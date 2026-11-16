@@ -8,6 +8,7 @@ import { Segmented } from '../components/Segmented'
 import { KanaChart, LevelLegend } from '../components/kana/KanaChart'
 import { KanaDetail } from '../components/kana/KanaDetail'
 import { KanaSession } from '../components/kana/KanaSession'
+import { WritingSheetLink } from '../components/writing/WritingSheetLink'
 import { KANA_ROWS, SCRIPT_LABELS, kanaOf, rowsOf, type KanaRow } from '../data/kana'
 import { DESKTOP, useMediaQuery } from '../hooks/useMediaQuery'
 import { kanaLevel, useKanaStats, weakest } from '../lib/kanaProgress'
@@ -169,6 +170,10 @@ export function Kana() {
               Bỏ chọn
             </button>
           </div>
+          <WritingSheetLink
+            to={`/writing?src=kana&script=${script}&rows=${scriptRows.filter((r) => selected.has(r.id)).map((r) => r.id).join(',')}`}
+            className="mb-3"
+          />
 
           <KanaChart script={script} stats={stats} selectedRows={selected} onToggleRow={toggleRow} active={detail ?? undefined} onPick={pick} />
 

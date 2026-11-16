@@ -24,6 +24,8 @@
   --matsu-soft: #dcf0e5;
   --cell-line: #9fb0d6;
   --cell-guide: #c4cfe7;
+  /* Tờ giấy trong bản xem trước phiếu luyện viết: luôn trắng như bản in (cả dark mode) */
+  --sheet: #ffffff;
   /* Màu sổ tay */
   --nb-kihada: #d9a21b;
   --nb-beni: #c23b47;
@@ -81,6 +83,7 @@
   --color-matsu-soft: var(--matsu-soft);
   --color-cell-line: var(--cell-line);
   --color-cell-guide: var(--cell-guide);
+  --color-sheet: var(--sheet);
 
   --font-sans: "Be Vietnam Pro", "Noto Sans JP", system-ui, sans-serif;
   --font-jp: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", sans-serif;

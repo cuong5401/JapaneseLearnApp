@@ -28,6 +28,8 @@
 | `python scripts/convert_xlsx.py <file.xlsx> public/data` | Sinh lại dữ liệu từ Excel (cần `openpyxl`) |
 | `python scripts/convert_xlsx.py --check` | Kiểm tra ngữ pháp tự soạn, không cần Excel |
 | `py scripts/import-strokes.py [--zip file]` | Sinh lại thứ tự nét từ KanjiVG (tải release `*-main.zip` mới nhất) |
+| `py scripts/import-kanjidic.py [--file f]` | Sinh lại âm On/Kun, số nét, JLPT cũ từ KANJIDIC2 (`kanji/kanji-readings.json`) |
+| `node scripts/build-pdf-fonts.mjs` | Subset lại font nhúng phiếu luyện viết (`src/assets/fonts/`) khi danh sách chữ đổi |
 
 - Windows: lệnh `python` có thể không có, dùng `py`.
 - Máy này bật **Smart App Control**: chặn chromium/webkit tải về của Playwright và binding `.node` của oxlint.
@@ -70,6 +72,13 @@
   Test đọc `data-step` / `data-total` / `data-playing`. Chỉ nét hiện tại có vòng `--beni` (+ chấm đặt bút, mũi tên
   cuối nét), nét đã vẽ là số xám nhỏ không nền, nét chưa vẽ không có số; vị trí theo `labelPositions` (không chồng).
   Nét mờ: mảnh, `--cell-line`, opacity thấp. Không ghi nguồn dưới khung (ở Cài đặt + README).
+- **Âm On / Kun (KANJIDIC2, EDRDG), CC BY-SA 4.0** – ghi nguồn ở README + Cài đặt > Giới thiệu (`READINGS_CREDIT`).
+  `public/data/kanji/kanji-readings.json` `{ source, version, chars: { 一: { on, kun, s, jlpt? } } }` sinh bằng
+  `scripts/import-kanjidic.py` (chữ của kanji.json + bộ thủ + strokes/index; chữ thiếu thì không có mục → app để trống).
+  File riêng, **không** sửa kanji.json (kanji.json sinh từ Excel). Không nằm trong manifest, fetch trực tiếp, store
+  `src/lib/readings.ts` (`useReadings`, `loadReadings`). Kun giữ ký hiệu gốc: "." ngăn okurigana (ひと.つ → hiển thị
+  ひとつ, panel in nhạt phần okurigana), "-" tiền/hậu tố; `uniqueKun` bỏ dạng "-" khi đã có dạng thường cùng gốc.
+  Panel chi tiết (`KanjiReadings` trong KanjiDetail + CharDetail) luôn hiện On / Kun / Số nét, chờ dữ liệu giữ đủ 3 dòng.
 - **Câu ví dụ (Tatoeba)** trong chi tiết từ vựng (`WordExamples` dưới nghĩa, trang và panel / sheet):
   `https://api.tatoeba.org/v1/sentences` (public, không key, CORS `*`; `sort` bắt buộc; `showtrans:lang=vie,eng`,
   `include=audios`, thêm 1 request `trans:lang=vie` nếu ít câu tiếng Việt). Câu **CC BY 2.0 FR**: ghi nguồn bằng link
@@ -113,6 +122,30 @@
   đã thay đổi gì, kết quả test, ảnh chụp (đường dẫn), điều người dùng cần tự làm.
 - CI (`.github/workflows/deploy.yml`, push `main`): `npm ci` → lint → test → build (secret `VITE_UNLOCK_CODE`) →
   check:secrets → kiểm tra dist → e2e preview → deploy Pages. Bước nào lỗi thì không deploy.
+
+## Luyện viết (phiếu tập viết, `/writing`)
+
+- Vào từ sidebar desktop (mục "Luyện viết", ẩn ở bottom nav và nav tablet) và nút "Tạo phiếu luyện viết"
+  (`WritingSheetLink`) ở trang bài Chữ Hán (`?src=kanji&level=N5&bai=1`), Sổ tay (`?src=notebook&id=`), bảng kana
+  (`?src=kana&script=&rows=`). Nguồn đồng bộ URL (`parseSource` / `sourceParams`); tự nhập (`src=custom`) không đưa chữ lên URL.
+- `src/lib/writing/` (thuần, có test `writing.test.ts`, `fonts.test.ts`):
+  `sources.ts` (nguồn → danh sách chữ → `WritingItem`; tự nhập lọc trùng + chữ không có nét KanjiVG; sổ tay lấy chữ Hán
+  trong từ đã lưu; chia bài dùng `src/lib/kanjiLessons.ts` chung với trang Chữ Hán), `options.ts` (`jla:v1:writing-options`,
+  chỉ là cài đặt hiển thị, không vào backup), `layout.ts` (`geometry` + `buildScene`: mỗi trang là danh sách nét kẻ / chữ /
+  text theo point, gốc trên trái), `pdf.ts`, `docx.ts`, `cellImage.ts` (PNG 300 dpi bằng canvas), `fonts.ts`, `measure.ts`,
+  `exportFile.ts` (tải file, in qua iframe, chia sẻ trên iPhone).
+- **Xem trước SVG, PDF, Word cùng đọc `buildScene` / `geometry`** → đổi bố cục ở một chỗ. Ô = bội số 0.05pt (1 twip) để
+  bảng Word khớp PDF; ranh giới ô tiêu đề trùng đường kẻ cột (`headerSplit`). Khung 0.75pt, ô 0.5pt, hướng dẫn nét đứt 0.3pt.
+  Hàng tiêu đề: "NHẤT: Số 1" | On | Kun (kana: romaji | chữ bảng kia); text dài thu nhỏ tới 7pt rồi bỏ bớt âm cuối ("…").
+- PDF: pdf-lib + @pdf-lib/fontkit, chữ = `drawSvgPath` path KanjiVG (nét 3/109, đầu tròn), số nét = text tại (x, y) gốc
+  KanjiVG; text dùng font nhúng `subset: true`. Chữ không có nét → Klee One, thiếu nữa → Noto Sans JP. 20 chữ ≈ 57 KB.
+  Word: docx, mỗi chữ một bảng (ô mẫu ghép dọc), ảnh PNG = kích thước ô, giữa các khối là đoạn cao đúng `gap`, trang mới
+  bằng `pageBreakBefore`; tiêu đề là text thường.
+- **Chỉ tải thư viện xuất khi bấm xuất**: `exportFile.ts` dùng `import('./pdf')` / `import('./docx')`; trang Writing
+  không được import tĩnh pdf-lib / docx. Chunk `pdf-*.js`, `docx-*.js` và font `.ttf` (import `?url`) không precache
+  (`globIgnores`), cache CacheFirst khi dùng (`kotonoha-lazy-assets`) → lần sau xuất được offline. Nét chữ có cache riêng
+  `kotonoha-strokes` (2.500 mục) để in nhiều bài không đẩy dữ liệu từ vựng ra khỏi cache chung.
+- Test e2e `tests/writing.spec.ts`: `WRITING_SHOT=<png>` render trang 1 PDF bằng pdf.js, `WRITING_OUT=<dir>` lưu PDF/DOCX.
 
 ## Ôn tập: FSRS (ts-fsrs 5.x)
 
@@ -176,6 +209,7 @@
 - Chữ Hán: chia bài theo cấp xuất hiện, flashcard, quiz âm Hán Việt, chi tiết dạng ngăn xếp theo URL
   (`?k=` chữ gốc, `?xem=w:…~k:…~r:…`; desktop là panel/drawer, điện thoại là bottom sheet). Bộ thủ + chữ thuộc bộ.
 - Ngữ pháp N5–N1 (N5/N3 có mẫu tự soạn), lọc nhóm, đánh dấu đã kiểm tra.
+- Luyện viết: phiếu tập viết PDF / Word (xem mục riêng). Âm On/Kun (KANJIDIC2) trong panel chi tiết chữ Hán.
 - Thứ tự nét (KanjiVG): panel chi tiết chữ Hán / bộ thủ / kana (tự phát 1 lần), mặt sau flashcard chữ Hán và kana
   (nút "Xem cách viết"), bảng vẽ tay ("Xem cách viết đúng"). Chạm khung để vẽ lại. Reduced motion: không tự phát.
 - Câu ví dụ trong chi tiết từ vựng: Tatoeba (dịch Việt / Anh, nghe, nguồn), "Ví dụ khác", lưu câu vào sổ tay;
@@ -206,4 +240,7 @@
   986/1795 chữ hỏng (事 mất nét sổ). Xem quy tắc nén path ở mục Dữ liệu.
 - Bộ thủ từng đánh số theo thứ tự dòng Excel (lệch số Khang Hy từ bộ 10, chữ thuộc bộ sai) → luôn dùng số Khang Hy.
 - Bấm nút chấm flashcard bằng chuột giữ focus trên nút → Space bấm lại nút thay vì lật thẻ (nút dùng `onMouseDown preventDefault`).
+- Font subset bằng HarfBuzz có glyph độ dài lẻ; subset của @pdf-lib/fontkit chép nguyên byte rồi ghi `loca` dạng ngắn
+  (offset/2) → mất chữ trong PDF (ガ, キ, ひ… trống). `build-pdf-fonts.mjs` đệm glyph thành bội số 4 byte (`padGlyphs`),
+  `fonts.test.ts` kiểm tra. Xem kết quả PDF bằng ảnh render, đừng chỉ trích text (text vẫn đúng dù glyph trống).
 - StrictMode chạy effect hai lần ở dev: việc gửi/tự động gửi hoãn một nhịp (`setTimeout 0`) và dọn trong cleanup.

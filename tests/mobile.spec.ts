@@ -31,7 +31,7 @@ const inputFontSizes = (page: Page) =>
 
 const useMockAi = (page: Page) => page.addInitScript(() => localStorage.setItem('jla:v1:ai-settings', JSON.stringify({ provider: 'mock' })))
 
-const PAGES = ['/settings', '/ai', '/kanji?tab=radicals', '/grammar/n5']
+const PAGES = ['/settings', '/ai', '/kanji?tab=radicals', '/grammar/n5', '/writing?src=custom']
 
 for (const path of PAGES) {
   test(`ô nhập ≥ 16px và focus không phóng to: ${path}`, async ({ page }) => {

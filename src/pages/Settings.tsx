@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { SrsSettingsSection } from '../components/SrsSettingsSection'
+import { READINGS_CREDIT } from '../lib/readings'
 import { STROKE_CREDIT } from '../lib/strokes'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
@@ -209,6 +210,17 @@ export function Settings() {
               giấy phép
             </a>
           </li>
+          <li>
+            {READINGS_CREDIT} –{' '}
+            <a href="https://www.edrdg.org/wiki/index.php/KANJIDIC_Project" target="_blank" rel="noreferrer" className="font-medium text-ai hover:underline">
+              KANJIDIC Project
+            </a>
+            ,{' '}
+            <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer" className="font-medium text-ai hover:underline">
+              giấy phép
+            </a>
+          </li>
+          <li>Font trong phiếu luyện viết: Noto Sans JP, Be Vietnam Pro, Klee One (SIL Open Font License 1.1)</li>
           <li>Bộ thủ của chữ: Unicode Unihan (© Unicode, Inc.)</li>
           <li>Nhận dạng chữ viết tay: KanjiCanvas (Dominik Klein, MIT)</li>
         </ul>

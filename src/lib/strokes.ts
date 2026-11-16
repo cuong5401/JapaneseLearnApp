@@ -207,6 +207,50 @@ export function useStrokes(ch: string): StrokeState {
   )
 }
 
+/** Danh sách chữ có dữ liệu nét (strokes/index.json). */
+export const strokeIndex = (): Promise<Set<string>> => loadIndex()
+
+/**
+ * Dữ liệu nét của một chữ dạng Promise (dùng chung cache với useStrokes); chữ không có dữ liệu → null.
+ * Lỗi mạng → reject (để nơi gọi báo lỗi thay vì âm thầm vẽ bằng font).
+ */
+export async function loadStrokeData(ch: string): Promise<StrokeData | null> {
+  const cur = states.get(ch)
+  if (cur?.status === 'ready') return cur.data
+  if (cur?.status === 'missing') return null
+  const chars = await loadIndex()
+  if (!chars.has(ch)) {
+    set(ch, { status: 'missing' })
+    return null
+  }
+  const r = await fetch(`${BASE}${strokeFile(ch)}`)
+  if (!r.ok) throw new Error(`Lỗi ${r.status} khi tải nét chữ ${ch}`)
+  const data = parseStrokeData(await r.json())
+  set(ch, data ? { status: 'ready', data } : { status: 'missing' })
+  return data
+}
+
+let version = 0
+listeners.add(() => version++)
+
+/** Trạng thái nét của nhiều chữ (tải song song); mảng đổi khi có chữ tải xong. */
+export function useStrokeStates(chars: readonly string[]): StrokeState[] {
+  const key = chars.join('\u0000')
+  useEffect(() => {
+    if (key) key.split('\u0000').forEach(request)
+  }, [key])
+  useSyncExternalStore(
+    (l) => {
+      listeners.add(l)
+      return () => {
+        listeners.delete(l)
+      }
+    },
+    () => version,
+  )
+  return chars.map((c) => states.get(c) ?? LOADING)
+}
+
 /** Thử lại sau lỗi mạng. */
 export function retryStrokes(ch: string) {
   if (states.get(ch)?.status === 'error') {

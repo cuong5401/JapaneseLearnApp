@@ -12,6 +12,7 @@ import { AskAiLink } from '../ai/AskAiLink'
 import { kanjiQuestion } from '../../lib/ai/questions'
 import { BookmarkButton } from '../notebook/BookmarkButton'
 import { StrokeSection } from '../strokes/StrokeOrder'
+import { KanjiReadings } from './KanjiReadings'
 
 type Push = (f: Frame) => void
 
@@ -92,6 +93,7 @@ export function KanjiDetail({ item, onPush }: { item: KanjiEntry; onPush: Push }
           <RadicalChip ch={item.kanji} onPush={onPush} />
         </div>
       </div>
+      <KanjiReadings ch={item.kanji} />
       <StrokeSection key={item.kanji} char={item.kanji} />
       <div className="mt-5 grid grid-cols-2 gap-2">
         <ButtonLink

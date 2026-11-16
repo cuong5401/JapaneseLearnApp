@@ -10,6 +10,7 @@ import { Button } from '../components/Pressable'
 import { Segmented } from '../components/Segmented'
 import { Stagger, StaggerItem } from '../components/Stagger'
 import { DetailStackView } from '../components/detail/DetailStack'
+import { WritingSheetLink } from '../components/writing/WritingSheetLink'
 import { BookmarkButton, BookmarkIcon } from '../components/notebook/BookmarkButton'
 import { ChoiceQuiz, type ChoiceQuizConfig } from '../components/study/ChoiceQuiz'
 import { FlashcardSession, type SessionLink } from '../components/study/FlashcardSession'
@@ -23,21 +24,17 @@ import { WIDE_PANEL, useMediaQuery } from '../hooks/useMediaQuery'
 import { useCards } from '../hooks/useProgress'
 import { useScrollMemory } from '../hooks/useScrollMemory'
 import type { Frame } from '../lib/detailStack'
+import { KANJI_LEVEL_OPTIONS, filterByLevel, type KanjiLevelFilter } from '../lib/kanjiLessons'
 import { splitLessons } from '../lib/lessons'
 import { isSaved, useNotebooks } from '../lib/notebooks'
 import { normalizeVi } from '../lib/search'
 import { useLessonSize } from '../lib/settings'
-import { LEVELS, type KanjiEntry, type RadicalItem } from '../types'
+import type { KanjiEntry, RadicalItem } from '../types'
 
 type Section = 'chars' | 'radicals'
 type Mode = 'list' | 'flashcards' | 'quiz'
-type LevelFilter = 'all' | (typeof LEVELS)[number] | 'none'
-
-const LEVEL_OPTIONS: { value: LevelFilter; label: string }[] = [
-  { value: 'all', label: 'Tất cả' },
-  ...LEVELS.map((l) => ({ value: l, label: `Từ ${l}` })),
-  { value: 'none', label: 'Chỉ trong từ ghép' },
-]
+type LevelFilter = KanjiLevelFilter
+const LEVEL_OPTIONS = KANJI_LEVEL_OPTIONS
 
 const MODES: { value: Mode; label: string }[] = [
   { value: 'list', label: 'Danh sách' },
@@ -64,11 +61,6 @@ function kanjiHref(params: URLSearchParams, set: Record<string, string | null>):
   }
   const s = p.toString()
   return s ? `/kanji?${s}` : '/kanji'
-}
-
-function filterByLevel(list: KanjiEntry[], level: LevelFilter) {
-  const out = level === 'all' ? list : list.filter((k) => (level === 'none' ? k.firstLevel === null : k.firstLevel === level))
-  return [...out].sort((a, b) => b.wordCount - a.wordCount)
 }
 
 /* ───────────── Lưới chữ của một bài ───────────── */
@@ -169,7 +161,21 @@ function RadicalFlashcards({ items, back, next }: { items: RadicalItem[]; back: 
 
 /* ───────────── Bài học (chữ Hán / bộ thủ) ───────────── */
 
-function LessonHeader({ title, subtitle, backHref, mode, onMode }: { title: string; subtitle: string; backHref: string; mode: Mode; onMode: (m: Mode) => void }) {
+function LessonHeader({
+  title,
+  subtitle,
+  backHref,
+  mode,
+  onMode,
+  writingHref,
+}: {
+  title: string
+  subtitle: string
+  backHref: string
+  mode: Mode
+  onMode: (m: Mode) => void
+  writingHref?: string
+}) {
   return (
     <div className="mb-6">
       <Link to={backHref} className="-ml-2 mb-1 inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-sm text-muted hover:text-ink">
@@ -182,8 +188,9 @@ function LessonHeader({ title, subtitle, backHref, mode, onMode }: { title: stri
         <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
         <span className="text-sm text-muted">{subtitle}</span>
       </div>
-      <div className="mt-4">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <Segmented label="Chế độ học" value={mode} onChange={onMode} options={MODES} />
+        {writingHref && <WritingSheetLink to={writingHref} />}
       </div>
     </div>
   )
@@ -288,6 +295,7 @@ export function Kanji() {
               title={`Bài ${lessonIndex + 1}`}
               subtitle={`Chữ Hán · ${levelLabel} · ${chars.length} chữ`}
               backHref={gridHref}
+              writingHref={`/writing?src=kanji&level=${level}&bai=${lessonIndex + 1}`}
               mode={mode}
               onMode={(m) => setParam({ mode: m === 'list' ? null : m, xem: null })}
             />

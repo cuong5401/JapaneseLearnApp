@@ -104,7 +104,9 @@ export default defineConfig(({ command, mode, isPreview }) => {
           globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
           // Mẫu nét vẽ tay (~2 MB) không precache: chỉ tải khi mở bảng vẽ, rồi cache (xem runtimeCaching).
           // SDK Claude (~380 KB) chỉ cần khi chọn Claude trong Cài đặt AI: cũng không precache.
-          globIgnores: ['404.html', 'data/**', 'assets/ref-patterns-*.js', 'assets/sdk-*.js'],
+          // Thư viện xuất phiếu luyện viết (pdf-lib ~1,1 MB, docx ~240 KB) và font nhúng (.ttf, không nằm trong
+          // globPatterns) chỉ tải khi bấm xuất, rồi cache (xem runtimeCaching) để lần sau xuất được khi offline.
+          globIgnores: ['404.html', 'data/**', 'assets/ref-patterns-*.js', 'assets/sdk-*.js', 'assets/pdf-*.js', 'assets/docx-*.js'],
           navigateFallback: 'index.html',
           cleanupOutdatedCaches: true,
           runtimeCaching: [
@@ -120,6 +122,17 @@ export default defineConfig(({ command, mode, isPreview }) => {
               },
             },
             {
+              // Thứ tự nét (~1 KB/chữ, ~1.800 file): cache riêng để in phiếu nhiều bài không đẩy file từ vựng ra
+              // khỏi cache chung (60 mục), và để xuất phiếu offline các chữ đã xem.
+              urlPattern: ({ url }) => url.pathname.includes('/data/strokes/'),
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'kotonoha-strokes',
+                expiration: { maxEntries: 2500 },
+                cacheableResponse: { statuses: [200] },
+              },
+            },
+            {
               // File dữ liệu có ?v=hash: trả bản đã lưu ngay, cập nhật ngầm.
               urlPattern: ({ url }) => url.pathname.includes('/data/') && url.pathname.endsWith('.json'),
               handler: 'StaleWhileRevalidate',
@@ -132,11 +145,12 @@ export default defineConfig(({ command, mode, isPreview }) => {
             {
               // Mẫu nét vẽ tay và SDK Claude: tên file có hash nên dùng bản đã lưu là an toàn;
               // dùng được offline sau lần mở đầu (Hỏi AI thì vẫn cần mạng để gọi API).
-              urlPattern: ({ url }) => /\/assets\/(ref-patterns|sdk)-[\w-]+\.js$/.test(url.pathname),
+              // Thư viện xuất phiếu (pdf, docx) và font nhúng (.ttf) cũng vậy.
+              urlPattern: ({ url }) => /\/assets\/((ref-patterns|sdk|pdf|docx)-[\w-]+\.js|[\w-]+\.ttf)$/.test(url.pathname),
               handler: 'CacheFirst',
               options: {
                 cacheName: 'kotonoha-lazy-assets',
-                expiration: { maxEntries: 6 },
+                expiration: { maxEntries: 16 },
                 cacheableResponse: { statuses: [200] },
               },
             },

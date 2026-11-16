@@ -59,6 +59,7 @@ const router = createBrowserRouter([
       { path: '/review', lazy: () => import('./pages/Review').then((m) => ({ Component: m.Review })) },
       { path: '/notebooks', lazy: () => import('./pages/Notebooks').then((m) => ({ Component: m.Notebooks })) },
       { path: '/notebooks/:id', lazy: () => import('./pages/NotebookPage').then((m) => ({ Component: m.NotebookPage })) },
+      { path: '/writing', lazy: () => import('./pages/Writing').then((m) => ({ Component: m.Writing })) },
       { path: '/progress', lazy: () => import('./pages/Progress').then((m) => ({ Component: m.Progress })) },
       { path: '/ai', lazy: () => import('./pages/AskAi').then((m) => ({ Component: m.AskAi })) },
       { path: '/settings', lazy: () => import('./pages/Settings').then((m) => ({ Component: m.Settings })) },
