@@ -137,14 +137,14 @@ test('bàn phím ảo (visualViewport thấp đi 340px): header khung không khu
   await expect(nav).toBeVisible()
 })
 
-test('bấm "Chữ Hán" ở bottom nav: thu gọn và chuyển trang một lần bấm; mở lại còn tin nhắn và chữ gõ dở; Back lùi trang', async ({ page }) => {
+test('bấm "Học" ở bottom nav: thu gọn và chuyển trang một lần bấm; mở lại còn tin nhắn và chữ gõ dở; Back lùi trang', async ({ page }) => {
   await page.goto(app())
   await open(page)
   const input = panel(page).locator('[data-ai-input]')
   await input.fill('abc đang gõ dở')
-  await page.locator('[data-bottom-nav]').getByRole('link', { name: /Chữ Hán/ }).tap()
+  await page.locator('[data-bottom-nav]').getByRole('link', { name: /Học$/ }).tap()
   await expect(dock(page)).toHaveAttribute('data-ai-dock', 'closed')
-  await expect.poll(() => path(page)).toBe(app('kanji'))
+  await expect.poll(() => path(page)).toBe(app('learn'))
   expect(path(page)).not.toContain('JapaneseLearnApp/JapaneseLearnApp')
   await expect(page.getByRole('heading', { name: 'Không tìm thấy trang này' })).toHaveCount(0)
 

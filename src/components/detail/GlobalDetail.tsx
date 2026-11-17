@@ -10,11 +10,11 @@ import { PageSkeleton } from '../LoadState'
 // Nội dung chi tiết (từ, chữ Hán, bộ thủ) chỉ tải khi mở lần đầu: không làm nặng bundle chính.
 const DetailStackView = lazy(() => import('./DetailStack').then((m) => ({ default: m.DetailStackView })))
 
-/** Trang tự hiển thị ngăn xếp của mình (Kanji), không dùng drawer toàn cục. */
-const OWN_STACK = new Set(['/kanji'])
+/** Trang tự hiển thị ngăn xếp của mình (Kanji, Cách đếm), không dùng drawer toàn cục. */
+const OWN_STACK = new Set(['/kanji', '/learn/counters'])
 
 /**
- * Chi tiết từ / chữ Hán / bộ thủ mở từ bất kỳ trang nào (?xem=…): kết quả tìm kiếm, từ liên quan,
+ * Chi tiết từ / chữ Hán / bộ thủ / trợ số từ mở từ bất kỳ trang nào (?xem=…): kết quả tìm kiếm, từ liên quan,
  * mục trong sổ tay… Desktop là drawer bên phải, điện thoại là bottom sheet. Không rời trang đang xem.
  */
 export function GlobalDetail() {

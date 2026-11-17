@@ -103,7 +103,7 @@ export function Progress() {
 
   return (
     <div>
-      <PageHeader title="Tiến độ" />
+      <PageHeader title="Tiến độ" back={{ to: '/me', label: 'Cá nhân' }} />
 
       <dl className="grid grid-cols-3 divide-x divide-line rounded-xl border border-line bg-surface">
         {totals.map((t) => (

@@ -19,7 +19,9 @@ import { progress } from '../lib/progress'
 import { hasJapanese, normalizeKana, normalizeVi } from '../lib/search'
 import { useLessonSize } from '../lib/settings'
 import { showToast } from '../lib/toast'
-import type { KanjiEntry, StudyEntry } from '../types'
+import { CounterFront } from '../components/study/counterFaces'
+import { acceptedReadings, isFullCounter, readingsOf } from '../lib/counters'
+import type { CounterFormKey, CounterItem, KanjiEntry, StudyEntry } from '../types'
 import { WritingSheetLink } from '../components/writing/WritingSheetLink'
 import { NotFound } from './NotFound'
 
@@ -27,8 +29,8 @@ type Kind = StudyEntry['kind']
 type Filter = 'all' | Kind
 type Mode = 'list' | 'flashcards' | 'quiz'
 
-const KIND_LABEL: Record<Kind, string> = { word: 'Từ vựng', kanji: 'Kanji', radical: 'Bộ thủ', grammar: 'Ngữ pháp', char: 'Chữ khác' }
-const KIND_ORDER: Kind[] = ['word', 'kanji', 'radical', 'grammar', 'char']
+const KIND_LABEL: Record<Kind, string> = { word: 'Từ vựng', kanji: 'Kanji', radical: 'Bộ thủ', grammar: 'Ngữ pháp', counter: 'Cách đếm', char: 'Chữ khác' }
+const KIND_ORDER: Kind[] = ['word', 'kanji', 'radical', 'grammar', 'counter', 'char']
 const MODES: { value: Mode; label: string }[] = [
   { value: 'list', label: 'Danh sách' },
   { value: 'flashcards', label: 'Flashcard' },
@@ -39,9 +41,19 @@ const MODES: { value: Mode; label: string }[] = [
 const QUIZ: ChoiceQuizConfig<EntryCard> = {
   title: 'Quiz sổ tay',
   prompt: ({ entry }) =>
-    entry.kind === 'word' ? 'Từ này nghĩa là gì?' : entry.kind === 'kanji' ? 'Âm Hán Việt của chữ này?' : entry.kind === 'radical' ? 'Bộ này tên là gì?' : 'Mẫu này nghĩa là gì?',
+    entry.kind === 'word'
+      ? 'Từ này nghĩa là gì?'
+      : entry.kind === 'kanji'
+        ? 'Âm Hán Việt của chữ này?'
+        : entry.kind === 'radical'
+          ? 'Bộ này tên là gì?'
+          : entry.kind === 'counter'
+            ? 'Đọc thế nào?'
+            : 'Mẫu này nghĩa là gì?',
   question: ({ entry }) =>
-    entry.kind === 'word' ? (
+    entry.kind === 'counter' ? (
+      <CounterFront item={entry.item} n={entry.n} />
+    ) : entry.kind === 'word' ? (
       <p lang="ja" className="text-center font-jp text-[clamp(2rem,12cqw,3.25rem)] font-bold break-words">
         {entry.item.word}
       </p>
@@ -53,12 +65,30 @@ const QUIZ: ChoiceQuizConfig<EntryCard> = {
       <GridCell className="w-[clamp(7rem,40cqw,10rem)]">{entry.kind === 'kanji' ? entry.item.kanji : entry.kind === 'radical' ? entry.item.radical : entry.item.char}</GridCell>
     ),
   answer: ({ entry }) =>
-    entry.kind === 'word' ? entry.item.meaning : entry.kind === 'kanji' ? entry.item.hanViet : entry.kind === 'radical' ? entry.item.name : entry.kind === 'grammar' ? (entry.item.meaning ?? '') : '',
-  alsoRight: ({ entry }) => (entry.kind === 'kanji' ? (entry.item.hanVietAlt ?? []) : []),
+    entry.kind === 'counter'
+      ? counterAnswer(entry.item, entry.n)
+      : entry.kind === 'word'
+        ? entry.item.meaning
+        : entry.kind === 'kanji'
+          ? entry.item.hanViet
+          : entry.kind === 'radical'
+            ? entry.item.name
+            : entry.kind === 'grammar'
+              ? (entry.item.meaning ?? '')
+              : '',
+  alsoRight: ({ entry }) => (entry.kind === 'kanji' ? (entry.item.hanVietAlt ?? []) : entry.kind === 'counter' && entry.n ? [...counterAccepted(entry.item, entry.n)] : []),
   group: ({ entry }) => entry.kind,
 }
 
+/** Đáp án quiz sổ tay cho trợ số từ: cách đọc của ô (ct-hon-3) hoặc của chính trợ số từ (ct-hon). */
+function counterAnswer(item: CounterItem, n?: CounterFormKey): string {
+  if (n && isFullCounter(item)) return readingsOf(item.forms[n] ?? '')[0] ?? ''
+  return item.reading
+}
+const counterAccepted = (item: CounterItem, n: CounterFormKey) => (isFullCounter(item) ? acceptedReadings(item, n) : new Set<string>())
+
 function searchKeys(e: StudyEntry): { ja: string[]; vi: string[] } {
+  if (e.kind === 'counter') return { ja: [e.item.counter, normalizeKana(e.item.reading)], vi: [normalizeVi(`${e.item.usage} ${e.item.group}`)] }
   if (e.kind === 'word') return { ja: [e.item.word, normalizeKana(e.item.reading || '')], vi: [normalizeVi(e.item.meaning), normalizeVi(e.item.hanViet ?? '')] }
   if (e.kind === 'kanji') return { ja: [e.item.kanji], vi: [normalizeVi(e.item.hanViet)] }
   if (e.kind === 'radical') return { ja: [e.item.radical], vi: [normalizeVi(`${e.item.name} ${e.item.meaning}`)] }
@@ -69,10 +99,29 @@ function searchKeys(e: StudyEntry): { ja: string[]; vi: string[] } {
 function EntryRow({ card, onOpen, onRemove, examples }: { card: EntryCard; onOpen: () => void; onRemove: () => void; examples?: SavedExample[] }) {
   const { entry } = card
   const learned = Boolean(useCards()[card.id])
-  const glyph = entry.kind === 'kanji' ? entry.item.kanji : entry.kind === 'radical' ? entry.item.radical : entry.kind === 'char' ? entry.item.char : null
+  const glyph =
+    entry.kind === 'kanji'
+      ? entry.item.kanji
+      : entry.kind === 'radical'
+        ? entry.item.radical
+        : entry.kind === 'char'
+          ? entry.item.char
+          : entry.kind === 'counter'
+            ? entry.item.counter
+            : null
   const head = entry.kind === 'word' ? entry.item.word : entry.kind === 'grammar' ? entry.item.title : ''
   const sub =
-    entry.kind === 'word' ? entry.item.meaning : entry.kind === 'kanji' ? entry.item.hanViet : entry.kind === 'radical' ? `Bộ ${entry.item.name}: ${entry.item.meaning}` : entry.kind === 'char' ? 'Chưa có trong danh sách chữ Hán' : (entry.item.meaning ?? 'Mở để xem giải thích')
+    entry.kind === 'counter'
+      ? `${entry.item.reading}: ${entry.item.usage}`
+      : entry.kind === 'word'
+        ? entry.item.meaning
+        : entry.kind === 'kanji'
+          ? entry.item.hanViet
+          : entry.kind === 'radical'
+            ? `Bộ ${entry.item.name}: ${entry.item.meaning}`
+            : entry.kind === 'char'
+              ? 'Chưa có trong danh sách chữ Hán'
+              : (entry.item.meaning ?? 'Mở để xem giải thích')
   const content = (
     <>
       {glyph ? (
@@ -209,6 +258,7 @@ export function NotebookPage() {
     else if (e.kind === 'kanji') stack.open({ t: 'k', ch: e.item.kanji })
     else if (e.kind === 'radical') stack.open({ t: 'r', no: e.item.no })
     else if (e.kind === 'char') stack.open({ t: 'k', ch: e.item.char })
+    else if (e.kind === 'counter') stack.open({ t: 'c', id: e.item.id })
   }
   const remove = (ref: string) => notebooks.removeItem(book.id, ref)
 

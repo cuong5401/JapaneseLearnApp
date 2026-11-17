@@ -1,0 +1,2301 @@
+{
+ "version": 1,
+ "source": "Kotonoha – tự soạn (kiến thức ngữ pháp chung)",
+ "rules": [
+  {
+   "title": "Hai hệ số đếm",
+   "text": "Tiếng Nhật có 2 cách đọc số: kiểu Hán (いち、に、さん…) dùng với hầu hết trợ số từ, và kiểu thuần Nhật (ひと、ふた、み…) dùng với つ và một số từ như 切れ、箱、袋. Kiểu thuần Nhật thường chỉ dùng cho số nhỏ (1–3 hoặc 1–10)."
+  },
+  {
+   "title": "Số 4, 7, 9",
+   "text": "4 thường đọc よん (よ trước 人、時、年、円), ít khi し. 7 thường đọc なな (しち ở 7時, 7月). 9 thường đọc きゅう (く ở 9時, 9月, 9時間)."
+  },
+  {
+   "title": "Âm ngắt ở 1, 6, 8, 10",
+   "text": "Trước trợ số từ bắt đầu bằng k, s, t, h (か、さ、た、は hàng): 1 → いっ, 6 → ろっ (thường chỉ trước k và h), 8 → はっ (hoặc giữ はち), 10 → じゅっ／じっ. Ví dụ: いっこ、ろっこ、はっこ、じゅっこ."
+  },
+  {
+   "title": "Hàng は đổi thành ぱ／ば",
+   "text": "Trợ số từ bắt đầu bằng は、ひ、ふ、へ、ほ: sau 1, 6, 8, 10 đổi thành ぱ-hàng (いっぽん、ろっぴき); sau 3 và 何 thường đổi thành ば-hàng (さんぼん、なんびき) hoặc ぱ-hàng (さんぷん、なんぷん) tùy từ."
+  },
+  {
+   "title": "Hỏi số lượng",
+   "text": "Thêm 何 (なん) trước trợ số từ: 何本 (なんぼん), 何人 (なんにん). Đồ vật chung hỏi いくつ, giá tiền hỏi いくら."
+  },
+  {
+   "title": "Vị trí trong câu",
+   "text": "Số + trợ số từ thường đứng sau trợ từ が／を, trước động từ: りんごを三つ買います. Cũng có thể đứng trước danh từ với の: 三つのりんご."
+  }
+ ],
+ "counters": [
+  {
+   "id": "tsu",
+   "counter": "つ",
+   "reading": "つ",
+   "group": "Đồ vật nói chung",
+   "level": "N5",
+   "usage": "Đếm đồ vật nói chung (kiểu đếm thuần Nhật). Dùng khi không biết trợ số từ riêng, hoặc cho vật trừu tượng (ý kiến, vấn đề). Chỉ đếm từ 1 đến 10.",
+   "examples": [
+    {
+     "ja": "りんごを三つください。",
+     "kana": "りんごをみっつください。",
+     "vi": "Cho tôi 3 quả táo."
+    },
+    {
+     "ja": "質問が一つあります。",
+     "kana": "しつもんがひとつあります。",
+     "vi": "Tôi có một câu hỏi."
+    }
+   ],
+   "forms": {
+    "1": "ひとつ",
+    "2": "ふたつ",
+    "3": "みっつ",
+    "4": "よっつ",
+    "5": "いつつ",
+    "6": "むっつ",
+    "7": "ななつ",
+    "8": "やっつ",
+    "9": "ここのつ",
+    "10": "とお",
+    "nan": "いくつ"
+   },
+   "irregular": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "nan"
+   ],
+   "notes": "Từ 11 trở lên không dùng つ: đọc số bình thường (じゅういち、じゅうに…) hoặc dùng 個. Hỏi số lượng: いくつ. Trẻ nhỏ cũng hỏi tuổi bằng いくつ (おいくつですか: lịch sự)."
+  },
+  {
+   "id": "ko",
+   "counter": "個",
+   "reading": "こ",
+   "group": "Đồ vật nói chung",
+   "level": "N5",
+   "usage": "Đồ vật nhỏ, tròn hoặc khối: quả, viên, cái kẹo, trứng, cục tẩy, hộp nhỏ.",
+   "examples": [
+    {
+     "ja": "卵を六個買いました。",
+     "kana": "たまごをろっこかいました。",
+     "vi": "Tôi đã mua 6 quả trứng."
+    },
+    {
+     "ja": "消しゴムが一個あります。",
+     "kana": "けしゴムがいっこあります。",
+     "vi": "Có 1 cục tẩy."
+    }
+   ],
+   "forms": {
+    "1": "いっこ",
+    "2": "にこ",
+    "3": "さんこ",
+    "4": "よんこ",
+    "5": "ごこ",
+    "6": "ろっこ",
+    "7": "ななこ",
+    "8": "はっこ／はちこ",
+    "9": "きゅうこ",
+    "10": "じゅっこ／じっこ",
+    "nan": "なんこ"
+   },
+   "irregular": [
+    "1",
+    "6",
+    "8",
+    "10"
+   ],
+   "notes": "1, 6, 8, 10 biến âm thành âm ngắt (っ)."
+  },
+  {
+   "id": "nin",
+   "counter": "人",
+   "reading": "にん",
+   "group": "Người",
+   "level": "N5",
+   "usage": "Đếm người.",
+   "examples": [
+    {
+     "ja": "家族は四人です。",
+     "kana": "かぞくはよにんです。",
+     "vi": "Gia đình tôi có 4 người."
+    },
+    {
+     "ja": "一人で行きます。",
+     "kana": "ひとりでいきます。",
+     "vi": "Tôi đi một mình."
+    }
+   ],
+   "forms": {
+    "1": "ひとり",
+    "2": "ふたり",
+    "3": "さんにん",
+    "4": "よにん",
+    "5": "ごにん",
+    "6": "ろくにん",
+    "7": "ななにん／しちにん",
+    "8": "はちにん",
+    "9": "きゅうにん／くにん",
+    "10": "じゅうにん",
+    "nan": "なんにん"
+   },
+   "irregular": [
+    "1",
+    "2",
+    "4"
+   ],
+   "notes": "1 người ひとり, 2 người ふたり (đọc kiểu Nhật), 4 người よにん (không phải よんにん). 一人で = một mình."
+  },
+  {
+   "id": "mei",
+   "counter": "名",
+   "reading": "めい",
+   "group": "Người",
+   "level": "N4",
+   "usage": "Đếm người (trang trọng): văn bản, thông báo, nhà hàng (何名様ですか).",
+   "examples": [
+    {
+     "ja": "何名様ですか。",
+     "kana": "なんめいさまですか。",
+     "vi": "Quý khách đi mấy người ạ?"
+    },
+    {
+     "ja": "参加者は二十名です。",
+     "kana": "さんかしゃはにじゅうめいです。",
+     "vi": "Có 20 người tham gia."
+    }
+   ],
+   "forms": {
+    "1": "いちめい",
+    "2": "にめい",
+    "3": "さんめい",
+    "4": "よんめい",
+    "5": "ごめい",
+    "6": "ろくめい",
+    "7": "ななめい",
+    "8": "はちめい",
+    "9": "きゅうめい",
+    "10": "じゅうめい",
+    "nan": "なんめい"
+   },
+   "irregular": [],
+   "notes": "Ở nhà hàng hay nói お一人様 (おひとりさま), お二人様 (おふたりさま), 三名様 (さんめいさま)."
+  },
+  {
+   "id": "ninmae",
+   "counter": "人前",
+   "reading": "にんまえ",
+   "group": "Đồ ăn: lát, miếng, phần",
+   "level": "N3",
+   "usage": "Số suất ăn, phần ăn cho mấy người.",
+   "examples": [
+    {
+     "ja": "ラーメンを二人前お願いします。",
+     "kana": "ラーメンをににんまえおねがいします。",
+     "vi": "Cho 2 suất mì ramen."
+    }
+   ],
+   "forms": {
+    "1": "いちにんまえ",
+    "2": "ににんまえ",
+    "3": "さんにんまえ",
+    "4": "よにんまえ",
+    "5": "ごにんまえ",
+    "6": "ろくにんまえ",
+    "7": "ななにんまえ",
+    "8": "はちにんまえ",
+    "9": "きゅうにんまえ",
+    "10": "じゅうにんまえ",
+    "nan": "なんにんまえ"
+   },
+   "irregular": [
+    "4"
+   ],
+   "notes": "一人前 (いちにんまえ) còn có nghĩa \"trưởng thành, ra dáng người lớn, đủ năng lực\". 4 suất: よにんまえ."
+  },
+  {
+   "id": "hiki",
+   "counter": "匹",
+   "reading": "ひき",
+   "group": "Động vật",
+   "level": "N5",
+   "usage": "Động vật nhỏ: chó, mèo, cá, côn trùng.",
+   "examples": [
+    {
+     "ja": "猫を二匹飼っています。",
+     "kana": "ねこをにひきかっています。",
+     "vi": "Tôi nuôi 2 con mèo."
+    },
+    {
+     "ja": "魚が三匹います。",
+     "kana": "さかながさんびきいます。",
+     "vi": "Có 3 con cá."
+    }
+   ],
+   "forms": {
+    "1": "いっぴき",
+    "2": "にひき",
+    "3": "さんびき",
+    "4": "よんひき",
+    "5": "ごひき",
+    "6": "ろっぴき",
+    "7": "ななひき",
+    "8": "はっぴき／はちひき",
+    "9": "きゅうひき",
+    "10": "じゅっぴき／じっぴき",
+    "nan": "なんびき"
+   },
+   "irregular": [
+    "1",
+    "3",
+    "6",
+    "8",
+    "10",
+    "nan"
+   ],
+   "notes": "ひ → ぴ ở 1, 6, 8, 10; ひ → び ở 3 và 何."
+  },
+  {
+   "id": "tou_animal",
+   "counter": "頭",
+   "reading": "とう",
+   "group": "Động vật",
+   "level": "N3",
+   "usage": "Động vật lớn: bò, ngựa, voi, sư tử (lớn hơn người).",
+   "examples": [
+    {
+     "ja": "牛が五頭います。",
+     "kana": "うしがごとういます。",
+     "vi": "Có 5 con bò."
+    }
+   ],
+   "forms": {
+    "1": "いっとう",
+    "2": "にとう",
+    "3": "さんとう",
+    "4": "よんとう",
+    "5": "ごとう",
+    "6": "ろくとう",
+    "7": "ななとう",
+    "8": "はっとう／はちとう",
+    "9": "きゅうとう",
+    "10": "じゅっとう／じっとう",
+    "nan": "なんとう"
+   },
+   "irregular": [
+    "1",
+    "8",
+    "10"
+   ],
+   "notes": ""
+  },
+  {
+   "id": "wa",
+   "counter": "羽",
+   "reading": "わ",
+   "group": "Động vật",
+   "level": "N3",
+   "usage": "Chim, gà; theo truyền thống thỏ cũng đếm bằng 羽.",
+   "examples": [
+    {
+     "ja": "鳥が三羽飛んでいます。",
+     "kana": "とりがさんわとんでいます。",
+     "vi": "Có 3 con chim đang bay."
+    }
+   ],
+   "forms": {
+    "1": "いちわ",
+    "2": "にわ",
+    "3": "さんわ／さんば",
+    "4": "よんわ",
+    "5": "ごわ",
+    "6": "ろくわ／ろっぱ",
+    "7": "ななわ",
+    "8": "はちわ／はっぱ",
+    "9": "きゅうわ",
+    "10": "じゅうわ／じっぱ",
+    "nan": "なんわ／なんば"
+   },
+   "irregular": [
+    "3",
+    "6",
+    "8",
+    "10"
+   ],
+   "notes": "Cách đọc ば/ぱ (さんば、ろっぱ…) là cách cũ, ngày nay thường đọc đều わ."
+  },
+  {
+   "id": "hon",
+   "counter": "本",
+   "reading": "ほん",
+   "group": "Vật dài, mỏng, sách vở",
+   "level": "N5",
+   "usage": "Vật dài, thon: bút, chai, cây, ô, chuối; cũng dùng cho cuộc gọi điện, bộ phim, chuyến tàu/xe buýt, bàn thắng.",
+   "examples": [
+    {
+     "ja": "ペンを一本貸してください。",
+     "kana": "ペンをいっぽんかしてください。",
+     "vi": "Cho tôi mượn 1 cây bút."
+    },
+    {
+     "ja": "ビールを三本買いました。",
+     "kana": "ビールをさんぼんかいました。",
+     "vi": "Tôi đã mua 3 chai bia."
+    }
+   ],
+   "forms": {
+    "1": "いっぽん",
+    "2": "にほん",
+    "3": "さんぼん",
+    "4": "よんほん",
+    "5": "ごほん",
+    "6": "ろっぽん",
+    "7": "ななほん",
+    "8": "はっぽん／はちほん",
+    "9": "きゅうほん",
+    "10": "じゅっぽん／じっぽん",
+    "nan": "なんぼん"
+   },
+   "irregular": [
+    "1",
+    "3",
+    "6",
+    "8",
+    "10",
+    "nan"
+   ],
+   "notes": "ほ → ぽ ở 1, 6, 8, 10; ほ → ぼ ở 3 và 何."
+  },
+  {
+   "id": "mai",
+   "counter": "枚",
+   "reading": "まい",
+   "group": "Vật dài, mỏng, sách vở",
+   "level": "N5",
+   "usage": "Vật mỏng, phẳng: giấy, áo sơ mi, đĩa CD, vé, tem, ảnh, lát thịt mỏng.",
+   "examples": [
+    {
+     "ja": "切手を五枚ください。",
+     "kana": "きってをごまいください。",
+     "vi": "Cho tôi 5 con tem."
+    },
+    {
+     "ja": "シャツを二枚買いました。",
+     "kana": "シャツをにまいかいました。",
+     "vi": "Tôi đã mua 2 chiếc áo sơ mi."
+    }
+   ],
+   "forms": {
+    "1": "いちまい",
+    "2": "にまい",
+    "3": "さんまい",
+    "4": "よんまい",
+    "5": "ごまい",
+    "6": "ろくまい",
+    "7": "ななまい",
+    "8": "はちまい",
+    "9": "きゅうまい",
+    "10": "じゅうまい",
+    "nan": "なんまい"
+   },
+   "irregular": [],
+   "notes": "Không có biến âm."
+  },
+  {
+   "id": "satsu",
+   "counter": "冊",
+   "reading": "さつ",
+   "group": "Vật dài, mỏng, sách vở",
+   "level": "N5",
+   "usage": "Sách, vở, tạp chí.",
+   "examples": [
+    {
+     "ja": "本を三冊借りました。",
+     "kana": "ほんをさんさつかりました。",
+     "vi": "Tôi đã mượn 3 quyển sách."
+    }
+   ],
+   "forms": {
+    "1": "いっさつ",
+    "2": "にさつ",
+    "3": "さんさつ",
+    "4": "よんさつ",
+    "5": "ごさつ",
+    "6": "ろくさつ",
+    "7": "ななさつ",
+    "8": "はっさつ",
+    "9": "きゅうさつ",
+    "10": "じゅっさつ／じっさつ",
+    "nan": "なんさつ"
+   },
+   "irregular": [
+    "1",
+    "8",
+    "10"
+   ],
+   "notes": "6 vẫn là ろくさつ (không ngắt âm)."
+  },
+  {
+   "id": "dai",
+   "counter": "台",
+   "reading": "だい",
+   "group": "Máy móc, xe cộ",
+   "level": "N5",
+   "usage": "Máy móc, xe cộ: ô tô, xe đạp, máy tính, tivi, điện thoại, máy giặt.",
+   "examples": [
+    {
+     "ja": "車が二台あります。",
+     "kana": "くるまがにだいあります。",
+     "vi": "Có 2 chiếc ô tô."
+    }
+   ],
+   "forms": {
+    "1": "いちだい",
+    "2": "にだい",
+    "3": "さんだい",
+    "4": "よんだい",
+    "5": "ごだい",
+    "6": "ろくだい",
+    "7": "ななだい",
+    "8": "はちだい",
+    "9": "きゅうだい",
+    "10": "じゅうだい",
+    "nan": "なんだい"
+   },
+   "irregular": [],
+   "notes": "Không có biến âm."
+  },
+  {
+   "id": "hai",
+   "counter": "杯",
+   "reading": "はい",
+   "group": "Đồ uống, bát, ly",
+   "level": "N5",
+   "usage": "Ly, cốc, chén, bát (đồ đựng có chất lỏng hoặc cơm); thìa (đường, muối).",
+   "examples": [
+    {
+     "ja": "コーヒーを一杯ください。",
+     "kana": "コーヒーをいっぱいください。",
+     "vi": "Cho tôi một ly cà phê."
+    },
+    {
+     "ja": "ご飯を二杯食べました。",
+     "kana": "ごはんをにはいたべました。",
+     "vi": "Tôi đã ăn 2 bát cơm."
+    }
+   ],
+   "forms": {
+    "1": "いっぱい",
+    "2": "にはい",
+    "3": "さんばい",
+    "4": "よんはい",
+    "5": "ごはい",
+    "6": "ろっぱい",
+    "7": "ななはい",
+    "8": "はっぱい／はちはい",
+    "9": "きゅうはい",
+    "10": "じゅっぱい／じっぱい",
+    "nan": "なんばい"
+   },
+   "irregular": [
+    "1",
+    "3",
+    "6",
+    "8",
+    "10",
+    "nan"
+   ],
+   "notes": "は → ぱ ở 1, 6, 8, 10; は → ば ở 3 và 何. いっぱい còn có nghĩa \"đầy, nhiều\"."
+  },
+  {
+   "id": "kai",
+   "counter": "回",
+   "reading": "かい",
+   "group": "Số lần, thứ tự, tỉ lệ",
+   "level": "N5",
+   "usage": "Số lần (làm việc gì), số lần tổ chức.",
+   "examples": [
+    {
+     "ja": "一日に三回薬を飲みます。",
+     "kana": "いちにちにさんかいくすりをのみます。",
+     "vi": "Một ngày uống thuốc 3 lần."
+    }
+   ],
+   "forms": {
+    "1": "いっかい",
+    "2": "にかい",
+    "3": "さんかい",
+    "4": "よんかい",
+    "5": "ごかい",
+    "6": "ろっかい",
+    "7": "ななかい",
+    "8": "はっかい／はちかい",
+    "9": "きゅうかい",
+    "10": "じゅっかい／じっかい",
+    "nan": "なんかい"
+   },
+   "irregular": [
+    "1",
+    "6",
+    "8",
+    "10"
+   ],
+   "notes": "Cùng cách đọc với 階 (tầng) nhưng 3 và 何 không đổi âm: さんかい, なんかい."
+  },
+  {
+   "id": "do",
+   "counter": "度",
+   "reading": "ど",
+   "group": "Số lần, thứ tự, tỉ lệ",
+   "level": "N5",
+   "usage": "Số lần (hơi trang trọng hơn 回); độ (nhiệt độ, góc).",
+   "examples": [
+    {
+     "ja": "もう一度言ってください。",
+     "kana": "もういちどいってください。",
+     "vi": "Xin hãy nói lại một lần nữa."
+    },
+    {
+     "ja": "熱が三十八度あります。",
+     "kana": "ねつがさんじゅうはちどあります。",
+     "vi": "Tôi sốt 38 độ."
+    }
+   ],
+   "forms": {
+    "1": "いちど",
+    "2": "にど",
+    "3": "さんど",
+    "4": "よんど",
+    "5": "ごど",
+    "6": "ろくど",
+    "7": "ななど",
+    "8": "はちど",
+    "9": "きゅうど",
+    "10": "じゅうど",
+    "nan": "なんど"
+   },
+   "irregular": [],
+   "notes": "Không có biến âm."
+  },
+  {
+   "id": "ban",
+   "counter": "番",
+   "reading": "ばん",
+   "group": "Số lần, thứ tự, tỉ lệ",
+   "level": "N5",
+   "usage": "Số thứ tự, số hiệu (số 1, số 2…). 番目 (ばんめ) = thứ mấy.",
+   "examples": [
+    {
+     "ja": "一番好きな食べ物は何ですか。",
+     "kana": "いちばんすきなたべものはなんですか。",
+     "vi": "Món bạn thích nhất là gì?"
+    },
+    {
+     "ja": "前から三番目の席です。",
+     "kana": "まえからさんばんめのせきです。",
+     "vi": "Ghế thứ 3 tính từ phía trước."
+    }
+   ],
+   "forms": {
+    "1": "いちばん",
+    "2": "にばん",
+    "3": "さんばん",
+    "4": "よんばん",
+    "5": "ごばん",
+    "6": "ろくばん",
+    "7": "ななばん",
+    "8": "はちばん",
+    "9": "きゅうばん",
+    "10": "じゅうばん",
+    "nan": "なんばん"
+   },
+   "irregular": [],
+   "notes": "Thêm 目 thành 番目: いちばんめ, にばんめ… = thứ nhất, thứ hai. 一番 còn có nghĩa \"nhất\"."
+  },
+  {
+   "id": "bai",
+   "counter": "倍",
+   "reading": "ばい",
+   "group": "Số lần, thứ tự, tỉ lệ",
+   "level": "N3",
+   "usage": "Gấp mấy lần.",
+   "examples": [
+    {
+     "ja": "値段が二倍になりました。",
+     "kana": "ねだんがにばいになりました。",
+     "vi": "Giá đã tăng gấp đôi."
+    }
+   ],
+   "forms": {
+    "1": "いちばい",
+    "2": "にばい",
+    "3": "さんばい",
+    "4": "よんばい",
+    "5": "ごばい",
+    "6": "ろくばい",
+    "7": "ななばい",
+    "8": "はちばい",
+    "9": "きゅうばい",
+    "10": "じゅうばい",
+    "nan": "なんばい"
+   },
+   "irregular": [],
+   "notes": "Không có biến âm. Chú ý: 三倍 さんばい trùng âm với 三杯 (3 ly)."
+  },
+  {
+   "id": "wari",
+   "counter": "割",
+   "reading": "わり",
+   "group": "Số lần, thứ tự, tỉ lệ",
+   "level": "N3",
+   "usage": "Phần mười (1割 = 10%): giảm giá, tỉ lệ.",
+   "examples": [
+    {
+     "ja": "全品三割引きです。",
+     "kana": "ぜんぴんさんわりびきです。",
+     "vi": "Tất cả sản phẩm giảm 30%."
+    }
+   ],
+   "forms": {
+    "1": "いちわり",
+    "2": "にわり",
+    "3": "さんわり",
+    "4": "よんわり",
+    "5": "ごわり",
+    "6": "ろくわり",
+    "7": "ななわり",
+    "8": "はちわり",
+    "9": "きゅうわり",
+    "10": "じゅうわり",
+    "nan": "なんわり"
+   },
+   "irregular": [],
+   "notes": "割引 (わりびき) = giảm giá. 3割 = 30%."
+  },
+  {
+   "id": "ji",
+   "counter": "時",
+   "reading": "じ",
+   "group": "Giờ, phút, khoảng thời gian",
+   "level": "N5",
+   "usage": "Giờ (mấy giờ).",
+   "examples": [
+    {
+     "ja": "今、四時です。",
+     "kana": "いま、よじです。",
+     "vi": "Bây giờ là 4 giờ."
+    },
+    {
+     "ja": "九時に会いましょう。",
+     "kana": "くじにあいましょう。",
+     "vi": "Hẹn gặp lúc 9 giờ."
+    }
+   ],
+   "forms": {
+    "1": "いちじ",
+    "2": "にじ",
+    "3": "さんじ",
+    "4": "よじ",
+    "5": "ごじ",
+    "6": "ろくじ",
+    "7": "しちじ",
+    "8": "はちじ",
+    "9": "くじ",
+    "10": "じゅうじ",
+    "nan": "なんじ"
+   },
+   "irregular": [
+    "4",
+    "7",
+    "9"
+   ],
+   "notes": "4 giờ よじ, 7 giờ しちじ, 9 giờ くじ (không dùng よん, なな, きゅう). 11 giờ じゅういちじ, 12 giờ じゅうにじ. Rưỡi: 半 (はん): 四時半 よじはん."
+  },
+  {
+   "id": "fun",
+   "counter": "分",
+   "reading": "ふん",
+   "group": "Giờ, phút, khoảng thời gian",
+   "level": "N5",
+   "usage": "Phút.",
+   "examples": [
+    {
+     "ja": "三分待ってください。",
+     "kana": "さんぷんまってください。",
+     "vi": "Đợi 3 phút nhé."
+    },
+    {
+     "ja": "駅まで十分です。",
+     "kana": "えきまでじゅっぷんです。",
+     "vi": "Đến ga mất 10 phút."
+    }
+   ],
+   "forms": {
+    "1": "いっぷん",
+    "2": "にふん",
+    "3": "さんぷん",
+    "4": "よんぷん",
+    "5": "ごふん",
+    "6": "ろっぷん",
+    "7": "ななふん",
+    "8": "はっぷん／はちふん",
+    "9": "きゅうふん",
+    "10": "じゅっぷん／じっぷん",
+    "nan": "なんぷん"
+   },
+   "irregular": [
+    "1",
+    "3",
+    "4",
+    "6",
+    "8",
+    "10",
+    "nan"
+   ],
+   "notes": "ふ → ぷ ở 1, 3, 4, 6, 8, 10 và 何. Cùng chữ 分 nhưng 十分 (じゅうぶん) = \"đủ\"."
+  },
+  {
+   "id": "byou",
+   "counter": "秒",
+   "reading": "びょう",
+   "group": "Giờ, phút, khoảng thời gian",
+   "level": "N5",
+   "usage": "Giây.",
+   "examples": [
+    {
+     "ja": "三十秒で終わります。",
+     "kana": "さんじゅうびょうでおわります。",
+     "vi": "Xong trong 30 giây."
+    }
+   ],
+   "forms": {
+    "1": "いちびょう",
+    "2": "にびょう",
+    "3": "さんびょう",
+    "4": "よんびょう",
+    "5": "ごびょう",
+    "6": "ろくびょう",
+    "7": "ななびょう",
+    "8": "はちびょう",
+    "9": "きゅうびょう",
+    "10": "じゅうびょう",
+    "nan": "なんびょう"
+   },
+   "irregular": [],
+   "notes": "Không có biến âm."
+  },
+  {
+   "id": "jikan",
+   "counter": "時間",
+   "reading": "じかん",
+   "group": "Giờ, phút, khoảng thời gian",
+   "level": "N5",
+   "usage": "Khoảng thời gian tính bằng giờ (mấy tiếng).",
+   "examples": [
+    {
+     "ja": "毎日八時間働きます。",
+     "kana": "まいにちはちじかんはたらきます。",
+     "vi": "Mỗi ngày tôi làm việc 8 tiếng."
+    }
+   ],
+   "forms": {
+    "1": "いちじかん",
+    "2": "にじかん",
+    "3": "さんじかん",
+    "4": "よじかん",
+    "5": "ごじかん",
+    "6": "ろくじかん",
+    "7": "ななじかん／しちじかん",
+    "8": "はちじかん",
+    "9": "くじかん",
+    "10": "じゅうじかん",
+    "nan": "なんじかん"
+   },
+   "irregular": [
+    "4",
+    "9"
+   ],
+   "notes": "4 tiếng よじかん, 9 tiếng くじかん. Phân biệt: 4時 (4 giờ) và 4時間 (4 tiếng đồng hồ)."
+  },
+  {
+   "id": "hi",
+   "counter": "日",
+   "reading": "か／にち",
+   "group": "Ngày, tháng, năm",
+   "level": "N5",
+   "usage": "Ngày trong tháng (ngày mùng mấy). Từ 1 đến 10 đọc kiểu riêng, phải học thuộc.",
+   "examples": [
+    {
+     "ja": "一日から休みです。",
+     "kana": "ついたちからやすみです。",
+     "vi": "Từ ngày mùng 1 được nghỉ."
+    },
+    {
+     "ja": "二十日は給料日です。",
+     "kana": "はつかはきゅうりょうびです。",
+     "vi": "Ngày 20 là ngày lĩnh lương."
+    }
+   ],
+   "forms": {
+    "1": "ついたち",
+    "2": "ふつか",
+    "3": "みっか",
+    "4": "よっか",
+    "5": "いつか",
+    "6": "むいか",
+    "7": "なのか",
+    "8": "ようか",
+    "9": "ここのか",
+    "10": "とおか",
+    "nan": "なんにち"
+   },
+   "irregular": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10"
+   ],
+   "notes": "Từ 11 trở đi: số + にち (じゅういちにち, じゅうににち…), TRỪ: 14 じゅうよっか, 20 はつか, 24 にじゅうよっか. Chú ý 17 じゅうしちにち, 19 じゅうくにち, 27 にじゅうしちにち, 29 にじゅうくにち."
+  },
+  {
+   "id": "nichikan",
+   "counter": "日間",
+   "reading": "にちかん",
+   "group": "Ngày, tháng, năm",
+   "level": "N5",
+   "usage": "Số ngày (khoảng thời gian: mấy ngày). 間 thường có thể lược bỏ.",
+   "examples": [
+    {
+     "ja": "三日間休みます。",
+     "kana": "みっかかんやすみます。",
+     "vi": "Tôi nghỉ 3 ngày."
+    },
+    {
+     "ja": "一日中寝ていました。",
+     "kana": "いちにちじゅうねていました。",
+     "vi": "Tôi đã ngủ cả ngày."
+    }
+   ],
+   "forms": {
+    "1": "いちにち",
+    "2": "ふつかかん",
+    "3": "みっかかん",
+    "4": "よっかかん",
+    "5": "いつかかん",
+    "6": "むいかかん",
+    "7": "なのかかん",
+    "8": "ようかかん",
+    "9": "ここのかかん",
+    "10": "とおかかん",
+    "nan": "なんにちかん"
+   },
+   "irregular": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10"
+   ],
+   "notes": "1 ngày (khoảng thời gian) là いちにち, KHÔNG phải ついたち (mùng 1). Từ 2 ngày trở đi giống cách đọc ngày trong tháng."
+  },
+  {
+   "id": "shuukan",
+   "counter": "週間",
+   "reading": "しゅうかん",
+   "group": "Ngày, tháng, năm",
+   "level": "N5",
+   "usage": "Số tuần.",
+   "examples": [
+    {
+     "ja": "二週間日本に旅行します。",
+     "kana": "にしゅうかんにほんにりょこうします。",
+     "vi": "Tôi du lịch Nhật 2 tuần."
+    }
+   ],
+   "forms": {
+    "1": "いっしゅうかん",
+    "2": "にしゅうかん",
+    "3": "さんしゅうかん",
+    "4": "よんしゅうかん",
+    "5": "ごしゅうかん",
+    "6": "ろくしゅうかん",
+    "7": "ななしゅうかん",
+    "8": "はっしゅうかん",
+    "9": "きゅうしゅうかん",
+    "10": "じゅっしゅうかん／じっしゅうかん",
+    "nan": "なんしゅうかん"
+   },
+   "irregular": [
+    "1",
+    "8",
+    "10"
+   ],
+   "notes": ""
+  },
+  {
+   "id": "gatsu",
+   "counter": "月",
+   "reading": "がつ",
+   "group": "Ngày, tháng, năm",
+   "level": "N5",
+   "usage": "Tháng mấy (tên tháng trong năm).",
+   "examples": [
+    {
+     "ja": "四月に入社しました。",
+     "kana": "しがつににゅうしゃしました。",
+     "vi": "Tôi vào công ty tháng 4."
+    }
+   ],
+   "forms": {
+    "1": "いちがつ",
+    "2": "にがつ",
+    "3": "さんがつ",
+    "4": "しがつ",
+    "5": "ごがつ",
+    "6": "ろくがつ",
+    "7": "しちがつ",
+    "8": "はちがつ",
+    "9": "くがつ",
+    "10": "じゅうがつ",
+    "nan": "なんがつ"
+   },
+   "irregular": [
+    "4",
+    "7",
+    "9"
+   ],
+   "notes": "Tháng 4 しがつ, tháng 7 しちがつ, tháng 9 くがつ. Tháng 11 じゅういちがつ, tháng 12 じゅうにがつ."
+  },
+  {
+   "id": "kagetsu",
+   "counter": "か月",
+   "reading": "かげつ",
+   "group": "Ngày, tháng, năm",
+   "level": "N5",
+   "usage": "Số tháng (khoảng thời gian: mấy tháng). Viết: か月／ヶ月／カ月／箇月.",
+   "examples": [
+    {
+     "ja": "三か月日本語を勉強しました。",
+     "kana": "さんかげつにほんごをべんきょうしました。",
+     "vi": "Tôi đã học tiếng Nhật 3 tháng."
+    }
+   ],
+   "forms": {
+    "1": "いっかげつ",
+    "2": "にかげつ",
+    "3": "さんかげつ",
+    "4": "よんかげつ",
+    "5": "ごかげつ",
+    "6": "ろっかげつ",
+    "7": "ななかげつ",
+    "8": "はっかげつ／はちかげつ",
+    "9": "きゅうかげつ",
+    "10": "じゅっかげつ／じっかげつ",
+    "nan": "なんかげつ"
+   },
+   "irregular": [
+    "1",
+    "6",
+    "8",
+    "10"
+   ],
+   "notes": "Phân biệt: 3月 (さんがつ, tháng Ba) và 3か月 (さんかげつ, 3 tháng)."
+  },
+  {
+   "id": "nen",
+   "counter": "年",
+   "reading": "ねん",
+   "group": "Ngày, tháng, năm",
+   "level": "N5",
+   "usage": "Năm (năm bao nhiêu, mấy năm). 年間 = khoảng mấy năm.",
+   "examples": [
+    {
+     "ja": "日本に来て二年になります。",
+     "kana": "にほんにきてにねんになります。",
+     "vi": "Tôi đến Nhật được 2 năm."
+    }
+   ],
+   "forms": {
+    "1": "いちねん",
+    "2": "にねん",
+    "3": "さんねん",
+    "4": "よねん",
+    "5": "ごねん",
+    "6": "ろくねん",
+    "7": "ななねん／しちねん",
+    "8": "はちねん",
+    "9": "きゅうねん／くねん",
+    "10": "じゅうねん",
+    "nan": "なんねん"
+   },
+   "irregular": [
+    "4"
+   ],
+   "notes": "4 năm よねん (không phải よんねん)."
+  },
+  {
+   "id": "haku",
+   "counter": "泊",
+   "reading": "はく",
+   "group": "Nhà cửa, tầng, nơi ở",
+   "level": "N4",
+   "usage": "Số đêm nghỉ lại (khách sạn, du lịch). 泊 + 日: 2泊3日 = 3 ngày 2 đêm.",
+   "examples": [
+    {
+     "ja": "二泊三日で京都へ行きます。",
+     "kana": "にはくみっかできょうとへいきます。",
+     "vi": "Tôi đi Kyoto 3 ngày 2 đêm."
+    }
+   ],
+   "forms": {
+    "1": "いっぱく",
+    "2": "にはく",
+    "3": "さんぱく",
+    "4": "よんぱく",
+    "5": "ごはく",
+    "6": "ろっぱく",
+    "7": "ななはく",
+    "8": "はっぱく／はちはく",
+    "9": "きゅうはく",
+    "10": "じゅっぱく／じっぱく",
+    "nan": "なんぱく"
+   },
+   "irregular": [
+    "1",
+    "3",
+    "4",
+    "6",
+    "8",
+    "10",
+    "nan"
+   ],
+   "notes": "は → ぱ ở 1, 3, 4, 6, 8, 10 và 何."
+  },
+  {
+   "id": "sai",
+   "counter": "歳",
+   "reading": "さい",
+   "group": "Tiền, tuổi",
+   "level": "N5",
+   "usage": "Tuổi. Viết tắt là 才.",
+   "examples": [
+    {
+     "ja": "私は二十五歳です。",
+     "kana": "わたしはにじゅうごさいです。",
+     "vi": "Tôi 25 tuổi."
+    }
+   ],
+   "forms": {
+    "1": "いっさい",
+    "2": "にさい",
+    "3": "さんさい",
+    "4": "よんさい",
+    "5": "ごさい",
+    "6": "ろくさい",
+    "7": "ななさい",
+    "8": "はっさい",
+    "9": "きゅうさい",
+    "10": "じゅっさい／じっさい",
+    "nan": "なんさい"
+   },
+   "irregular": [
+    "1",
+    "8",
+    "10"
+   ],
+   "notes": "20 tuổi đọc là はたち (二十歳). Hỏi lịch sự: おいくつですか."
+  },
+  {
+   "id": "en",
+   "counter": "円",
+   "reading": "えん",
+   "group": "Tiền, tuổi",
+   "level": "N5",
+   "usage": "Yên (tiền Nhật).",
+   "examples": [
+    {
+     "ja": "この本は四百円です。",
+     "kana": "このほんはよんひゃくえんです。",
+     "vi": "Quyển sách này 400 yên."
+    }
+   ],
+   "forms": {
+    "1": "いちえん",
+    "2": "にえん",
+    "3": "さんえん",
+    "4": "よえん",
+    "5": "ごえん",
+    "6": "ろくえん",
+    "7": "ななえん",
+    "8": "はちえん",
+    "9": "きゅうえん",
+    "10": "じゅうえん",
+    "nan": "いくら"
+   },
+   "irregular": [
+    "4",
+    "nan"
+   ],
+   "notes": "4 yên よえん. Hỏi giá: いくら (なんえん cũng được). Hàng trăm/nghìn: 300 さんびゃく, 600 ろっぴゃく, 800 はっぴゃく, 3000 さんぜん, 8000 はっせん."
+  },
+  {
+   "id": "kai_floor",
+   "counter": "階",
+   "reading": "かい",
+   "group": "Nhà cửa, tầng, nơi ở",
+   "level": "N5",
+   "usage": "Tầng (của tòa nhà).",
+   "examples": [
+    {
+     "ja": "事務所は三階にあります。",
+     "kana": "じむしょはさんがいにあります。",
+     "vi": "Văn phòng ở tầng 3."
+    }
+   ],
+   "forms": {
+    "1": "いっかい",
+    "2": "にかい",
+    "3": "さんがい／さんかい",
+    "4": "よんかい",
+    "5": "ごかい",
+    "6": "ろっかい",
+    "7": "ななかい",
+    "8": "はっかい／はちかい",
+    "9": "きゅうかい",
+    "10": "じゅっかい／じっかい",
+    "nan": "なんがい／なんかい"
+   },
+   "irregular": [
+    "1",
+    "3",
+    "6",
+    "8",
+    "10",
+    "nan"
+   ],
+   "notes": "Tầng 3 và \"tầng mấy\" thường đọc là さんがい, なんがい. Tầng hầm: 地下一階 (ちかいっかい)."
+  },
+  {
+   "id": "ken_house",
+   "counter": "軒",
+   "reading": "けん",
+   "group": "Nhà cửa, tầng, nơi ở",
+   "level": "N3",
+   "usage": "Nhà, cửa hàng (đếm số căn).",
+   "examples": [
+    {
+     "ja": "この通りにはコンビニが三軒あります。",
+     "kana": "このとおりにはコンビニがさんげんあります。",
+     "vi": "Con phố này có 3 cửa hàng tiện lợi."
+    }
+   ],
+   "forms": {
+    "1": "いっけん",
+    "2": "にけん",
+    "3": "さんげん",
+    "4": "よんけん",
+    "5": "ごけん",
+    "6": "ろっけん",
+    "7": "ななけん",
+    "8": "はっけん／はちけん",
+    "9": "きゅうけん",
+    "10": "じゅっけん／じっけん",
+    "nan": "なんげん"
+   },
+   "irregular": [
+    "1",
+    "3",
+    "6",
+    "8",
+    "10",
+    "nan"
+   ],
+   "notes": "3 và 何 đổi thành げん. Khác với 件 (việc, vụ): さんけん."
+  },
+  {
+   "id": "soku",
+   "counter": "足",
+   "reading": "そく",
+   "group": "Quần áo, giày dép",
+   "level": "N4",
+   "usage": "Đôi (giày, tất, dép).",
+   "examples": [
+    {
+     "ja": "靴を二足買いました。",
+     "kana": "くつをにそくかいました。",
+     "vi": "Tôi đã mua 2 đôi giày."
+    }
+   ],
+   "forms": {
+    "1": "いっそく",
+    "2": "にそく",
+    "3": "さんぞく",
+    "4": "よんそく",
+    "5": "ごそく",
+    "6": "ろくそく",
+    "7": "ななそく",
+    "8": "はっそく",
+    "9": "きゅうそく",
+    "10": "じゅっそく／じっそく",
+    "nan": "なんぞく"
+   },
+   "irregular": [
+    "1",
+    "3",
+    "8",
+    "10",
+    "nan"
+   ],
+   "notes": "3 và 何 đổi thành ぞく."
+  },
+  {
+   "id": "chaku",
+   "counter": "着",
+   "reading": "ちゃく",
+   "group": "Quần áo, giày dép",
+   "level": "N3",
+   "usage": "Bộ quần áo, áo khoác, váy (cả bộ); cũng là thứ hạng về đích (1着 = về nhất).",
+   "examples": [
+    {
+     "ja": "スーツを一着持っています。",
+     "kana": "スーツをいっちゃくもっています。",
+     "vi": "Tôi có 1 bộ com-lê."
+    }
+   ],
+   "forms": {
+    "1": "いっちゃく",
+    "2": "にちゃく",
+    "3": "さんちゃく",
+    "4": "よんちゃく",
+    "5": "ごちゃく",
+    "6": "ろくちゃく",
+    "7": "ななちゃく",
+    "8": "はっちゃく",
+    "9": "きゅうちゃく",
+    "10": "じゅっちゃく／じっちゃく",
+    "nan": "なんちゃく"
+   },
+   "irregular": [
+    "1",
+    "8",
+    "10"
+   ],
+   "notes": "Áo sơ mi, áo phông thường dùng 枚."
+  },
+  {
+   "id": "ken",
+   "counter": "件",
+   "reading": "けん",
+   "group": "Việc, thư, văn bản",
+   "level": "N4",
+   "usage": "Việc, vụ, trường hợp, email/tin nhắn, kết quả tìm kiếm.",
+   "examples": [
+    {
+     "ja": "新しいメールが三件あります。",
+     "kana": "あたらしいメールがさんけんあります。",
+     "vi": "Có 3 email mới."
+    }
+   ],
+   "forms": {
+    "1": "いっけん",
+    "2": "にけん",
+    "3": "さんけん",
+    "4": "よんけん",
+    "5": "ごけん",
+    "6": "ろっけん",
+    "7": "ななけん",
+    "8": "はっけん／はちけん",
+    "9": "きゅうけん",
+    "10": "じゅっけん／じっけん",
+    "nan": "なんけん"
+   },
+   "irregular": [
+    "1",
+    "6",
+    "8",
+    "10"
+   ],
+   "notes": ""
+  },
+  {
+   "id": "tsuu",
+   "counter": "通",
+   "reading": "つう",
+   "group": "Việc, thư, văn bản",
+   "level": "N3",
+   "usage": "Thư, email, văn bản gửi đi.",
+   "examples": [
+    {
+     "ja": "手紙を二通書きました。",
+     "kana": "てがみをにつうかきました。",
+     "vi": "Tôi đã viết 2 lá thư."
+    }
+   ],
+   "forms": {
+    "1": "いっつう",
+    "2": "につう",
+    "3": "さんつう",
+    "4": "よんつう",
+    "5": "ごつう",
+    "6": "ろくつう",
+    "7": "ななつう",
+    "8": "はっつう",
+    "9": "きゅうつう",
+    "10": "じゅっつう／じっつう",
+    "nan": "なんつう"
+   },
+   "irregular": [
+    "1",
+    "8",
+    "10"
+   ],
+   "notes": "Cũng viết 通り (とおり) với nghĩa \"cách\": 一通り (ひととおり) = đại khái, một lượt; 二通り (ふたとおり) = 2 cách."
+  },
+  {
+   "id": "bu",
+   "counter": "部",
+   "reading": "ぶ",
+   "group": "Việc, thư, văn bản",
+   "level": "N3",
+   "usage": "Bản (tài liệu, báo, bản in); phần (của tác phẩm, sự kiện).",
+   "examples": [
+    {
+     "ja": "資料を十部コピーしてください。",
+     "kana": "しりょうをじゅうぶコピーしてください。",
+     "vi": "Hãy photo 10 bản tài liệu."
+    }
+   ],
+   "forms": {
+    "1": "いちぶ",
+    "2": "にぶ",
+    "3": "さんぶ",
+    "4": "よんぶ",
+    "5": "ごぶ",
+    "6": "ろくぶ",
+    "7": "ななぶ",
+    "8": "はちぶ",
+    "9": "きゅうぶ",
+    "10": "じゅうぶ",
+    "nan": "なんぶ"
+   },
+   "irregular": [],
+   "notes": "Không có biến âm. 一部 (いちぶ) còn có nghĩa \"một phần\"."
+  },
+  {
+   "id": "ten",
+   "counter": "点",
+   "reading": "てん",
+   "group": "Việc, thư, văn bản",
+   "level": "N4",
+   "usage": "Điểm số; số món đồ (hàng hóa, tác phẩm).",
+   "examples": [
+    {
+     "ja": "テストで九十点を取りました。",
+     "kana": "テストできゅうじゅってんをとりました。",
+     "vi": "Tôi được 90 điểm bài kiểm tra."
+    }
+   ],
+   "forms": {
+    "1": "いってん",
+    "2": "にてん",
+    "3": "さんてん",
+    "4": "よんてん",
+    "5": "ごてん",
+    "6": "ろくてん",
+    "7": "ななてん",
+    "8": "はってん／はちてん",
+    "9": "きゅうてん",
+    "10": "じゅってん／じってん",
+    "nan": "なんてん"
+   },
+   "irregular": [
+    "1",
+    "8",
+    "10"
+   ],
+   "notes": ""
+  },
+  {
+   "id": "kyoku",
+   "counter": "曲",
+   "reading": "きょく",
+   "group": "Việc, thư, văn bản",
+   "level": "N3",
+   "usage": "Bài hát, bản nhạc.",
+   "examples": [
+    {
+     "ja": "カラオケで五曲歌いました。",
+     "kana": "カラオケでごきょくうたいました。",
+     "vi": "Tôi đã hát 5 bài ở karaoke."
+    }
+   ],
+   "forms": {
+    "1": "いっきょく",
+    "2": "にきょく",
+    "3": "さんきょく",
+    "4": "よんきょく",
+    "5": "ごきょく",
+    "6": "ろっきょく",
+    "7": "ななきょく",
+    "8": "はっきょく／はちきょく",
+    "9": "きゅうきょく",
+    "10": "じゅっきょく／じっきょく",
+    "nan": "なんきょく"
+   },
+   "irregular": [
+    "1",
+    "6",
+    "8",
+    "10"
+   ],
+   "notes": ""
+  },
+  {
+   "id": "sha",
+   "counter": "社",
+   "reading": "しゃ",
+   "group": "Việc, thư, văn bản",
+   "level": "N3",
+   "usage": "Công ty.",
+   "examples": [
+    {
+     "ja": "三社の面接を受けました。",
+     "kana": "さんしゃのめんせつをうけました。",
+     "vi": "Tôi đã phỏng vấn ở 3 công ty."
+    }
+   ],
+   "forms": {
+    "1": "いっしゃ",
+    "2": "にしゃ",
+    "3": "さんしゃ",
+    "4": "よんしゃ",
+    "5": "ごしゃ",
+    "6": "ろくしゃ",
+    "7": "ななしゃ",
+    "8": "はっしゃ",
+    "9": "きゅうしゃ",
+    "10": "じゅっしゃ／じっしゃ",
+    "nan": "なんしゃ"
+   },
+   "irregular": [
+    "1",
+    "8",
+    "10"
+   ],
+   "notes": ""
+  },
+  {
+   "id": "kire",
+   "counter": "切れ",
+   "reading": "きれ",
+   "group": "Đồ ăn: lát, miếng, phần",
+   "level": "N4",
+   "usage": "Lát, miếng (cắt ra): bánh, cá, thịt, dưa hấu.",
+   "examples": [
+    {
+     "ja": "ケーキを一切れください。",
+     "kana": "ケーキをひときれください。",
+     "vi": "Cho tôi một miếng bánh."
+    }
+   ],
+   "forms": {
+    "1": "ひときれ",
+    "2": "ふたきれ",
+    "3": "みきれ",
+    "nan": "なんきれ"
+   },
+   "irregular": [
+    "1",
+    "2",
+    "3"
+   ],
+   "notes": "Thường chỉ dùng với số nhỏ (1–3). Từ 4 trở lên hay nói よきれ／よんきれ、ごきれ… hoặc chuyển sang 個／枚. Lát mỏng (thịt nguội, bánh mì sandwich) dùng 枚."
+  },
+  {
+   "id": "kuchi",
+   "counter": "口",
+   "reading": "くち",
+   "group": "Đồ ăn: lát, miếng, phần",
+   "level": "N3",
+   "usage": "Miếng (cắn), ngụm (uống); suất, phần đóng góp.",
+   "examples": [
+    {
+     "ja": "一口食べてみて。",
+     "kana": "ひとくちたべてみて。",
+     "vi": "Ăn thử một miếng đi."
+    }
+   ],
+   "forms": {
+    "1": "ひとくち",
+    "2": "ふたくち",
+    "3": "みくち"
+   },
+   "irregular": [
+    "1",
+    "2",
+    "3"
+   ],
+   "notes": "Thường dùng với số nhỏ. 一口 còn dùng trong 一口サイズ (cỡ vừa một miếng)."
+  },
+  {
+   "id": "sara",
+   "counter": "皿",
+   "reading": "さら",
+   "group": "Đồ ăn: lát, miếng, phần",
+   "level": "N4",
+   "usage": "Đĩa (món ăn), phần ăn trên đĩa.",
+   "examples": [
+    {
+     "ja": "餃子を二皿注文しました。",
+     "kana": "ぎょうざをふたさらちゅうもんしました。",
+     "vi": "Tôi đã gọi 2 đĩa sủi cảo."
+    }
+   ],
+   "forms": {
+    "1": "ひとさら",
+    "2": "ふたさら",
+    "3": "さんさら",
+    "nan": "なんさら"
+   },
+   "irregular": [
+    "1",
+    "2"
+   ],
+   "notes": "Từ 3 trở lên thường đọc kiểu Hán: さんさら、よんさら…"
+  },
+  {
+   "id": "hako",
+   "counter": "箱",
+   "reading": "はこ",
+   "group": "Nhóm, bộ, gói",
+   "level": "N4",
+   "usage": "Hộp, thùng.",
+   "examples": [
+    {
+     "ja": "お菓子を一箱買いました。",
+     "kana": "おかしをひとはこかいました。",
+     "vi": "Tôi đã mua một hộp bánh kẹo."
+    }
+   ],
+   "forms": {
+    "1": "ひとはこ",
+    "2": "ふたはこ",
+    "3": "みはこ／さんはこ",
+    "nan": "なんはこ"
+   },
+   "irregular": [
+    "1",
+    "2",
+    "3"
+   ],
+   "notes": "Từ 4 trở lên thường đọc kiểu Hán: よんはこ、ごはこ…; 6, 8, 10 hay biến âm thành ろっぱこ、はっぱこ、じゅっぱこ."
+  },
+  {
+   "id": "fukuro",
+   "counter": "袋",
+   "reading": "ふくろ",
+   "group": "Nhóm, bộ, gói",
+   "level": "N4",
+   "usage": "Túi, bao.",
+   "examples": [
+    {
+     "ja": "お米を一袋ください。",
+     "kana": "おこめをひとふくろください。",
+     "vi": "Cho tôi một bao gạo."
+    }
+   ],
+   "forms": {
+    "1": "ひとふくろ",
+    "2": "ふたふくろ",
+    "3": "みふくろ／さんふくろ",
+    "nan": "なんふくろ"
+   },
+   "irregular": [
+    "1",
+    "2",
+    "3"
+   ],
+   "notes": "Từ 4 trở lên: よんふくろ、ごふくろ… (đọc kiểu Hán)."
+  },
+  {
+   "id": "kumi",
+   "counter": "組",
+   "reading": "くみ",
+   "group": "Nhóm, bộ, gói",
+   "level": "N3",
+   "usage": "Bộ, cặp, nhóm, đôi (người).",
+   "examples": [
+    {
+     "ja": "一組のカップルが座っています。",
+     "kana": "ひとくみのカップルがすわっています。",
+     "vi": "Một cặp đôi đang ngồi."
+    }
+   ],
+   "forms": {
+    "1": "ひとくみ",
+    "2": "ふたくみ",
+    "3": "みくみ",
+    "nan": "なんくみ"
+   },
+   "irregular": [
+    "1",
+    "2",
+    "3"
+   ],
+   "notes": "Lớp học: 1組 đọc いちくみ (lớp 1), 2組 にくみ."
+  },
+  {
+   "id": "ban_night",
+   "counter": "晩",
+   "reading": "ばん",
+   "group": "Ngày, tháng, năm",
+   "level": "N3",
+   "usage": "Đêm, buổi tối (số đêm).",
+   "examples": [
+    {
+     "ja": "一晩考えさせてください。",
+     "kana": "ひとばんかんがえさせてください。",
+     "vi": "Cho tôi suy nghĩ một đêm."
+    }
+   ],
+   "forms": {
+    "1": "ひとばん",
+    "2": "ふたばん",
+    "3": "みばん"
+   },
+   "irregular": [
+    "1",
+    "2",
+    "3"
+   ],
+   "notes": "Thường dùng với số nhỏ; số đêm ở khách sạn dùng 泊."
+  },
+  {
+   "id": "heya",
+   "counter": "部屋",
+   "reading": "へや",
+   "group": "Nhà cửa, tầng, nơi ở",
+   "level": "N4",
+   "usage": "Phòng (số phòng).",
+   "examples": [
+    {
+     "ja": "この家は部屋が三つあります。",
+     "kana": "このいえはへやがみっつあります。",
+     "vi": "Ngôi nhà này có 3 phòng."
+    }
+   ],
+   "forms": {
+    "1": "ひとへや",
+    "2": "ふたへや",
+    "3": "みへや"
+   },
+   "irregular": [
+    "1",
+    "2",
+    "3"
+   ],
+   "notes": "Trong hội thoại hay đếm phòng bằng つ: 部屋が三つ. Kiểu nhà: 2LDK."
+  }
+ ],
+ "more": [
+  {
+   "id": "kyaku",
+   "counter": "脚",
+   "reading": "きゃく",
+   "group": "Đồ vật nói chung",
+   "level": "N2",
+   "usage": "Ghế, bàn (đồ có chân).",
+   "keyForms": "いっきゃく・ろっきゃく・はっきゃく・じゅっきゃく",
+   "example": null
+  },
+  {
+   "id": "tou_bld",
+   "counter": "棟",
+   "reading": "とう",
+   "group": "Nhà cửa, tầng, nơi ở",
+   "level": "N2",
+   "usage": "Tòa nhà (khu chung cư, bệnh viện).",
+   "keyForms": "いっとう・はっとう・じゅっとう",
+   "example": null
+  },
+  {
+   "id": "ko_house",
+   "counter": "戸",
+   "reading": "こ",
+   "group": "Nhà cửa, tầng, nơi ở",
+   "level": "N2",
+   "usage": "Hộ (nhà ở, căn hộ).",
+   "keyForms": "いっこ・ろっこ・はっこ・じゅっこ",
+   "example": null
+  },
+  {
+   "id": "setai",
+   "counter": "世帯",
+   "reading": "せたい",
+   "group": "Nhà cửa, tầng, nơi ở",
+   "level": "N2",
+   "usage": "Hộ gia đình.",
+   "keyForms": "いっせたい・はっせたい・じゅっせたい",
+   "example": null
+  },
+  {
+   "id": "jou",
+   "counter": "畳",
+   "reading": "じょう",
+   "group": "Nhà cửa, tầng, nơi ở",
+   "level": "N3",
+   "usage": "Chiếu tatami (diện tích phòng: 6畳 = 6 chiếu).",
+   "keyForms": "いちじょう・ろくじょう・はちじょう",
+   "example": null
+  },
+  {
+   "id": "tsubo",
+   "counter": "坪",
+   "reading": "つぼ",
+   "group": "Nhà cửa, tầng, nơi ở",
+   "level": "N1",
+   "usage": "Tsubo (≈ 3,3 m², diện tích đất/nhà).",
+   "keyForms": "ひとつぼ・ふたつぼ",
+   "example": null
+  },
+  {
+   "id": "seki_seat",
+   "counter": "席",
+   "reading": "せき",
+   "group": "Nhà cửa, tầng, nơi ở",
+   "level": "N3",
+   "usage": "Chỗ ngồi.",
+   "keyForms": "いっせき・はっせき・じゅっせき",
+   "example": null
+  },
+  {
+   "id": "ki",
+   "counter": "機",
+   "reading": "き",
+   "group": "Máy móc, xe cộ",
+   "level": "N2",
+   "usage": "Máy bay, máy móc lớn.",
+   "keyForms": "いっき・ろっき・はっき・じゅっき",
+   "example": null
+  },
+  {
+   "id": "ryou",
+   "counter": "両",
+   "reading": "りょう",
+   "group": "Máy móc, xe cộ",
+   "level": "N2",
+   "usage": "Toa tàu.",
+   "keyForms": "いちりょう・にりょう・さんりょう",
+   "example": null
+  },
+  {
+   "id": "gousha",
+   "counter": "号車",
+   "reading": "ごうしゃ",
+   "group": "Máy móc, xe cộ",
+   "level": "N3",
+   "usage": "Toa số mấy (shinkansen: 5号車).",
+   "keyForms": "いちごうしゃ・にごうしゃ",
+   "example": null
+  },
+  {
+   "id": "bansen",
+   "counter": "番線",
+   "reading": "ばんせん",
+   "group": "Máy móc, xe cộ",
+   "level": "N3",
+   "usage": "Đường ray / sân ga số mấy.",
+   "keyForms": "いちばんせん・にばんせん",
+   "example": null
+  },
+  {
+   "id": "bin",
+   "counter": "便",
+   "reading": "びん",
+   "group": "Máy móc, xe cộ",
+   "level": "N3",
+   "usage": "Chuyến (máy bay, xe, chuyển phát).",
+   "keyForms": "いちびん・にびん・さんびん",
+   "example": null
+  },
+  {
+   "id": "seki_ship",
+   "counter": "隻",
+   "reading": "せき",
+   "group": "Máy móc, xe cộ",
+   "level": "N1",
+   "usage": "Tàu thuyền lớn.",
+   "keyForms": "いっせき・はっせき・じゅっせき",
+   "example": null
+  },
+  {
+   "id": "sou",
+   "counter": "艘",
+   "reading": "そう",
+   "group": "Máy móc, xe cộ",
+   "level": "N1",
+   "usage": "Thuyền nhỏ.",
+   "keyForms": "いっそう・はっそう・じゅっそう",
+   "example": null
+  },
+  {
+   "id": "jou_pill",
+   "counter": "錠",
+   "reading": "じょう",
+   "group": "Đồ ăn: lát, miếng, phần",
+   "level": "N2",
+   "usage": "Viên thuốc.",
+   "keyForms": "いちじょう・にじょう・さんじょう",
+   "example": null
+  },
+  {
+   "id": "hou",
+   "counter": "包",
+   "reading": "ほう",
+   "group": "Đồ ăn: lát, miếng, phần",
+   "level": "N2",
+   "usage": "Gói (thuốc bột).",
+   "keyForms": "いっぽう・ろっぽう・はっぽう・じゅっぽう",
+   "example": null
+  },
+  {
+   "id": "teki",
+   "counter": "滴",
+   "reading": "てき",
+   "group": "Đồ ăn: lát, miếng, phần",
+   "level": "N1",
+   "usage": "Giọt.",
+   "keyForms": "いってき・はってき・じゅってき",
+   "example": null
+  },
+  {
+   "id": "tsubu",
+   "counter": "粒",
+   "reading": "つぶ",
+   "group": "Đồ ăn: lát, miếng, phần",
+   "level": "N3",
+   "usage": "Hạt, viên nhỏ (gạo, nho, thuốc).",
+   "keyForms": "ひとつぶ・ふたつぶ・みつぶ",
+   "example": null
+  },
+  {
+   "id": "tama",
+   "counter": "玉",
+   "reading": "たま",
+   "group": "Đồ ăn: lát, miếng, phần",
+   "level": "N3",
+   "usage": "Vắt mì, bắp cải, quả bóng.",
+   "keyForms": "ひとたま・ふたたま・みたま",
+   "example": null
+  },
+  {
+   "id": "fusa",
+   "counter": "房",
+   "reading": "ふさ",
+   "group": "Đồ ăn: lát, miếng, phần",
+   "level": "N2",
+   "usage": "Nải (chuối), chùm (nho).",
+   "keyForms": "ひとふさ・ふたふさ・みふさ",
+   "example": null
+  },
+  {
+   "id": "kan_sushi",
+   "counter": "貫",
+   "reading": "かん",
+   "group": "Đồ ăn: lát, miếng, phần",
+   "level": "N1",
+   "usage": "Miếng sushi nigiri.",
+   "keyForms": "いっかん・にかん・さんかん",
+   "example": null
+  },
+  {
+   "id": "chou",
+   "counter": "丁",
+   "reading": "ちょう",
+   "group": "Đồ ăn: lát, miếng, phần",
+   "level": "N2",
+   "usage": "Bìa đậu phụ; súng, dao (dụng cụ).",
+   "keyForms": "いっちょう・はっちょう・じゅっちょう",
+   "example": null
+  },
+  {
+   "id": "zen",
+   "counter": "膳",
+   "reading": "ぜん",
+   "group": "Đồ ăn: lát, miếng, phần",
+   "level": "N2",
+   "usage": "Đôi đũa; bát cơm.",
+   "keyForms": "いちぜん・にぜん・さんぜん",
+   "example": null
+  },
+  {
+   "id": "hin",
+   "counter": "品",
+   "reading": "ひん／しな",
+   "group": "Đồ ăn: lát, miếng, phần",
+   "level": "N2",
+   "usage": "Món ăn (trong thực đơn); món hàng.",
+   "keyForms": "いっぴん・にひん・さんぴん（ふたしな…）",
+   "example": null
+  },
+  {
+   "id": "kan_can",
+   "counter": "缶",
+   "reading": "かん",
+   "group": "Đồ uống, bát, ly",
+   "level": "N3",
+   "usage": "Lon (nước, bia) — trong hội thoại hay dùng 本.",
+   "keyForms": "いっかん・にかん・さんかん（hội thoại hay dùng 本）",
+   "example": null
+  },
+  {
+   "id": "tsui",
+   "counter": "対",
+   "reading": "つい",
+   "group": "Nhóm, bộ, gói",
+   "level": "N2",
+   "usage": "Đôi, cặp (vật đi thành đôi).",
+   "keyForms": "いっつい・につい・さんつい",
+   "example": null
+  },
+  {
+   "id": "tabe",
+   "counter": "束",
+   "reading": "たば",
+   "group": "Nhóm, bộ, gói",
+   "level": "N2",
+   "usage": "Bó (hoa, rau, giấy).",
+   "keyForms": "ひとたば・ふたたば・みたば",
+   "example": null
+  },
+  {
+   "id": "setto",
+   "counter": "セット",
+   "reading": "セット",
+   "group": "Nhóm, bộ, gói",
+   "level": "N4",
+   "usage": "Bộ (đồ dùng, suất ăn).",
+   "keyForms": "ワンセット／いっセット・にセット",
+   "example": null
+  },
+  {
+   "id": "kabu",
+   "counter": "株",
+   "reading": "かぶ",
+   "group": "Vật dài, mỏng, sách vở",
+   "level": "N2",
+   "usage": "Gốc cây, khóm cây; cổ phiếu.",
+   "keyForms": "ひとかぶ・ふたかぶ・みかぶ",
+   "example": null
+  },
+  {
+   "id": "rin",
+   "counter": "輪",
+   "reading": "りん",
+   "group": "Vật dài, mỏng, sách vở",
+   "level": "N2",
+   "usage": "Bông hoa; bánh xe.",
+   "keyForms": "いちりん・にりん・さんりん",
+   "example": null
+  },
+  {
+   "id": "kan_vol",
+   "counter": "巻",
+   "reading": "かん",
+   "group": "Vật dài, mỏng, sách vở",
+   "level": "N2",
+   "usage": "Tập (truyện tranh, bộ sách nhiều tập).",
+   "keyForms": "いっかん・ろっかん・はっかん・じゅっかん",
+   "example": null
+  },
+  {
+   "id": "wa_ep",
+   "counter": "話",
+   "reading": "わ",
+   "group": "Vật dài, mỏng, sách vở",
+   "level": "N3",
+   "usage": "Tập (phim, anime, truyện).",
+   "keyForms": "いちわ・にわ・さんわ",
+   "example": null
+  },
+  {
+   "id": "gyou",
+   "counter": "行",
+   "reading": "ぎょう",
+   "group": "Việc, thư, văn bản",
+   "level": "N3",
+   "usage": "Dòng (văn bản).",
+   "keyForms": "いちぎょう・にぎょう・さんぎょう",
+   "example": null
+  },
+  {
+   "id": "peeji",
+   "counter": "ページ",
+   "reading": "ページ",
+   "group": "Việc, thư, văn bản",
+   "level": "N5",
+   "usage": "Trang (sách).",
+   "keyForms": "いちページ／いっページ・にページ・さんページ",
+   "example": null
+  },
+  {
+   "id": "mon",
+   "counter": "問",
+   "reading": "もん",
+   "group": "Việc, thư, văn bản",
+   "level": "N3",
+   "usage": "Câu hỏi, bài tập.",
+   "keyForms": "いちもん・にもん・さんもん",
+   "example": null
+  },
+  {
+   "id": "kasho",
+   "counter": "箇所",
+   "reading": "かしょ",
+   "group": "Việc, thư, văn bản",
+   "level": "N3",
+   "usage": "Chỗ, điểm (lỗi, địa điểm).",
+   "keyForms": "いっかしょ・ろっかしょ・はっかしょ・じゅっかしょ",
+   "example": null
+  },
+  {
+   "id": "shurui",
+   "counter": "種類",
+   "reading": "しゅるい",
+   "group": "Việc, thư, văn bản",
+   "level": "N4",
+   "usage": "Loại, chủng loại.",
+   "keyForms": "いっしゅるい・はっしゅるい・じゅっしゅるい",
+   "example": null
+  },
+  {
+   "id": "hyou",
+   "counter": "票",
+   "reading": "ひょう",
+   "group": "Việc, thư, văn bản",
+   "level": "N2",
+   "usage": "Phiếu bầu.",
+   "keyForms": "いっぴょう・ろっぴょう・はっぴょう・じゅっぴょう",
+   "example": null
+  },
+  {
+   "id": "shu",
+   "counter": "首",
+   "reading": "しゅ",
+   "group": "Việc, thư, văn bản",
+   "level": "N1",
+   "usage": "Bài thơ (tanka, waka).",
+   "keyForms": "いっしゅ・はっしゅ・じゅっしゅ",
+   "example": null
+  },
+  {
+   "id": "ku",
+   "counter": "句",
+   "reading": "く",
+   "group": "Việc, thư, văn bản",
+   "level": "N1",
+   "usage": "Bài thơ haiku, câu.",
+   "keyForms": "いっく・はっく・じゅっく",
+   "example": null
+  },
+  {
+   "id": "nensei",
+   "counter": "年生",
+   "reading": "ねんせい",
+   "group": "Số lần, thứ tự, tỉ lệ",
+   "level": "N5",
+   "usage": "Học sinh/sinh viên năm thứ mấy.",
+   "keyForms": "いちねんせい・にねんせい・よねんせい",
+   "example": null
+  },
+  {
+   "id": "jigen",
+   "counter": "時限",
+   "reading": "じげん",
+   "group": "Giờ, phút, khoảng thời gian",
+   "level": "N3",
+   "usage": "Tiết học (tiết thứ mấy).",
+   "keyForms": "いちじげん・にじげん・よじげん",
+   "example": null
+  },
+  {
+   "id": "banme",
+   "counter": "番目",
+   "reading": "ばんめ",
+   "group": "Số lần, thứ tự, tỉ lệ",
+   "level": "N4",
+   "usage": "Thứ mấy (thứ tự).",
+   "keyForms": "いちばんめ・にばんめ・さんばんめ",
+   "example": null
+  },
+  {
+   "id": "i",
+   "counter": "位",
+   "reading": "い",
+   "group": "Số lần, thứ tự, tỉ lệ",
+   "level": "N3",
+   "usage": "Hạng (xếp hạng).",
+   "keyForms": "いちい・にい・さんい",
+   "example": null
+  },
+  {
+   "id": "tou_prize",
+   "counter": "等",
+   "reading": "とう",
+   "group": "Số lần, thứ tự, tỉ lệ",
+   "level": "N3",
+   "usage": "Giải (giải nhất, nhì…); hạng (toa hạng).",
+   "keyForms": "いっとう・にとう・さんとう",
+   "example": null
+  },
+  {
+   "id": "kyuu",
+   "counter": "級",
+   "reading": "きゅう",
+   "group": "Số lần, thứ tự, tỉ lệ",
+   "level": "N3",
+   "usage": "Cấp độ (kỳ thi, bằng cấp: 漢検2級).",
+   "keyForms": "いっきゅう・ろっきゅう・はっきゅう・じゅっきゅう",
+   "example": null
+  },
+  {
+   "id": "dan",
+   "counter": "段",
+   "reading": "だん",
+   "group": "Số lần, thứ tự, tỉ lệ",
+   "level": "N3",
+   "usage": "Bậc (cầu thang); đẳng (võ thuật, cờ).",
+   "keyForms": "いちだん・にだん・さんだん",
+   "example": null
+  },
+  {
+   "id": "ho",
+   "counter": "歩",
+   "reading": "ほ",
+   "group": "Số lần, thứ tự, tỉ lệ",
+   "level": "N3",
+   "usage": "Bước (chân).",
+   "keyForms": "いっぽ・にほ・さんぽ・ろっぽ・はっぽ・じゅっぽ",
+   "example": null
+  },
+  {
+   "id": "shuu",
+   "counter": "周",
+   "reading": "しゅう",
+   "group": "Số lần, thứ tự, tỉ lệ",
+   "level": "N3",
+   "usage": "Vòng (chạy, đi quanh).",
+   "keyForms": "いっしゅう・はっしゅう・じゅっしゅう",
+   "example": null
+  },
+  {
+   "id": "sen",
+   "counter": "戦",
+   "reading": "せん",
+   "group": "Số lần, thứ tự, tỉ lệ",
+   "level": "N2",
+   "usage": "Trận đấu.",
+   "keyForms": "いっせん・はっせん・じゅっせん",
+   "example": null
+  },
+  {
+   "id": "tai",
+   "counter": "体",
+   "reading": "たい",
+   "group": "Đồ vật nói chung",
+   "level": "N2",
+   "usage": "Tượng, búp bê, robot.",
+   "keyForms": "いったい・はったい・じゅったい",
+   "example": null
+  },
+  {
+   "id": "ki_base",
+   "counter": "基",
+   "reading": "き",
+   "group": "Đồ vật nói chung",
+   "level": "N1",
+   "usage": "Mộ, tháp, lò phản ứng, công trình đứng.",
+   "keyForms": "いっき・はっき・じゅっき",
+   "example": null
+  },
+  {
+   "id": "men",
+   "counter": "面",
+   "reading": "めん",
+   "group": "Đồ vật nói chung",
+   "level": "N2",
+   "usage": "Mặt (gương), sân (tennis), màn (game).",
+   "keyForms": "いちめん・にめん・さんめん",
+   "example": null
+  },
+  {
+   "id": "chou_tent",
+   "counter": "張",
+   "reading": "ちょう",
+   "group": "Đồ vật nói chung",
+   "level": "N1",
+   "usage": "Lều, cung, đàn (nhạc cụ có dây).",
+   "keyForms": "いっちょう・はっちょう・じゅっちょう",
+   "example": null
+  },
+  {
+   "id": "kou",
+   "counter": "校",
+   "reading": "こう",
+   "group": "Việc, thư, văn bản",
+   "level": "N3",
+   "usage": "Trường học.",
+   "keyForms": "いっこう・ろっこう・はっこう・じゅっこう",
+   "example": null
+  },
+  {
+   "id": "choume",
+   "counter": "丁目",
+   "reading": "ちょうめ",
+   "group": "Nhà cửa, tầng, nơi ở",
+   "level": "N4",
+   "usage": "Khu phố số mấy (địa chỉ).",
+   "keyForms": "いっちょうめ・にちょうめ・さんちょうめ",
+   "example": null
+  },
+  {
+   "id": "banchi",
+   "counter": "番地",
+   "reading": "ばんち",
+   "group": "Nhà cửa, tầng, nơi ở",
+   "level": "N4",
+   "usage": "Số nhà / số lô (địa chỉ).",
+   "keyForms": "いちばんち・にばんち・さんばんち",
+   "example": null
+  },
+  {
+   "id": "toori",
+   "counter": "通り",
+   "reading": "とおり",
+   "group": "Số lần, thứ tự, tỉ lệ",
+   "level": "N3",
+   "usage": "Cách (số cách làm).",
+   "keyForms": "ひととおり・ふたとおり・みとおり",
+   "example": null
+  }
+ ]
+}

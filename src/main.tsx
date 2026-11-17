@@ -31,6 +31,9 @@ const router = createBrowserRouter([
         errorElement: <RouteError />,
         children: [
       { path: '/', lazy: () => import('./pages/Home').then((m) => ({ Component: m.Home })) },
+      { path: '/learn', lazy: () => import('./pages/Learn').then((m) => ({ Component: m.Learn })) },
+      { path: '/learn/counters', lazy: () => import('./pages/Counters').then((m) => ({ Component: m.Counters })) },
+      { path: '/me', lazy: () => import('./pages/Me').then((m) => ({ Component: m.Me })) },
       { path: '/kana', lazy: () => import('./pages/Kana').then((m) => ({ Component: m.Kana })) },
       { path: '/vocab/:deck', lazy: () => import('./pages/VocabDeck').then((m) => ({ Component: m.VocabDeck })) },
       { path: '/vocab/:deck/:lesson', lazy: () => import('./pages/Lesson').then((m) => ({ Component: m.Lesson })) },

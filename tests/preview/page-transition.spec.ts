@@ -53,6 +53,8 @@ async function expectMainFilled(page: Page, step: string) {
 }
 
 const navLink = (page: Page, label: RegExp) => page.getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: label })
+/** Mục "Học" (学 Học): không nhầm với nhóm "Học tập" (không phải link). */
+const LEARN = /Học$/
 
 async function settle(page: Page) {
   await page.waitForFunction(() => !document.querySelector('[aria-label^="Đang tải"]'), null, { timeout: 15_000 })
@@ -71,8 +73,7 @@ async function pickKanji(page: Page) {
  * Điện thoại + sheet đang mở: lớp nền sheet che thanh điều hướng, nên bấm bằng click của DOM.
  */
 async function goTo(page: Page, p: Probe, label: RegExp, path: string, step: string, viaDom = false) {
-  // /grammar tự chuyển hướng (replace) sang /grammar/n5: đó là trang đích hợp lệ.
-  const finalPath = path === 'grammar' ? 'grammar/n5' : path
+  const finalPath = path
   await clearNavLog(page)
   const link = navLink(page, label)
   if (viaDom) await link.evaluate((a) => (a as HTMLAnchorElement).click())
@@ -99,13 +100,23 @@ test('chọn chữ 合 → Trang chủ', async ({ page }) => {
   await goTo(page, p, /Trang chủ/, '', 'Chữ Hán 合 → Trang chủ', phone > 0)
 })
 
-test('chọn 合 → chọn một từ trong panel → Ngữ pháp', async ({ page }) => {
+test('chọn 合 → chọn một từ trong panel → Học', async ({ page }) => {
   const p = await probe(page)
   await pickKanji(page)
   await page.locator('[data-kanji-words] button').first().click()
   await settle(page)
   const phone = await page.locator('[role="dialog"]').count()
-  await goTo(page, p, /Ngữ pháp/, 'grammar', 'chữ → từ → Ngữ pháp', phone > 0)
+  await goTo(page, p, LEARN, 'learn', 'chữ → từ → Học', phone > 0)
+})
+
+test('Cách đếm: chọn 本 → Cá nhân', async ({ page }) => {
+  const p = await probe(page)
+  await page.goto(`${BASE}learn/counters`)
+  await settle(page)
+  await page.locator('[data-counter-card="hon"]').click()
+  await expect(page.locator('[data-detail-counter="hon"]')).toBeVisible()
+  const phone = await page.locator('[role="dialog"]').count()
+  await goTo(page, p, /Cá nhân/, 'me', 'Cách đếm 本 → Cá nhân', phone > 0)
 })
 
 test('tab Bộ thủ → chọn một bộ → Sổ tay', async ({ page }) => {
@@ -126,18 +137,18 @@ test('bấm nhanh hai mục điều hướng liên tiếp (panel đang mở)', a
   await page.evaluate(() => {
     const links = [...document.querySelectorAll<HTMLAnchorElement>('nav[aria-label="Điều hướng chính"] a')]
     const by = (t: string) => links.find((a) => a.offsetParent !== null && a.textContent?.includes(t))
-    by('Ngữ pháp')?.click()
+    by('Ôn tập')?.click()
     by('Sổ tay')?.click()
   })
   await expect.poll(() => pathOf(page)).toBe(`${BASE}notebooks`)
-  await expectMainFilled(page, 'bấm nhanh Ngữ pháp → Sổ tay')
+  await expectMainFilled(page, 'bấm nhanh Ôn tập → Sổ tay')
   await page.waitForTimeout(500)
   // Cả hai lần bấm đều được ghi, và không có thêm lần ghi nào của trang cũ.
-  expect((await navLog(page)).filter((e) => !e.includes('/notebooks') && !e.includes('/grammar'))).toEqual([])
+  expect((await navLog(page)).filter((e) => !e.includes('/notebooks') && !e.includes('/review'))).toEqual([])
   expect(p.errors).toEqual([])
-  // Rồi quay về Chữ Hán và đi tiếp: vẫn không trắng.
-  await goTo(page, p, /Chữ Hán/, 'kanji', 'Sổ tay → Chữ Hán')
-  await goTo(page, p, /Trang chủ/, '', 'Chữ Hán → Trang chủ')
+  // Rồi quay về Học và đi tiếp: vẫn không trắng.
+  await goTo(page, p, LEARN, 'learn', 'Sổ tay → Học')
+  await goTo(page, p, /Trang chủ/, '', 'Học → Trang chủ')
 })
 
 test('chuyển liên tục nhiều trang: main luôn có nội dung', async ({ page }) => {
@@ -145,10 +156,10 @@ test('chuyển liên tục nhiều trang: main luôn có nội dung', async ({ p
   await page.goto(`${BASE}`)
   await expectMainFilled(page, 'Trang chủ')
   for (const [label, path] of [
-    [/Chữ Hán/, 'kanji'],
-    [/Ngữ pháp/, 'grammar'],
+    [LEARN, 'learn'],
+    [/Ôn tập/, 'review'],
     [/Sổ tay/, 'notebooks'],
-    [/Tiến độ/, 'progress'],
+    [/Cá nhân/, 'me'],
     [/Trang chủ/, ''],
   ] as const) {
     await goTo(page, p, label, path, `→ ${path || 'Trang chủ'}`)

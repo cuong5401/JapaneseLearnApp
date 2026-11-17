@@ -91,7 +91,7 @@ export function notebookChars(entries: readonly StudyEntry[]): string[] {
     if (e.kind === 'kanji') out.push(e.item.kanji)
     else if (e.kind === 'char') out.push(e.item.char)
     else if (e.kind === 'radical') out.push(e.item.radical)
-    else if (e.kind === 'word') out.push(...kanjiIn(e.item.word))
+    else if (e.kind === 'word' || e.kind === 'counter') out.push(...kanjiIn(e.kind === 'word' ? e.item.word : e.item.counter))
   }
   return [...new Set(out)]
 }

@@ -7,6 +7,7 @@ import { GridCell } from '../GridCell'
 import { SpeakButton } from '../SpeakButton'
 import { Flip } from './Flip'
 import { CardFaces } from './VocabCardFaces'
+import { counterEntryFaces } from './counterFaces'
 
 /** Mặt thẻ: nhận mục và trạng thái lật, trả về cả hai mặt (dùng lớp .flip/.flip-inner). */
 export type FacesRenderer<T> = (item: T, flipped: boolean) => ReactNode
@@ -131,6 +132,7 @@ export function entryLabel(e: StudyEntry): string {
   if (e.kind === 'kanji') return e.item.kanji
   if (e.kind === 'radical') return `bộ ${e.item.radical}`
   if (e.kind === 'char') return e.item.char
+  if (e.kind === 'counter') return e.n ? `${e.n === 'nan' ? '何' : e.n}${e.item.counter}` : e.item.counter
   return e.item.title
 }
 
@@ -144,6 +146,7 @@ export function entryFaces(words: Map<string, StudyEntry>, kanjiByChar: Map<stri
     if (entry.kind === 'kanji') return kanji(entry.item, flipped)
     if (entry.kind === 'radical') return radical(entry.item, flipped)
     if (entry.kind === 'char') return charFaces(entry.item.char, flipped)
+    if (entry.kind === 'counter') return counterEntryFaces(entry.item, entry.n, flipped)
     const g = entry.item
     const ex = g.examples?.[0]
     return (

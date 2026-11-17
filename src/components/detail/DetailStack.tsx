@@ -1,8 +1,10 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useEntries, useKanjiIndex, useRadicals } from '../../hooks/useData'
+import { useCounters, useEntries, useKanjiIndex, useRadicals } from '../../hooks/useData'
+import { counterIndex } from '../../lib/counters'
 import { frameKey, type Frame } from '../../lib/detailStack'
 import { DetailSkeleton, LoadError } from '../LoadState'
 import { CharDetail } from './CharDetail'
+import { CounterDetail } from './CounterDetail'
 import { KanjiDetail } from './KanjiDetail'
 import { RadicalDetail } from './RadicalDetail'
 import { WordDetail } from './WordDetail'
@@ -38,9 +40,18 @@ function RadicalFrame({ no, onPush }: { no: number; onPush: Push }) {
   return item ? <RadicalDetail item={item} onPush={onPush} /> : <Missing what={`bộ số ${no}`} />
 }
 
+function CounterFrame({ id }: { id: string }) {
+  const counters = useCounters()
+  if (counters.status === 'error') return <LoadError error={counters.error} onRetry={counters.retry} />
+  if (!counters.data) return <DetailSkeleton />
+  const item = counterIndex(counters.data).get(id)
+  return item ? <CounterDetail item={item} /> : <Missing what="trợ số từ này" />
+}
+
 export function FrameContent({ frame, onPush }: { frame: Frame; onPush: Push }) {
   if (frame.t === 'k') return <KanjiFrame ch={frame.ch} onPush={onPush} />
   if (frame.t === 'r') return <RadicalFrame no={frame.no} onPush={onPush} />
+  if (frame.t === 'c') return <CounterFrame id={frame.id} />
   return <WordFrame id={frame.id} onPush={onPush} />
 }
 
@@ -49,12 +60,19 @@ function FrameLabel({ frame }: { frame: Frame }) {
   const words = useEntries(frame.t === 'w' ? [frame.id] : [])
   const radicals = useRadicals()
   if (frame.t === 'k') return <span lang="ja" className="font-jp">{frame.ch}</span>
+  if (frame.t === 'c') return <CounterLabel id={frame.id} />
   if (frame.t === 'r') {
     const r = radicals.data?.find((x) => x.no === frame.no)
     return r ? <span lang="ja" className="font-jp">{r.radical}</span> : <>Bộ {frame.no}</>
   }
   const e = words.entries.get(frame.id)
   return e?.kind === 'word' ? <span lang="ja" className="font-jp">{e.item.word}</span> : <>Quay lại</>
+}
+
+function CounterLabel({ id }: { id: string }) {
+  const counters = useCounters()
+  const item = counters.data ? counterIndex(counters.data).get(id) : undefined
+  return item ? <span lang="ja" className="font-jp">{item.counter}</span> : <>Quay lại</>
 }
 
 /**

@@ -11,6 +11,12 @@ describe('ngăn xếp chi tiết', () => {
     expect(parseStack(null)).toEqual([])
   })
 
+  it('khung trợ số từ c:<id>', () => {
+    expect(parseStack('c:hon~c:tou_animal')).toEqual([{ t: 'c', id: 'hon' }, { t: 'c', id: 'tou_animal' }])
+    expect(serializeStack([{ t: 'c', id: 'hon' }])).toBe('c:hon')
+    expect(parseStack('c:Hon~c:1')).toEqual([])
+  })
+
   it('đẩy khung mới, không đẩy trùng khung đang hiện (kể cả khung gốc bên dưới)', () => {
     const word: Frame = { t: 'w', id: 'n5-98163e17' }
     let st = pushFrame([], word, { t: 'k', ch: '日' })

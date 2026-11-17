@@ -19,6 +19,7 @@ import { formatDelay, preview } from '../lib/srs'
 import { useSrsSettings } from '../lib/srsSettings'
 import { useCards, useNow, useReviewQueue } from '../hooks/useProgress'
 import { kanjiOfRadical } from '../data/radicalKanji'
+import { CounterBack, CounterFront } from '../components/study/counterFaces'
 import type { Grade, StudyEntry } from '../types'
 
 /** 4 mức chấm FSRS: Quên (Again) / Khó (Hard) / Nhớ (Good) / Dễ (Easy), phím 1–4. */
@@ -39,6 +40,7 @@ const gradeItem = {
 } as const
 
 function Front({ entry }: { entry: StudyEntry }) {
+  if (entry.kind === 'counter') return <CounterFront item={entry.item} n={entry.n} />
   if (entry.kind === 'char') return <GridCell className="w-[clamp(7rem,34cqw,9.5rem)]">{entry.item.char}</GridCell>
   if (entry.kind === 'radical') return <GridCell className="w-[clamp(7rem,34cqw,9.5rem)]">{entry.item.radical}</GridCell>
   if (entry.kind === 'kanji') return <GridCell className="w-[clamp(7rem,34cqw,9.5rem)]">{entry.item.kanji}</GridCell>
@@ -58,6 +60,7 @@ function Front({ entry }: { entry: StudyEntry }) {
 function Back({ entry }: { entry: StudyEntry }) {
   // Chữ ngoài kanji.json không vào lịch ôn; chỉ phòng khi có thẻ cũ.
   if (entry.kind === 'char') return <p className="text-center text-muted">Chưa có dữ liệu cho chữ này.</p>
+  if (entry.kind === 'counter') return <CounterBack item={entry.item} n={entry.n} />
   if (entry.kind === 'radical') {
     const r = entry.item
     const chars = kanjiOfRadical(r.no).slice(0, 8)
@@ -133,10 +136,11 @@ function Back({ entry }: { entry: StudyEntry }) {
   )
 }
 
-const KIND_LABEL = { word: 'Từ vựng', kanji: 'Chữ Hán', grammar: 'Ngữ pháp', radical: 'Bộ thủ' } as const
+const KIND_LABEL = { word: 'Từ vựng', kanji: 'Chữ Hán', grammar: 'Ngữ pháp', radical: 'Bộ thủ', counter: 'Cách đếm' } as const
 
 function entryLabel(entry: StudyEntry) {
   if (entry.kind === 'word') return `${KIND_LABEL.word}, ${deckTitle(entry.deck)}`
+  if (entry.kind === 'counter') return entry.n ? `${KIND_LABEL.counter}: số + ${entry.item.counter}` : `${KIND_LABEL.counter} ${entry.item.level}`
   if (entry.kind === 'grammar') return `${KIND_LABEL.grammar} ${entry.item.level}`
   if (entry.kind === 'radical') return `${KIND_LABEL.radical} số ${entry.item.no}`
   if (entry.kind === 'char') return KIND_LABEL.kanji

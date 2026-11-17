@@ -5,12 +5,14 @@
  * Quy tắc: bấm một mục ở danh sách chính (lưới, kết quả tìm kiếm) THAY cả ngăn xếp bằng mục đó;
  * chỉ thao tác bên trong panel (chữ/từ liên quan) mới đẩy thêm. Tối đa MAX_FRAMES khung (kể cả chữ gốc ?k=).
  */
-export type Frame = { t: 'w'; id: string } | { t: 'k'; ch: string } | { t: 'r'; no: number }
+/** `c`: trợ số từ (id trong counters.json, ví dụ c:hon). */
+export type Frame = { t: 'w'; id: string } | { t: 'k'; ch: string } | { t: 'r'; no: number } | { t: 'c'; id: string }
 
 export const MAX_FRAMES = 8
 const SEP = '~'
 
 export function frameKey(f: Frame): string {
+  if (f.t === 'c') return `c:${f.id}`
   return f.t === 'w' ? `w:${f.id}` : f.t === 'k' ? `k:${f.ch}` : `r:${f.no}`
 }
 
@@ -23,6 +25,7 @@ export function parseFrame(s: string): Frame | null {
   if (t === 'w' && /^[a-z0-9-]+$/.test(v)) return { t: 'w', id: v }
   if (t === 'k' && [...v].length === 1) return { t: 'k', ch: v }
   if (t === 'r' && /^\d{1,3}$/.test(v)) return { t: 'r', no: Number(v) }
+  if (t === 'c' && /^[a-z][a-z_]*$/.test(v)) return { t: 'c', id: v }
   return null
 }
 

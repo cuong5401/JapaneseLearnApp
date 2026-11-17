@@ -3,10 +3,12 @@
  * Mọi file danh sách là mảng JSON, mỗi phần tử một dòng.
  */
 
+type Level = 'N5' | 'N4' | 'N3' | 'N2' | 'N1'
+
 export interface DataFile {
   /** Đường dẫn tương đối so với public/data, ví dụ "vocab/n5.json" */
   path: string
-  kind: 'vocab' | 'kanji' | 'radicals' | 'grammar'
+  kind: 'vocab' | 'kanji' | 'radicals' | 'grammar' | 'counters'
   title: string
   level?: 'N5' | 'N4' | 'N3' | 'N2' | 'N1'
   count: number
@@ -86,6 +88,59 @@ export interface GrammarExample {
   ja: string
   /** Có thể rỗng nếu không tách được câu dịch */
   vi: string
+}
+
+/* ───────────── counters.json: cách đếm (tự soạn, data-source/counters.json) ───────────── */
+
+/** Khóa ô trong bảng đếm: 1–10 và 何 ("nan"). */
+export type CounterFormKey = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'nan'
+
+export interface CounterRule {
+  title: string
+  text: string
+}
+
+export interface CounterExample {
+  ja: string
+  kana: string
+  vi: string
+}
+
+/** Trợ số từ có bảng đầy đủ. `id` chỉ gồm a-z và "_" (khóa thẻ ôn `ct-<id>-<số>`). */
+export interface CounterEntry {
+  id: string
+  counter: string
+  /** Cách đọc trợ số từ; vài mục có 2 cách ("か／にち") */
+  reading: string
+  group: string
+  level: Level
+  usage: string
+  examples: CounterExample[]
+  /** Cách đọc theo số; nhiều cách ngăn bằng "／". Trợ số từ kiểu thuần Nhật có thể thiếu số lớn. */
+  forms: Partial<Record<CounterFormKey, string>>
+  /** Các ô đọc bất quy tắc / biến âm */
+  irregular: CounterFormKey[]
+  notes?: string
+}
+
+/** Trợ số từ nâng cao: chỉ có vài cách đọc tiêu biểu. */
+export interface CounterMore {
+  id: string
+  counter: string
+  reading: string
+  group: string
+  level: Level
+  usage: string
+  keyForms: string
+  example?: CounterExample | null
+}
+
+export interface CounterData {
+  version: number
+  source: string
+  rules: CounterRule[]
+  counters: CounterEntry[]
+  more: CounterMore[]
 }
 
 /** grammar/n4…n1.json (n5 hiện rỗng vì sheet gốc trống) */

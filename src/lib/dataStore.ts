@@ -117,6 +117,8 @@ const DATA_ID = /^([a-z]+\d?)-[0-9a-f]{8}$/
 export function pathForId(id: string): string | null {
   // Bộ thủ: rd-001 … rd-214 (radicals.json không có id, xem lib/radicals.ts).
   if (/^rd-\d{3}$/.test(id)) return 'kanji/radicals.json'
+  // Cách đếm: ct-hon (trợ số từ), ct-hon-3 (ô số + trợ số từ), xem lib/counters.ts.
+  if (/^ct-[a-z][a-z_]*(?:-(?:10|[1-9]|nan))?$/.test(id)) return 'counters.json'
   const m = DATA_ID.exec(id)
   // Bản public không có file ngữ pháp: coi ID ngữ pháp như không tồn tại (bỏ qua, không báo lỗi tải).
   if (!m || (PUBLIC_BUILD && isGrammarId(id))) return null

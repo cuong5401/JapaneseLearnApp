@@ -15,7 +15,11 @@ Kết quả (thư mục đích):
     kanji/kanji.json          chỉ mục chữ Hán, tổng hợp từ cột Hán Việt
     kanji/radicals.json       214 bộ thủ Khang Hy (thiếu thì lấy data-source/radicals-extra.json)
     grammar/n4.json … n1.json ngữ pháp
+    counters.json             cách đếm (chép từ data-source/counters.json tự soạn, không lấy từ Excel)
     import-report.md          các dòng bị bỏ / nghi lỗi để rà lại
+
+Chỉ cập nhật cách đếm (không cần Excel):
+    python scripts/convert_xlsx.py --counters [public/data]
 
 Chạy lại bao nhiêu lần cũng được: ID tính từ nội dung (chữ + cách đọc) nên tiến độ SRS không mất.
 """
@@ -757,6 +761,112 @@ def parse_grammar_book(ws, level, head_re):
     return items
 
 
+# ---------------------------------------------------------------- cách đếm (data-source/counters.json, tự soạn)
+
+COUNTERS_SRC = Path(__file__).resolve().parent.parent / 'data-source' / 'counters.json'
+COUNTER_FORM_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'nan']
+COUNTER_KEYS = {'id', 'counter', 'reading', 'group', 'level', 'usage', 'examples', 'forms', 'irregular', 'notes'}
+COUNTER_MORE_KEYS = {'id', 'counter', 'reading', 'group', 'level', 'usage', 'keyForms', 'example'}
+COUNTER_ID_RE = re.compile(r'^[a-z][a-z_]*$')
+COUNTER_FORM_RE = re.compile(r'^[぀-ゟ]+(?:／[぀-ゟ]+)*$')
+
+
+def load_counters(src=COUNTERS_SRC):
+    """Đọc và kiểm tra data-source/counters.json. Trả về (dữ liệu, danh sách lỗi)."""
+    data = json.loads(Path(src).read_text(encoding='utf-8'))
+    errors = []
+    for k in ('rules', 'counters', 'more'):
+        if not isinstance(data.get(k), list):
+            errors.append(f'thiếu mảng "{k}"')
+    if errors:
+        return data, errors
+    for r in data['rules']:
+        if not r.get('title') or not r.get('text'):
+            errors.append(f'quy tắc thiếu title/text: {r}')
+    seen = set()
+    for kind, items, keys in (('counters', data['counters'], COUNTER_KEYS), ('more', data['more'], COUNTER_MORE_KEYS)):
+        for c in items:
+            cid = c.get('id', '')
+            where = f'{kind}/{cid or "?"}'
+            if not COUNTER_ID_RE.match(cid):
+                errors.append(f'{where}: id phải là chữ thường a-z, "_" (dùng trong id thẻ ôn ct-<id>-<số>)')
+            if cid in seen:
+                errors.append(f'{where}: id trùng')
+            seen.add(cid)
+            if set(c) - keys:
+                errors.append(f'{where}: trường lạ {sorted(set(c) - keys)}')
+            for k in ('counter', 'reading', 'group', 'usage'):
+                if not isinstance(c.get(k), str) or not c[k].strip():
+                    errors.append(f'{where}: thiếu "{k}"')
+            if c.get('level') not in LEVEL_RANK:
+                errors.append(f'{where}: level "{c.get("level")}" không hợp lệ')
+            if kind == 'more':
+                if not isinstance(c.get('keyForms'), str) or not c['keyForms'].strip():
+                    errors.append(f'{where}: thiếu "keyForms"')
+                continue
+            forms = c.get('forms') or {}
+            if not forms:
+                errors.append(f'{where}: thiếu "forms"')
+            for k, v in forms.items():
+                if k not in COUNTER_FORM_KEYS:
+                    errors.append(f'{where}: forms có khóa lạ "{k}" (chỉ 1..10, nan)')
+                if not isinstance(v, str) or not COUNTER_FORM_RE.match(v):
+                    errors.append(f'{where}: forms["{k}"] = {v!r} phải là hiragana, nhiều cách đọc ngăn bằng "／"')
+            for k in c.get('irregular', []):
+                if k not in forms:
+                    errors.append(f'{where}: irregular "{k}" không có trong forms')
+            for ex in c.get('examples', []):
+                if not all(isinstance(ex.get(k), str) and ex[k] for k in ('ja', 'kana', 'vi')):
+                    errors.append(f'{where}: ví dụ thiếu ja/kana/vi: {ex}')
+    return data, errors
+
+
+def counters_body(data):
+    """Mỗi mục một dòng (giống các file dữ liệu khác): gọn, dễ đọc diff."""
+    def arr(items):
+        return '[\n' + ',\n'.join('    ' + json.dumps(x, ensure_ascii=False, separators=(',', ':')) for x in items) + '\n  ]'
+    head = {k: v for k, v in data.items() if k not in ('rules', 'counters', 'more')}
+    parts = [f'  {json.dumps(k, ensure_ascii=False)}: {json.dumps(v, ensure_ascii=False)}' for k, v in head.items()]
+    parts += [f'  "{k}": {arr(data[k])}' for k in ('rules', 'counters', 'more')]
+    return '{\n' + ',\n'.join(parts) + '\n}\n'
+
+
+def emit_counters(out):
+    """Chép counters.json sang thư mục dữ liệu, trả về mục manifest. Dữ liệu lỗi thì dừng."""
+    data, errors = load_counters()
+    if errors:
+        raise SystemExit('data-source/counters.json lỗi:\n  ' + '\n  '.join(errors))
+    body = counters_body(data)
+    path = Path(out) / 'counters.json'
+    path.write_text(body, encoding='utf-8', newline='\n')
+    b = body.encode('utf-8')
+    return OrderedDict([
+        ('path', 'counters.json'), ('kind', 'counters'), ('title', 'Cách đếm'),
+        ('count', len(data['counters']) + len(data['more'])), ('bytes', len(b)), ('hash', hashlib.sha1(b).hexdigest()[:10]),
+    ])
+
+
+def update_counters_only(out_dir):
+    """--counters: chỉ chép counters.json và sửa mục của nó trong manifest (không cần Excel)."""
+    out = Path(out_dir)
+    entry = emit_counters(out)
+    manifest = json.loads((out / 'manifest.json').read_text(encoding='utf-8'), object_pairs_hook=OrderedDict)
+    files = [f for f in manifest['files'] if f['path'] != entry['path']]
+    files.append(entry)
+    manifest['files'] = files
+    write_json(out / 'manifest.json', manifest)
+    return entry
+
+
+def check_counters():
+    data, errors = load_counters()
+    if not errors:
+        print(f"counters: {len(data['counters'])} trợ số từ có bảng, {len(data['more'])} trợ số từ khác, {len(data['rules'])} quy tắc")
+    for e in errors:
+        print('  LỖI counters', e)
+    return not errors
+
+
 # ---------------------------------------------------------------- xuất file
 
 def write_json(path, data):
@@ -824,6 +934,8 @@ def main(xlsx, out_dir):
     emit('kanji/radicals.json', radicals, 'radicals', 'Bộ thủ')
     for lv, items in grammar.items():
         emit(f'grammar/{lv}.json', items, 'grammar', f'Ngữ pháp {lv.upper()}', lv.upper())
+    # Cách đếm: tự soạn (không lấy từ Excel), chỉ kiểm tra rồi chép sang.
+    files.append(emit_counters(out))
 
     manifest = OrderedDict([
         ('version', datetime.now(timezone.utc).strftime('%Y%m%d%H%M')),
@@ -853,7 +965,12 @@ if __name__ == '__main__':
     if len(sys.argv) >= 2 and sys.argv[1] == '--check':
         d = sys.argv[2] if len(sys.argv) > 2 else 'public/data'
         ok = check_extra(d)
+        ok = check_counters() and ok
         sys.exit(0 if check_radicals(d) and ok else 1)
+    if len(sys.argv) >= 2 and sys.argv[1] == '--counters':
+        f = update_counters_only(sys.argv[2] if len(sys.argv) > 2 else 'public/data')
+        print(f"{f['path']:28} {f['count']:6} mục  {f['bytes'] / 1024:7.0f} KB")
+        sys.exit(0)
     if len(sys.argv) != 3:
         print(__doc__)
         sys.exit(1)

@@ -1,6 +1,23 @@
-import type { GrammarEntry, KanjiEntry, RadicalEntry, VocabEntry } from './data'
+import type { CounterEntry, CounterFormKey, CounterMore, GrammarEntry, KanjiEntry, RadicalEntry, VocabEntry } from './data'
 
-export type { DataFile, DataManifest, GrammarEntry, GrammarExample, KanjiEntry, RadicalEntry, VocabEntry } from './data'
+export type {
+  CounterData,
+  CounterEntry,
+  CounterExample,
+  CounterFormKey,
+  CounterMore,
+  CounterRule,
+  DataFile,
+  DataManifest,
+  GrammarEntry,
+  GrammarExample,
+  KanjiEntry,
+  RadicalEntry,
+  VocabEntry,
+} from './data'
+
+/** Trợ số từ: có bảng đầy đủ (CounterEntry) hoặc nâng cao (CounterMore, chỉ có keyForms). */
+export type CounterItem = CounterEntry | CounterMore
 
 export const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'] as const
 export type Level = (typeof LEVELS)[number]
@@ -61,6 +78,8 @@ export type StudyEntry =
   | { kind: 'radical'; item: RadicalItem }
   | { kind: 'grammar'; item: GrammarEntry }
   | { kind: 'char'; item: CharItem }
+  /** Trợ số từ (`ct-hon`) hoặc một ô số + trợ số từ (`ct-hon-3`, có `n`) */
+  | { kind: 'counter'; item: CounterItem; n?: CounterFormKey }
 
 /**
  * Thẻ ôn tập ngắt quãng FSRS (ts-fsrs 5.x): đúng các trường của `Card` ts-fsrs, ngày lưu bằng ms để JSON gọn.

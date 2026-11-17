@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
+import { counterRef } from '../lib/counters'
 import { parseStack } from '../lib/detailStack'
-import { grammarQuestion, kanjiQuestion, wordQuestion, type PresetQuestion } from '../lib/ai/questions'
+import { counterQuestion, grammarQuestion, kanjiQuestion, wordQuestion, type PresetQuestion } from '../lib/ai/questions'
 import { useEntries, useKanjiIndex } from './useData'
 
 type Target = { t: 'item'; id: string } | { t: 'kanji'; ch: string } | null
@@ -11,6 +12,7 @@ function currentTarget(pathname: string, params: URLSearchParams): Target {
   const top = parseStack(params.get('xem')).at(-1)
   if (top?.t === 'w') return { t: 'item', id: top.id }
   if (top?.t === 'k') return { t: 'kanji', ch: top.ch }
+  if (top?.t === 'c') return { t: 'item', id: counterRef(top.id) }
   if (top) return null
   const k = pathname === '/kanji' ? (params.get('k') ?? params.get('c')) : null
   if (k && [...k].length === 1) return { t: 'kanji', ch: k }
@@ -38,5 +40,6 @@ export function useAiPageContext(): PresetQuestion | null {
   if (e?.kind === 'word') return wordQuestion(e.item)
   if (e?.kind === 'kanji') return kanjiQuestion(e.item.kanji, e.item.hanViet)
   if (e?.kind === 'grammar') return grammarQuestion(e.item)
+  if (e?.kind === 'counter') return counterQuestion(e.item)
   return null
 }

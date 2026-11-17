@@ -133,6 +133,14 @@
       "count": 99,
       "bytes": 204985,
       "hash": "f44d32cc81"
+    },
+    {
+      "path": "counters.json",
+      "kind": "counters",
+      "title": "Cách đếm",
+      "count": 107,
+      "bytes": 48943,
+      "hash": "cc8a33f868"
     }
   ]
 }

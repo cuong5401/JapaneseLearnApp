@@ -24,6 +24,7 @@ src/types/data.ts
 | `kanji/kanji.json` | Chỉ mục chữ Hán: âm Hán Việt + các từ chứa chữ đó |
 | `kanji/radicals.json` | Bộ thủ |
 | `grammar/n5.json` … `n1.json` | Ngữ pháp (N4 theo bài 26–50; N3 gồm 55 chương Excel + mẫu tự soạn; N5 chỉ có mẫu tự soạn) |
+| `counters.json` | Cách đếm (助数詞): quy tắc, 49 trợ số từ có bảng 1–10 + 何, 58 trợ số từ khác. Chép từ `data-source/counters.json` (tự soạn, không lấy từ Excel); `python scripts/convert_xlsx.py --counters` |
 | `import-report.md` | Dòng bị bỏ, trùng, thiếu cách đọc… để rà lại Excel |
 
 Kiểu dữ liệu chi tiết: `src/types/data.ts`.

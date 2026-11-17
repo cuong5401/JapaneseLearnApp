@@ -22,7 +22,13 @@ export const kanjiQuestion = (ch: string, hanViet?: string): PresetQuestion => (
     : `Giải thích chữ Hán ${ch}: âm Hán Việt, ý nghĩa, cách đọc và các từ hay dùng`,
 })
 
-export const grammarQuestion = (g: { title: string; meaning?: string }): PresetQuestion => ({
+export const counterQuestion = (c: { counter: string; reading: string }): PresetQuestion => ({
+  mode: 'lookup',
+  label: c.counter,
+  text: `Giải thích trợ số từ ${c.counter} (${c.reading}): đếm những gì, các số đọc biến âm và phân biệt với trợ số từ dễ nhầm`,
+})
+
+export const grammarQuestion =(g: { title: string; meaning?: string }): PresetQuestion => ({
   mode: 'grammar',
   label: g.title,
   text: `Giải thích mẫu ngữ pháp ${g.title}${g.meaning ? ` (${g.meaning.slice(0, 80)})` : ''} và phân biệt với mẫu dễ nhầm`,

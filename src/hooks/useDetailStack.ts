@@ -32,12 +32,13 @@ export interface DetailStack {
  *  - Mỗi lần push thêm một mục vào lịch sử trình duyệt, nên nút Back của trình duyệt/điện thoại
  *    lùi một khung hoặc đóng sheet thay vì rời trang.
  */
-export function useDetailStack(rootParam?: 'k'): DetailStack {
+export function useDetailStack(rootParam?: 'k', opts?: { ownPage?: boolean }): DetailStack {
   const [params, setParamsRaw] = useSearchParams()
   const location = useLocation()
   const navigateRaw = useNavigate()
-  // Trang riêng (có rootParam, vd. /kanji) chỉ ghi URL khi còn là trang đang hiển thị; GlobalDetail sống xuyên các trang.
-  const isOwn = useOwnPage(!rootParam)
+  // Trang riêng (có rootParam như /kanji, hoặc `ownPage` như /learn/counters) chỉ ghi URL khi còn là trang đang hiển thị;
+  // GlobalDetail sống xuyên các trang.
+  const isOwn = useOwnPage(!rootParam && !opts?.ownPage)
   const setParams = useCallback<typeof setParamsRaw>(
     (...args) => {
       if (isOwn()) setParamsRaw(...args)

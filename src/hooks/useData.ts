@@ -3,9 +3,11 @@ import { TERM_BY_ID, VOCAB_DECK_INFO, deckKeyForId, getTerms } from '../data'
 import { MANIFEST, dataStore, indexById, pathForId, request, type LoadStatus } from '../lib/dataStore'
 import { aiWordToVocab, aiWords, isAiWordId, useAiWords } from '../lib/aiWords'
 import { charOfRef } from '../lib/chars'
+import { COUNTERS_PATH, counterIndex, isFullCounter, parseCounterRef } from '../lib/counters'
 import { useWebWords, webWords } from '../lib/webWords'
 import { withRadicalIds } from '../lib/radicals'
 import type {
+  CounterData,
   DataManifest,
   Deck,
   GrammarEntry,
@@ -60,6 +62,8 @@ export function useRadicals(): Loadable<RadicalItem[]> {
   return { ...r, data: r.data ? withRadicalIds(r.data) : undefined }
 }
 export const useGrammar = (level: Level) => useFile<GrammarEntry[]>(`grammar/${level.toLowerCase()}.json`)
+/** Cách đếm (counters.json: quy tắc, trợ số từ có bảng, trợ số từ khác). */
+export const useCounters = () => useFile<CounterData>(COUNTERS_PATH)
 
 /** Từ vựng của một bộ: bộ public/data được tải về, nhóm thuật ngữ có sẵn thì trả ngay. */
 export function useVocab(deck: Deck): Loadable<VocabItem[]> {
@@ -117,6 +121,14 @@ export function useEntries(ids: readonly string[]): EntriesResult {
         continue
       }
       const path = pathForId(id)
+      if (path === COUNTERS_PATH) {
+        const data = byPath.get(path) as unknown as CounterData | undefined
+        const ref = parseCounterRef(id)
+        const item = data && ref ? counterIndex(data).get(ref.id) : undefined
+        // Ô số (ct-hon-3) chỉ hợp lệ khi bảng có ô đó.
+        if (item && (!ref!.n || (isFullCounter(item) && item.forms[ref!.n]))) map.set(id, { kind: 'counter', item, ...(ref!.n ? { n: ref!.n } : {}) })
+        continue
+      }
       const raw = path ? byPath.get(path) : undefined
       const list = path === 'kanji/radicals.json' && raw ? withRadicalIds(raw as unknown as RadicalEntry[]) : raw
       const item = list ? indexById(list).get(id) : undefined

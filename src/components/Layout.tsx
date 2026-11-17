@@ -1,13 +1,13 @@
 import { motion } from 'motion/react'
 import { Suspense, lazy, useEffect, useLayoutEffect, type MouseEvent } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { useTheme, type ThemeChoice } from '../hooks/useTheme'
+import { Link, Outlet, useLocation } from 'react-router-dom'
+import { THEME_LABEL, useTheme, type ThemeChoice } from '../hooks/useTheme'
 import { useDockNavClick } from '../hooks/useDockNavClick'
 import { useDueIds } from '../hooks/useProgress'
 import { isInteractiveTarget } from '../lib/keyboard'
+import { NAV, NAV_GROUPS, navActive } from '../lib/nav'
 import { searchUi, useSearchUi } from '../lib/searchUi'
 import { MainErrorBoundary } from './ErrorPanel'
-import { InstallApp } from './InstallApp'
 import { UpdatePrompt } from './UpdatePrompt'
 import { Toaster } from './Toaster'
 import { SaveSheetHost } from './notebook/SaveSheet'
@@ -16,41 +16,6 @@ import { AiDock } from './ai/AiDock'
 
 // Hộp tìm kiếm và chỉ mục của nó chỉ tải khi mở lần đầu.
 const SearchDialog = lazy(() => import('./SearchDialog'))
-
-interface NavItem {
-  to: string
-  glyph: string
-  label: string
-  short?: string
-  end: boolean
-  /** Ẩn khỏi thanh đáy điện thoại (vẫn có trong sidebar và nav trên) */
-  noBottom?: boolean
-  /** Ẩn khỏi nav trên của tablet (không đủ chỗ); vẫn có trong sidebar desktop */
-  noTop?: boolean
-}
-
-const NAV: NavItem[] = [
-  { to: '/', glyph: '家', label: 'Trang chủ', end: true },
-  { to: '/kanji', glyph: '漢', label: 'Chữ Hán', end: false },
-  { to: '/grammar', glyph: '文', label: 'Ngữ pháp', end: false },
-  { to: '/kana', glyph: 'あ', label: 'Luyện kana', short: 'Kana', end: false, noBottom: true },
-  { to: '/review', glyph: '復', label: 'Ôn tập', end: false },
-  { to: '/notebooks', glyph: '帳', label: 'Sổ tay', end: false },
-  // Vào từ nút "Tạo phiếu luyện viết" ở trang bài Chữ Hán, Sổ tay, bảng kana; desktop có thêm mục ở sidebar.
-  { to: '/writing', glyph: '書', label: 'Luyện viết', end: false, noBottom: true, noTop: true },
-  // Điện thoại đã có tab "Hỏi AI" nổi ở lề phải: thanh đáy nhường chỗ này cho Tiến độ.
-  { to: '/ai', glyph: '問', label: 'Hỏi AI', end: false, noBottom: true },
-  { to: '/progress', glyph: '進', label: 'Tiến độ', end: false },
-]
-
-function GearIcon({ className = 'size-5' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
-    </svg>
-  )
-}
 
 /** Bút vẽ: mở bảng vẽ chữ Hán trong hộp tìm kiếm. */
 function PenIcon({ className = 'size-5' }: { className?: string }) {
@@ -71,15 +36,9 @@ function SearchIcon({ className = 'size-5' }: { className?: string }) {
   )
 }
 
-const THEME_LABEL: Record<ThemeChoice, string> = {
-  system: 'Theo hệ thống',
-  light: 'Sáng',
-  dark: 'Tối',
-}
-
 const SLIDE = { type: 'spring', stiffness: 500, damping: 38 } as const
 
-function ThemeIcon({ choice }: { choice: ThemeChoice }) {
+export function ThemeIcon({ choice }: { choice: ThemeChoice }) {
   const common = { fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
   if (choice === 'light')
     return (
@@ -175,57 +134,45 @@ export function Layout() {
             <PenIcon className="size-4" />
           </button>
         </div>
-        <nav aria-label="Điều hướng chính" className="mt-5">
-          <ul className="space-y-1">
-            {NAV.map((n) => (
-              <li key={n.to}>
-                <NavLink
-                  to={n.to}
-                  onClick={dockNav(n.to)}
-                  end={n.end}
-                  className={({ isActive }) =>
-                    `relative flex min-h-12 items-center gap-3 rounded-xl px-3 font-medium transition-colors ${isActive ? 'text-ai' : 'text-muted hover:text-ink'}`
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      {isActive && (
-                        <motion.span layoutId="nav-side" transition={SLIDE} className="absolute inset-0 rounded-xl bg-ai-soft" />
-                      )}
-                      <span
-                        lang="ja"
-                        className={`relative grid size-8 place-items-center rounded-[3px] border font-jp text-base leading-none ${
-                          isActive ? 'border-ai bg-ai text-on-ai' : 'border-cell-line'
-                        }`}
+        <nav aria-label="Điều hướng chính" className="mt-5 space-y-5">
+          {NAV_GROUPS.map((g) => (
+            <div key={g.key}>
+              <p className="mb-1 px-3 text-[11px] font-semibold tracking-wider text-muted uppercase">{g.title}</p>
+              <ul className="space-y-1">
+                {NAV.filter((n) => n.group === g.key).map((n) => {
+                  const active = navActive(n, pathname)
+                  return (
+                    <li key={n.to}>
+                      <Link
+                        to={n.to}
+                        onClick={dockNav(n.to)}
+                        aria-current={active ? 'page' : undefined}
+                        className={`relative flex min-h-12 items-center gap-3 rounded-xl px-3 font-medium transition-colors ${active ? 'text-ai' : 'text-muted hover:text-ink'}`}
                       >
-                        {n.glyph}
-                      </span>
-                      <span className="relative">{n.label}</span>
-                      {n.to === '/review' && <DueBadge due={due} className="relative ml-auto min-w-6" />}
-                    </>
-                  )}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
+                        {active && <motion.span layoutId="nav-side" transition={SLIDE} className="absolute inset-0 rounded-xl bg-ai-soft" />}
+                        <span
+                          lang="ja"
+                          className={`relative grid size-8 place-items-center rounded-[3px] border font-jp text-base leading-none ${
+                            active ? 'border-ai bg-ai text-on-ai' : 'border-cell-line'
+                          }`}
+                        >
+                          {n.glyph}
+                        </span>
+                        <span className="relative">{n.label}</span>
+                        {n.to === '/review' && <DueBadge due={due} className="relative ml-auto min-w-6" />}
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          ))}
         </nav>
-        <div className="mt-auto">
-          <InstallApp compact />
-        </div>
-        <NavLink
-          to="/settings"
-          className={({ isActive }) =>
-            `flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm transition-colors ${isActive ? 'bg-ai-soft text-ai' : 'text-muted hover:bg-sunken hover:text-ink'}`
-          }
-        >
-          <GearIcon className="size-5" />
-          <span className="font-medium">Cài đặt</span>
-        </NavLink>
         <button
           type="button"
           onClick={cycle}
           aria-label={themeLabel}
-          className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-muted transition-colors hover:bg-sunken hover:text-ink"
+          className="mt-auto flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-muted transition-colors hover:bg-sunken hover:text-ink"
         >
           <ThemeIcon choice={choice} />
           <span className="flex flex-col items-start leading-tight">
@@ -240,26 +187,23 @@ export function Layout() {
         <div className="mx-auto flex h-14 max-w-[900px] items-center gap-4 px-4 md:px-6">
           <Logo onClick={dockNav('/')} />
           <nav className="ml-auto hidden items-center gap-0.5 md:flex" aria-label="Điều hướng chính">
-            {/* Tablet: logo đã dẫn về trang chủ, bỏ mục Trang chủ cho vừa 6 mục. */}
-            {NAV.filter((n) => n.to !== '/' && !n.noTop).map((n) => (
-              <NavLink
-                key={n.to}
-                to={n.to}
-                onClick={dockNav(n.to)}
-                end={n.end}
-                className={({ isActive }) =>
-                  `relative flex items-center rounded-lg px-2 py-2 text-sm font-medium whitespace-nowrap transition-colors ${isActive ? 'text-ai' : 'text-muted hover:text-ink'}`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    {isActive && <motion.span layoutId="nav-top" transition={SLIDE} className="absolute inset-0 rounded-lg bg-ai-soft" />}
-                    <span className="relative">{n.short ?? n.label}</span>
-                    {n.to === '/review' && <DueBadge due={due} className="relative ml-1.5 min-w-5" />}
-                  </>
-                )}
-              </NavLink>
-            ))}
+            {/* Tablet: logo đã dẫn về trang chủ, bỏ mục Trang chủ. */}
+            {NAV.filter((n) => n.to !== '/').map((n) => {
+              const active = navActive(n, pathname)
+              return (
+                <Link
+                  key={n.to}
+                  to={n.to}
+                  onClick={dockNav(n.to)}
+                  aria-current={active ? 'page' : undefined}
+                  className={`relative flex min-h-11 items-center rounded-lg px-3 text-sm font-medium whitespace-nowrap transition-colors ${active ? 'text-ai' : 'text-muted hover:text-ink'}`}
+                >
+                  {active && <motion.span layoutId="nav-top" transition={SLIDE} className="absolute inset-0 rounded-lg bg-ai-soft" />}
+                  <span className="relative">{n.label}</span>
+                  {n.to === '/review' && <DueBadge due={due} className="relative ml-1.5 min-w-5" />}
+                </Link>
+              )
+            })}
           </nav>
           <button
             type="button"
@@ -288,9 +232,6 @@ export function Layout() {
           >
             <ThemeIcon choice={choice} />
           </button>
-          <Link to="/settings" onClick={dockNav('/settings')} aria-label="Cài đặt" title="Cài đặt" className="grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink">
-            <GearIcon />
-          </Link>
         </div>
       </header>
 
@@ -313,32 +254,27 @@ export function Layout() {
         data-bottom-nav
         className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       >
-        <ul className="mx-auto grid max-w-lg grid-cols-6">
-          {NAV.filter((n) => !n.noBottom).map((n) => (
-            <li key={n.to}>
-              <NavLink
-                to={n.to}
-                onClick={dockNav(n.to)}
-                end={n.end}
-                className={({ isActive }) =>
-                  `flex min-h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium ${isActive ? 'text-ai' : 'text-muted'}`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <span lang="ja" className="relative grid size-7 place-items-center rounded-[3px] border border-cell-line font-jp text-base leading-none">
-                      {isActive && (
-                        <motion.span layoutId="nav-bottom" transition={SLIDE} className="absolute -inset-px rounded-[3px] bg-ai" />
-                      )}
-                      <span className={`relative ${isActive ? 'text-on-ai' : ''}`}>{n.glyph}</span>
-                      {n.to === '/review' && <DueBadge due={due} className="absolute -right-2.5 -top-2 min-w-4" />}
-                    </span>
-                    {n.short ?? n.label}
-                  </>
-                )}
-              </NavLink>
-            </li>
-          ))}
+        <ul className="mx-auto grid max-w-lg grid-cols-5">
+          {NAV.map((n) => {
+            const active = navActive(n, pathname)
+            return (
+              <li key={n.to}>
+                <Link
+                  to={n.to}
+                  onClick={dockNav(n.to)}
+                  aria-current={active ? 'page' : undefined}
+                  className={`flex min-h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium ${active ? 'text-ai' : 'text-muted'}`}
+                >
+                  <span lang="ja" className="relative grid size-7 place-items-center rounded-[3px] border border-cell-line font-jp text-base leading-none">
+                    {active && <motion.span layoutId="nav-bottom" transition={SLIDE} className="absolute -inset-px rounded-[3px] bg-ai" />}
+                    <span className={`relative ${active ? 'text-on-ai' : ''}`}>{n.glyph}</span>
+                    {n.to === '/review' && <DueBadge due={due} className="absolute -right-2.5 -top-2 min-w-4" />}
+                  </span>
+                  {n.label}
+                </Link>
+              </li>
+            )
+          })}
         </ul>
       </nav>
 

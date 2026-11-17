@@ -63,7 +63,11 @@ Tiến độ lưu trong localStorage của từng trình duyệt. Ở trang **Ti
 
 | Trang | Đường dẫn |
 |---|---|
-| Trang chủ: chữ Hán hôm nay, thẻ cần ôn, các bộ từ, chữ Hán, ngữ pháp, thuật ngữ | `/` |
+| Điều hướng 5 mục: Trang chủ · Học · Ôn tập · Sổ tay · Cá nhân (Hỏi AI là tab nổi ở lề phải) | sidebar / thanh đáy |
+| Trang chủ gọn (desktop vừa 1 màn hình): Ôn tập hôm nay, Học tiếp, chữ Hán ngẫu nhiên, lối tắt N5…N1, Chữ Hán, Ngữ pháp, Kana, Cách đếm | `/` |
+| Học: mọi bộ học theo nhóm (Từ vựng JLPT, bộ từ khác, chữ Hán, ngữ pháp, kana, cách đếm, thuật ngữ, luyện viết) kèm tiến độ | `/learn` |
+| Cách đếm (助数詞): quy tắc biến âm, 49 trợ số từ có bảng 1–10 + 何 (ô bất quy tắc tô đỏ, có lý do, nghe từng ô), 58 trợ số từ khác; flashcard "3 + 本", quiz chọn cách đọc / chọn trợ số từ cho câu / gõ cách đọc; ô hay sai và ô bất quy tắc vào lịch ôn | `/learn/counters` |
+| Cá nhân: tiến độ, cài đặt, Hỏi AI, giao diện, cài app, giới thiệu / nguồn dữ liệu | `/me` |
 | Bộ từ (N5–N1, Từ ghép, Từ láy, Phó từ): lưới bài, "Học tiếp", Từ chưa thuộc, đổi 20/30/50 từ mỗi bài | `/vocab/n5` |
 | Bài học: Danh sách, Flashcard (vuốt để chấm), Quiz | `/vocab/n5/1`, `/vocab/n5/weak` |
 | Chi tiết từ: Hán Việt, cách viết khác, từ gốc, ghi chú, từ liên quan (N1), chữ Hán trong từ | `/word/:id` |
@@ -96,6 +100,7 @@ Trang `/ai`: chat bằng tiếng Việt ở 4 chế độ (Tra từ, Giải thí
 - Dữ liệu học nằm trong `public/data/` (xem [DATA-README.md](DATA-README.md)), sinh từ Excel bằng `scripts/convert_xlsx.py`. **Không sửa tay** các file này; file Excel nguồn (`data-source/*.xlsx`) không đưa lên git.
 - Dữ liệu được `fetch` khi cần (`src/lib/dataStore.ts`), cache theo đường dẫn + `hash` trong manifest, không đóng gói vào bundle.
 - Ngữ pháp tự soạn: `data-source/grammar-extra/n3.json`, `n5.json` (có trong git, cùng kiểu `GrammarEntry` thêm `group`, `notes`, `related`, `"source": "kotonoha"`, `"auto": true`). Giải thích và câu ví dụ do Kotonoha tự viết, chưa qua người kiểm tra. `scripts/convert_xlsx.py` gộp vào `public/data/grammar/`: mục từ Excel trước, mục tự soạn sau; mẫu đã có trong Excel thì báo lỗi (dùng `related: ["#số chương"]` để trỏ tới). Kiểm tra nhanh không cần Excel: `python scripts/convert_xlsx.py --check`.
+- Cách đếm: `data-source/counters.json` (tự soạn, có trong git, không lấy từ Excel). Convert kiểm tra rồi chép sang `public/data/counters.json` và manifest; chỉ cập nhật phần này (không cần Excel): `python scripts/convert_xlsx.py --counters`.
 - Sheet N3 trong Excel mất tiêu đề phần lớn chương; `data-source/grammar-extra/n3-chapters.json` ghi điểm cắt, tiêu đề và nhóm chủ đề cho 55 chương. Script dừng nếu một id ngữ pháp cũ biến mất (để không mất tiến độ).
 - Hook: `useManifest`, `useVocab`, `useKanjiIndex`, `useRadicals`, `useGrammar`, `useEntries(ids)` (`src/hooks/useData.ts`).
 - Tiến độ SRS lưu theo `id` trong localStorage; thẻ có ID không còn tồn tại được bỏ qua.

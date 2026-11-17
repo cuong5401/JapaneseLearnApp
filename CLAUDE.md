@@ -26,7 +26,8 @@
 | `npm run check:secrets` | Quét repo + `dist/` tìm chuỗi giống API key |
 | `npm run icons` | Sinh icon PWA trong `public/icons/` |
 | `python scripts/convert_xlsx.py <file.xlsx> public/data` | Sinh lại dữ liệu từ Excel (cần `openpyxl`) |
-| `python scripts/convert_xlsx.py --check` | Kiểm tra ngữ pháp tự soạn, không cần Excel |
+| `python scripts/convert_xlsx.py --check` | Kiểm tra ngữ pháp tự soạn + cách đếm, không cần Excel |
+| `python scripts/convert_xlsx.py --counters` | Chỉ chép `data-source/counters.json` → `public/data/counters.json` + sửa manifest (không cần Excel) |
 | `py scripts/import-strokes.py [--zip file]` | Sinh lại thứ tự nét từ KanjiVG (tải release `*-main.zip` mới nhất) |
 | `py scripts/import-kanjidic.py [--file f]` | Sinh lại âm On/Kun, số nét, JLPT cũ từ KANJIDIC2 (`kanji/kanji-readings.json`) |
 | `node scripts/build-pdf-fonts.mjs` | Subset lại font nhúng phiếu luyện viết (`src/assets/fonts/`) khi danh sách chữ đổi |
@@ -41,6 +42,7 @@
 ## Cấu trúc
 
 - `src/pages/` – mỗi route một file, tải lười (khai báo trong `src/main.tsx`).
+- `src/lib/nav.ts` – điều hướng chính (xem mục "Điều hướng và trang chủ").
 - `src/components/` – UI: `Layout` (sidebar desktop, header + bottom nav điện thoại), `GridCell`, `BottomSheet`,
   `study/` (flashcard, quiz), `detail/` (ngăn xếp chi tiết từ / chữ / bộ thủ), `ai/` (chat, `AiDock` khung nổi),
   `kana/`, `handwriting/`, `notebook/`.
@@ -59,6 +61,10 @@
 - `public/data/` (`manifest.json`, `vocab/`, `kanji/`, `grammar/`, `import-report.md`) **sinh từ Excel** trong
   `data-source/` bằng `scripts/convert_xlsx.py`. **Không sửa tay JSON.** File Excel không có trong repo.
 - Ngữ pháp tự soạn (`data-source/grammar-extra/n3.json`, `n5.json`) có trong git, được gộp khi convert.
+- **Cách đếm** (`data-source/counters.json`, người dùng tự soạn, **không** từ Excel, có trong git): convert (cả bản đầy đủ và
+  `--counters`) kiểm tra rồi chép sang `public/data/counters.json` (manifest `kind: 'counters'`, count = counters + more).
+  Sửa nội dung ở `data-source/`, không sửa file trong `public/data`. Cấu trúc `{ rules[], counters[] (forms "1".."10","nan",
+  nhiều cách đọc ngăn "／", irregular[], examples[], notes), more[] (keyForms) }`; id chỉ a-z và "_".
 - ID = tiền tố + 8 ký tự SHA-1 của chữ + cách đọc (`n5-1a2b3c4d`, `kj-…`, `gn4-…`): ổn định, là **khóa của SRS,
   sổ tay, URL** → không đổi cách sinh ID.
 - `kanji.json`: `firstLevel` = cấp từ vựng đầu tiên có chữ đó, **không phải** cấp kanji JLPT.
@@ -167,6 +173,39 @@
   tối thiểu 0.5; difficulty từ ease 1.3→9, 2.5→5, ≥3→3; giữ due/reps/last_review; lapses 0), chưa ôn → Mới.
 - Kana dùng kho riêng `kanaProgress` (không phải SRS).
 
+## Điều hướng và trang chủ
+
+- **Điều hướng chính đúng 5 mục** (`NAV` trong `src/lib/nav.ts`): 家 Trang chủ · 学 Học (`/learn`) · 復 Ôn tập (huy hiệu số thẻ)
+  · 帳 Sổ tay · 私 Cá nhân (`/me`). Sidebar desktop chia nhóm có tiêu đề nhỏ ("Học tập", "Của bạn") + nút Giao diện ở đáy;
+  tablet nav trên 4 mục (logo = Trang chủ); điện thoại bottom nav 5 cột. Hỏi AI **không** nằm trong điều hướng (tab nổi
+  `AiDock`; trang `/ai` mở từ Cá nhân). Header điện thoại: tìm kiếm, vẽ chữ, giao diện (không còn nút Cài đặt).
+- URL cũ giữ nguyên (`/kanji`, `/grammar`, `/kana`, `/vocab`, `/word`, `/terms`, `/writing`, `/progress`, `/settings`…):
+  mục cha sáng theo `match` + `navActive` (đang ở /kanji thì "Học" sáng, /settings thì "Cá nhân"), link có `aria-current`.
+- `/learn` (`src/pages/Learn.tsx`): nhóm có tiêu đề nhỏ, thẻ cỡ vừa có tiến độ; Từ vựng JLPT = 1 thẻ 5 dòng cấp, Bộ từ khác,
+  Chữ Hán (+ Bộ thủ), Ngữ pháp, Kana, Cách đếm, Thuật ngữ (3 dòng), Luyện viết. `/me` (`src/pages/Me.tsx`): tóm tắt Tiến độ,
+  Cài đặt + Hỏi AI, Giao diện (`theme` store chung trong `useTheme`, khớp nút sidebar/header), Cài app, Giới thiệu
+  (`AboutSources`, cũng ở /settings). Thống kê dùng chung: `src/hooks/useStudyStats.ts`.
+- **Trang chủ phải gọn: desktop 1280×800 nằm trong 1 màn hình, không cuộn; điện thoại 390×844 tối đa ~2 màn.**
+  Hàng 1: "Ôn tập hôm nay" + "Học tiếp" (bài dở dang gần nhất của bộ từ vựng / chữ Hán ôn gần nhất), cùng chiều cao.
+  Hàng 2: chữ Hán ngẫu nhiên thu gọn (2 từ, chạm chữ mở chi tiết). Hàng 3: lối tắt (N5…N1, Chữ Hán, Ngữ pháp, Kana,
+  Cách đếm), điện thoại cuộn ngang scroll-snap, từ md lưới 5 cột + ô "Tất cả →". Khối lớn mới thêm đặt ở `/learn`,
+  không đặt ở trang chủ. Test: `tests/counters.spec.ts` (đo chiều cao trang, cùng chiều cao hàng 1).
+
+## Cách đếm (助数詞, `/learn/counters`)
+
+- Logic thuần `src/lib/counters.ts` (test `counters.test.ts`): ID `ct-<id>` (trợ số từ: sổ tay, chi tiết) và `ct-<id>-<n>`
+  (ô số + trợ số từ, n = 1..10 | nan: thẻ SRS). `pathForId` → `counters.json`, `useEntries` trả `StudyEntry` kind
+  `counter` (có `n` nếu là ô). `reasonFor` tự giải thích biến âm ("ほ → ぼ sau 3", "いち → いっ (âm ngắt)", "Số đếm kiểu
+  Nhật"). `acceptedReadings` (gồm …かん lược 間, なん+trợ số từ khi ô 何 là いくつ/いくら) **không bao giờ** là đáp án nhiễu.
+- Trang: Quy tắc đếm (thu gọn, mặc định đóng), lọc cấp `?cap=`, tìm kiếm (chữ/kana/cách đọc trong bảng/ví dụ; tiếng Việt
+  theo từ trọn vẹn, có dấu thì so có dấu), nhóm theo `group`, "Trợ số từ khác" (more). Chi tiết = khung ngăn xếp `c:<id>`
+  (`CounterDetail`): panel 360px (WIDE_PANEL) / bottom sheet, trang tự hiển thị ngăn xếp (`OWN_STACK`,
+  `useDetailStack(undefined, { ownPage: true })`). Bảng 1–10 + 何 lưới 3 cột, ô bất quy tắc nền `--beni`, chạm ô xem lý do.
+- Học: `?mode=flashcards|quiz`, `?ct=<id>` luyện một trợ số từ. Flashcard "3 + 本" → さんぼん + lý do. Quiz trộn 3 dạng:
+  chọn cách đọc, chọn trợ số từ cho câu ví dụ đục lỗ (nhiễu khác nhóm, bỏ cặp cùng đúng như 本/杯 trong `CONFUSABLE`),
+  gõ cách đọc. Chọn cặp (`pickPairs`): đến hạn → bất quy tắc chưa học → hay sai → còn lại.
+  **Chỉ ghi lịch ôn** (`shouldTrack`) khi trả lời sai, ô bất quy tắc, hoặc đã có thẻ (tránh hàng trăm thẻ ô thường).
+
 ## Không layout shift (bắt buộc)
 
 - `html { scrollbar-gutter: stable }`: trang dài/ngắn, khóa cuộn không làm lệch ngang.
@@ -193,7 +232,7 @@
 - `GridCell`: ô giấy tập viết (khung + chữ thập), cỡ chữ theo container (`cqw`), không theo viewport.
 - Font Be Vietnam Pro + Noto Sans JP (`lang="ja"` → `font-jp`). Icon là SVG, không dùng emoji.
 - Nút ≥ 44px (`min-h-11`). Tôn trọng reduced motion (`MotionConfig reducedMotion="user"`).
-- Mobile trước: < 768px có bottom nav (6 mục), < 1024px có header; ≥ 1024px có sidebar.
+- Mobile trước: < 768px có bottom nav (5 mục), < 1024px có header; ≥ 1024px có sidebar.
 - iPhone Safari: input/textarea/select ≥ 16px trên màn cảm ứng (`pointer-coarse:text-base`), không khóa zoom
   trong viewport; `touch-action: manipulation`; `overscroll-behavior: none` (html/body), vùng cuộn trong dùng
   `overscroll-contain`; bàn phím ảo xử lý bằng `visualViewport` (xem `AiDock`).
@@ -224,8 +263,9 @@
   màn hình + lớp nền (chạm thì lắc, không đóng), khóa cuộn, bám bàn phím qua `visualViewport` (ẩn bottom nav),
   bấm bottom nav/header thì thu gọn + chuyển trang (replace mục lịch sử của khung), vuốt header sang phải để thu gọn.
   Chữ gõ dở / vị trí cuộn giữ trong `dockMemory`. Test: `tests/dock.mobile.spec.ts` (chạy cả dev và bản build).
-- Trang chủ: chữ Hán ngẫu nhiên (không lặp 5 chữ gần nhất; từ đi kèm thiếu thì tra thêm Mazii khi có mạng; con số
-  "x từ" và danh sách cùng một nguồn `mergeKanjiWords`), thẻ "cần ôn" có biểu đồ 7 ngày tới + 3 bài tiếp theo.
+- Trang chủ (xem "Điều hướng và trang chủ"): chữ Hán ngẫu nhiên (không lặp 5 chữ gần nhất; 2 từ đi kèm, thiếu thì tra
+  thêm Mazii khi có mạng; con số "x từ" và danh sách cùng một nguồn `mergeKanjiWords`), Ôn tập hôm nay, Học tiếp, lối tắt.
+- Cách đếm (助数詞): 49 trợ số từ có bảng + 58 trợ số từ khác, flashcard, quiz, thẻ ôn cho ô hay sai / bất quy tắc.
 - PWA (cài đặt, cập nhật, offline), Xuất/Nhập tiến độ, mã mở khóa 4 số (nếu build có `VITE_UNLOCK_CODE`).
 
 ## Lỗi đã gặp, không lặp lại

@@ -182,8 +182,8 @@ for (const width of WIDTHS) {
         await expectClosed(page)
         // Điều hướng trong app (không tải lại trang): stream vẫn chạy tiếp.
         const nav = width < 768 ? page.locator('[data-bottom-nav]') : page.getByRole('navigation', { name: 'Điều hướng chính' }).first()
-        await nav.getByRole('link', { name: /Ngữ pháp/ }).click()
-        await expect(page).toHaveURL(/\/grammar/)
+        await nav.getByRole('link', { name: /Học$/ }).click()
+        await expect(page).toHaveURL(/\/learn/)
         await expect(page.locator('[data-ai-unread]')).toBeVisible({ timeout: 10_000 })
         await tab(page).click()
         await expect(panel(page).locator('[data-msg="assistant"]').last()).toContainText('Tôi đang học tiếng Nhật')
@@ -198,13 +198,13 @@ for (const width of WIDTHS) {
         await expectOpen(page)
         await expect(page.locator('[data-ai-backdrop]')).toHaveCount(0)
         expect(await page.evaluate(() => document.body.style.position)).toBe('')
-        await page.locator('aside').getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: /Ngữ pháp/ }).click()
-        await expect(page).toHaveURL(/\/grammar/)
+        await page.locator('aside').getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: /Sổ tay/ }).click()
+        await expect(page).toHaveURL(/\/notebooks/)
         await page.waitForTimeout(400)
         await expect(dock(page)).toHaveAttribute('data-ai-dock', 'open')
         await page.keyboard.press('Escape')
         await expectClosed(page)
-        expect(new URL(page.url()).pathname).toMatch(/^\/grammar/)
+        expect(new URL(page.url()).pathname).toMatch(/^\/notebooks/)
       })
 
       test('Back và Esc thu gọn khung, không rời trang', async ({ page }) => {

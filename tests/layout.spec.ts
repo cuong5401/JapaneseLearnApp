@@ -11,6 +11,11 @@ const WIDTHS = [390, 768, 1024, 1112, 1180, 1280, 1440]
 const THEMES = ['light', 'dark'] as const
 const PAGES = [
   '/',
+  '/learn',
+  '/learn/counters',
+  '/learn/counters?xem=c:hon',
+  '/learn/counters?mode=quiz',
+  '/me',
   '/kana',
   '/vocab/n5',
   '/vocab/n5/1',
@@ -84,9 +89,13 @@ function horizontalOverflow(page: Page) {
       // Khung chat Hỏi AI thu gọn: cố ý nằm ngoài lề phải, vùng chứa fixed overflow-hidden cắt đi
       // (ai-dock.spec kiểm riêng là trang không cuộn ngang được).
       if (el.closest('[data-ai-dock="closed"]')) continue
+      // Hàng cuộn ngang có chủ đích (lối tắt trang chủ trên điện thoại): mục bên trong được phép nằm ngoài màn hình,
+      // nhưng chính hàng đó phải nằm trong màn hình (kiểm tra ở vòng lặp này) và trang không cuộn ngang (bên dưới).
+      if (el.parentElement?.closest('[data-hscroll]')) continue
       const r = el.getBoundingClientRect()
       if (r.width && (r.right > w + 1 || r.left < -1)) bad.push(`${el.tagName}.${String(el.className).slice(0, 50)}`)
     }
+    if (document.documentElement.scrollWidth > w + 1) bad.push(`trang cuộn ngang: ${document.documentElement.scrollWidth}px`)
     return bad.slice(0, 5)
   })
 }

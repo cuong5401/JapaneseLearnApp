@@ -28,8 +28,8 @@ async function expectPage(page: Page, expected: string | RegExp) {
   await expect(page.getByRole('heading', { name: 'Không tìm thấy trang này' })).toHaveCount(0)
 }
 
-/** Thẻ bộ N5 trong mục "Từ vựng JLPT" của trang chủ (không phải nút "Học từ N5" của thẻ cần ôn). */
-const n5Deck = (page: Page) => page.locator('section[aria-labelledby="levels"] a[href$="/vocab/n5"]')
+/** Ô lối tắt N5 ở trang chủ. */
+const n5Deck = (page: Page) => page.locator('[data-shortcuts] a[href$="/vocab/n5"]')
 
 const dockState = (page: Page) => page.locator('[data-ai-dock]').getAttribute('data-ai-dock')
 
@@ -41,7 +41,7 @@ async function openDock(page: Page) {
 /** Điều hướng chính: sidebar (desktop) hoặc thanh đáy (điện thoại). */
 const nav = (page: Page, phone: boolean) => (phone ? page.locator('[data-bottom-nav]') : page.locator('aside').getByRole('navigation', { name: 'Điều hướng chính' }))
 
-test('khung AI mở: chuyển qua Chữ Hán, Ngữ pháp, bài từ vựng, Sổ tay → URL đúng một basename; Back thu gọn khung rồi mới lùi trang; F5 vẫn đúng', async ({ page }, info) => {
+test('khung AI mở: chuyển qua Học, Cá nhân, bài từ vựng, Sổ tay → URL đúng một basename; Back thu gọn khung rồi mới lùi trang; F5 vẫn đúng', async ({ page }, info) => {
   const phone = info.project.name === 'preview-phone'
   await page.goto(BASE)
   await expectPage(page, BASE)
@@ -60,10 +60,8 @@ test('khung AI mở: chuyển qua Chữ Hán, Ngữ pháp, bài từ vựng, S�
     visited.push(path(page))
   }
 
-  await go(/Chữ Hán/, `${BASE}kanji`)
-  // /grammar tự chuyển (replace) sang /grammar/n5: chờ chuyển xong rồi mới bấm tiếp, nếu không lệnh chuyển
-  // chạy muộn kéo URL về lại /grammar/n5 sau khi đã bấm Trang chủ.
-  await go(/Ngữ pháp/, `${BASE}grammar/n5`)
+  await go(/Học$/, `${BASE}learn`)
+  await go(/Cá nhân/, `${BASE}me`)
   if (phone) {
     // Điện thoại: sheet che nội dung trang, đi tới bài từ vựng qua Trang chủ → thẻ N5 khi khung đã thu gọn.
     await go(/Trang chủ/, BASE, false)
@@ -113,7 +111,7 @@ test('bấm Ngữ pháp rồi bấm ngay Trang chủ: không bị kéo về /gra
   for (let i = 0; i < 3; i++) {
     await page.goto(BASE)
     await expectPage(page, BASE)
-    await nav(page, phone).getByRole('link', { name: /Ngữ pháp/ }).click()
+    await page.locator('[data-shortcuts] a[href$="/grammar"]').click()
     // không chờ trang Ngữ pháp tải xong / chuyển cấp
     await nav(page, phone).getByRole('link', { name: /Trang chủ/ }).click()
     await page.waitForTimeout(1500)
