@@ -117,7 +117,7 @@ export function Progress() {
         <span className="flex items-center gap-1.5">
           <span className="h-1.5 w-4 rounded-full bg-cell-line" aria-hidden />{tr('progress.daHoc')}</span>
         <span className="flex items-center gap-1.5">
-          <span className="h-1.5 w-4 rounded-full bg-ai" aria-hidden />{tr('progress.daThuocKhoangCach')}{MASTERED_INTERVAL}{tr('progress.ngay')}</span>
+          <span className="h-1.5 w-4 rounded-full bg-ai" aria-hidden />{tr('progress.masteredLegend', { n: MASTERED_INTERVAL })}</span>
       </div>
 
       <SrsStats />

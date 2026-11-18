@@ -93,7 +93,16 @@ function horizontalOverflow(page: Page) {
       // nhưng chính hàng đó phải nằm trong màn hình (kiểm tra ở vòng lặp này) và trang không cuộn ngang (bên dưới).
       if (el.parentElement?.closest('[data-hscroll]')) continue
       const r = el.getBoundingClientRect()
-      if (r.width && (r.right > w + 1 || r.left < -1)) bad.push(`${el.tagName}.${String(el.className).slice(0, 50)}`)
+      if (!r.width || (r.right <= w + 1 && r.left >= -1)) continue
+      // Bị khung cha cắt (overflow ≠ visible, vd. dòng `truncate` hiện "…"): không tràn ra màn hình; chính khung cha
+      // được kiểm ở vòng lặp này.
+      let clip: HTMLElement | null = el.parentElement
+      while (clip && getComputedStyle(clip).overflowX === 'visible') clip = clip.parentElement
+      if (clip && clip !== document.body && clip !== document.documentElement) {
+        const c = clip.getBoundingClientRect()
+        if (c.right <= w + 1 && c.left >= -1) continue
+      }
+      bad.push(`${el.tagName}.${String(el.className).slice(0, 50)}`)
     }
     if (document.documentElement.scrollWidth > w + 1) bad.push(`trang cuộn ngang: ${document.documentElement.scrollWidth}px`)
     return bad.slice(0, 5)

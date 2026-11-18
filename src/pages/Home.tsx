@@ -22,6 +22,7 @@ import { speechText } from '../lib/speech'
 import { webWords } from '../lib/webWords'
 import type { DataManifest, KanjiEntry, SrsCard, VocabDeckKey } from '../types'
 import { t } from '../i18n'
+import { tRich } from '../i18n/rich'
 
 /**
  * Trang chủ gọn: desktop 1280×800 nằm trong một màn hình (không cuộn), điện thoại tối đa ~2 màn.
@@ -111,7 +112,7 @@ function RandomKanji({ kanji, onOpenKanji, onOpenWord }: { kanji: KanjiEntry; on
           <span className="block truncate text-[clamp(1.375rem,6cqw,2rem)] leading-tight font-bold tracking-wide">{kanji.hanViet}</span>
           <KanjiReadingsCompact ch={kanji.kanji} truncate className="mt-0.5" />
           <span className="mt-0.5 block text-sm text-muted" data-word-total={total}>
-            <span className="tabular-nums">{total}</span>{t('home.tu3')}{kanji.firstLevel && t('home.tu2', { firstLevel: kanji.firstLevel })}
+            {t('common.unitCount', { n: total, unit: 'word' })}{kanji.firstLevel && t('home.tu2', { firstLevel: kanji.firstLevel })}
           </span>
         </span>
       </button>
@@ -121,13 +122,13 @@ function RandomKanji({ kanji, onOpenKanji, onOpenWord }: { kanji: KanjiEntry; on
             <button
               type="button"
               onClick={() => onOpenWord(w.id)}
-              className="-mx-2 flex min-h-11 min-w-0 flex-1 items-baseline gap-x-3 rounded-lg px-2 text-left hover:bg-surface/60"
+              className="-mx-2 flex min-h-11 min-w-0 flex-1 items-baseline gap-x-3 overflow-hidden rounded-lg px-2 text-left hover:bg-surface/60"
             >
-              <span lang="ja" className="shrink-0 font-jp text-base font-semibold">
+              <span lang="ja" className="max-w-full shrink-0 truncate font-jp text-base font-semibold">
                 {w.word}
               </span>
               {w.reading && w.reading !== w.word && (
-                <span lang="ja" className="shrink-0 font-jp text-sm text-muted">
+                <span lang="ja" className="min-w-0 shrink truncate font-jp text-sm text-muted">
                   {w.reading}
                 </span>
               )}
@@ -241,8 +242,9 @@ function ReviewToday() {
     <section aria-labelledby="due" className={CARD} data-due-card>
       <h2 id="due" className="text-sm font-medium text-muted">{t('home.onTapHomNay')}</h2>
       <p className="mt-1 flex items-baseline gap-2">
-        <AnimatedNumber value={due} className={`text-4xl font-bold tabular-nums ${due > 0 ? 'text-ai' : 'text-muted'}`} />
-        <span className="text-muted">{t('home.theDenHan')}</span>
+        {tRich('home.dueCount', { n: due }, {
+          n: () => <AnimatedNumber value={due} className={`text-4xl font-bold tabular-nums ${due > 0 ? 'text-ai' : 'text-muted'}`} />,
+        })}
       </p>
       <p className="mt-1 min-h-5 text-sm text-muted" data-due-tomorrow>
         {due > 0 ? t('home.onXongDeGiu') : current.length > 0 ? t('home.ngayMaiThe', { tomorrow }) : t('home.hocBaiMoiThe')}
@@ -290,7 +292,7 @@ function ContinueCard() {
   }, [items, size, cards])
 
   const name = activity.kind === 'kanji' ? t('common.chuHan') : deckTitle({ kind: 'vocab', key: deck })
-  const unit = activity.kind === 'kanji' ? t('common.chu') : t('common.tu')
+  const unit = activity.kind === 'kanji' ? 'char' : 'word'
   const href = lesson ? (activity.kind === 'kanji' ? `/kanji?bai=${lesson.i + 1}` : `/vocab/${deck}/${lesson.i + 1}`) : '/learn'
   const started = Boolean(lesson && lesson.learned > 0)
   return (
@@ -305,7 +307,7 @@ function ContinueCard() {
           <div className="mt-2 flex items-center gap-3">
             <ProgressBar total={lesson.total} learned={lesson.learned} mastered={lesson.mastered} label={t('home.tienDoBai', { v: lesson.i + 1 })} />
             <span className="shrink-0 text-xs text-muted tabular-nums">
-              {lesson.learned}/{lesson.total} {unit}
+              {t('common.progressOf', { learned: lesson.learned, total: lesson.total, unit })}
             </span>
           </div>
         </>

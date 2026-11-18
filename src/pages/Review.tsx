@@ -24,6 +24,7 @@ import type { Grade, StudyEntry } from '../types'
 import { ResumePrompt } from '../components/study/ResumePrompt'
 import { useLeaveGuard, useStudySession } from '../hooks/useStudySession'
 import { formatDateTime, t as tr } from '../i18n'
+import { tRich } from '../i18n/rich'
 
 /** 4 mức chấm FSRS: Quên (Again) / Khó (Hard) / Nhớ (Good) / Dễ (Easy), phím 1–4. */
 const GRADES: { q: Grade; label: string; cls: string }[] = [
@@ -197,7 +198,7 @@ function Countdown({ due, onNow }: { due: number; onNow: () => void }) {
   return (
     <div className="flex flex-col items-center rounded-2xl border border-line bg-surface px-6 py-12 text-center" data-review-countdown>
       <GridCell className="size-24 text-ai">待</GridCell>
-      <h2 className="mt-5 text-xl font-semibold">{tr('review.theTiepTheoSau')}<span className="tabular-nums">{clock(due - now)}</span>
+      <h2 className="mt-5 text-xl font-semibold">{tRich('review.nextIn', { time: clock(due - now) }, { time: (s) => <span className="tabular-nums">{s}</span> })}
       </h2>
       <p className="mt-2 max-w-sm text-muted">{tr('review.theVuaHocDang')}</p>
       <Button onClick={onNow} className="mt-6 min-h-11 rounded-lg bg-ai px-5 font-semibold text-on-ai hover:opacity-90">{tr('review.onLuonBayGio')}</Button>
@@ -230,7 +231,7 @@ export function Review() {
   useEffect(() => {
     if (turn > 0 && queue) save({ done, lapses }, turn, turn + queue.length)
   }, [turn, done, lapses, queue, save])
-  const leaveGuard = useLeaveGuard(turn >= 3 && Boolean(queue?.length), { answered: turn, total: turn + (queue?.length ?? 0), unit: tr('review.the') })
+  const leaveGuard = useLeaveGuard(turn >= 3 && Boolean(queue?.length), { answered: turn, total: turn + (queue?.length ?? 0), unit: 'card' })
 
   const id = queue?.[0]
   const entry = id ? lookup.entries.get(id) : undefined
@@ -284,7 +285,7 @@ export function Review() {
         <ResumePrompt
           answered={saved.answered}
           total={saved.answered + queue.length}
-          unit={tr('review.the')}
+          unit="card"
           onResume={() => {
             setDone(saved.state.done ?? 0)
             setLapses(saved.state.lapses ?? 0)

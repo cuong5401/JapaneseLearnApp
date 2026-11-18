@@ -339,7 +339,7 @@ export function NotebookPage() {
         <>
           <LessonGrid
             items={cards}
-            unit={t('notebookPage.muc')}
+            unit="item"
             title={book.name}
             href={(i) => `${base}?bai=${i + 1}`}
             preview={(l) => l.slice(0, 4).map((c) => entryLabel(c.entry)).join('、')}

@@ -1,5 +1,6 @@
 import { Button } from '../Pressable'
 import { t } from '../../i18n'
+import type { CountUnit } from '../../i18n/units'
 
 /**
  * Mở lại bài đang làm dở: "Tiếp tục từ câu 8/20?" với Tiếp tục / Làm lại.
@@ -8,14 +9,14 @@ import { t } from '../../i18n'
 export function ResumePrompt({
   answered,
   total,
-  unit = t('resumePrompt.cau'),
+  unit = 'question',
   onResume,
   onRestart,
 }: {
   answered: number
   total: number
   /** "câu" (quiz) hoặc "thẻ" (flashcard) */
-  unit?: string
+  unit?: CountUnit
   onResume: () => void
   onRestart: () => void
 }) {

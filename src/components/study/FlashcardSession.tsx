@@ -365,7 +365,7 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
     } else memory.restart()
   }
 
-  const leaveGuard = useLeaveGuard(!done && pos >= 3 && !memory.offer, { answered: pos, total: queue.length, unit: t('flashcardSession.the2') })
+  const leaveGuard = useLeaveGuard(!done && pos >= 3 && !memory.offer, { answered: pos, total: queue.length, unit: 'card' })
 
   useEffect(() => {
     if (memory.offer) return
@@ -402,7 +402,7 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
   )
 
   if (memory.offer)
-    return <ResumePrompt answered={memory.offer.answered} total={memory.offer.total} unit={t('flashcardSession.the2')} onResume={resume} onRestart={memory.restart} />
+    return <ResumePrompt answered={memory.offer.answered} total={memory.offer.total} unit="card" onResume={resume} onRestart={memory.restart} />
 
   return (
     <StudyLayout aside={aside}>
@@ -420,7 +420,7 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
         ) : (
           <>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm text-muted">
-              <span className="tabular-nums lg:hidden">{t('flashcardSession.the')}{pos + 1}/{queue.length}
+              <span className="tabular-nums lg:hidden">{t('flashcardSession.cardOf', { at: pos + 1, total: queue.length })}
                 <span className="ml-3 text-matsu">{t('flashcardSession.nho', { known })}</span>
                 <span className="ml-3 text-beni">{t('flashcardSession.chuaNho2', { unknown })}</span>
               </span>

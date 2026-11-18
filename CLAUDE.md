@@ -109,20 +109,31 @@
   trong SRS + sổ tay một lần mỗi máy (import đầu tiên trong `main.tsx`) và khi nhập file tiến độ cũ (không có
   `radicalIds: 'kangxi'`). Đổi lại cách đánh số bộ thủ thì phải thêm migration mới.
 
-## Ngôn ngữ giao diện (i18n: Tiếng Việt / 日本語)
+## Ngôn ngữ giao diện (i18n: Tiếng Việt / 日本語, sẵn cho ngôn ngữ thứ 3)
 
 - **Mọi chữ giao diện qua từ điển**: `t('khóa', { thamSo })` từ `src/i18n` (menu, tiêu đề, nút, nhãn, placeholder, aria-label,
   title, toast, lỗi, màn trống, hộp thoại, tiêu đề / chân trang phiếu luyện viết…). Không viết chữ cứng trong JSX/TS:
   `scripts/check-i18n.mjs` (chạy trong `npm run lint`, CI) báo lỗi chuỗi có dấu tiếng Việt và chữ Latin ở JSX / thuộc tính hiển thị.
   Ngoại lệ có chủ đích: `// i18n-ignore` cuối dòng hoặc vùng `/* i18n-ignore-start */ … /* i18n-ignore-end */` (vd. thông báo
   kiểm tra dữ liệu cho script, tên nhóm ngữ pháp là giá trị dữ liệu, tên model AI).
-- Từ điển tự viết, khóa có kiểu chặt: `src/i18n/vi.ts` (gốc, `as const`) và `ja.ts` (`Dict` = đủ đúng khóa của vi; thiếu / thừa
-  là lỗi TypeScript; `src/i18n/i18n.test.ts` kiểm cùng khóa, cùng tham số `{ten}`, bản ja không còn chữ Việt). Thêm chữ mới:
-  thêm khóa vào **cả hai** file. Khóa `<khu vực>.<tên>` (khu vực = tên file, `common.*` cho chữ dùng chung).
-- Runtime `src/i18n/index.ts`: cả hai từ điển là chunk tải lười; `main.tsx` chờ `initLocale()` rồi mới render. Đổi ngôn ngữ
+- Từ điển tự viết, khóa có kiểu chặt: `src/i18n/vi.ts` (gốc, `as const`, định nghĩa bộ khóa `MessageKey`) và mỗi ngôn ngữ một
+  file `src/i18n/<mã>.ts` kiểu `Dict` (= đủ đúng khóa của vi; thiếu / thừa là lỗi TypeScript). Thêm chữ mới: thêm khóa vào
+  **mọi** file từ điển. Khóa `<khu vực>.<tên>` (khu vực = tên file, `common.*` cho chữ dùng chung).
+- **Bảng đăng ký duy nhất** `src/i18n/locales.ts` (`LOCALE_REGISTRY`: tên, mã Intl, `<title>`, import động từ điển). Mọi nơi khác
+  đọc từ đây: Cài đặt → Ngôn ngữ (`LOCALES`, `LOCALE_NAMES`), `isLocale` (Xuất / Nhập), `<html lang>`, Intl, test, script quét,
+  `scripts/build-pdf-fonts.mjs`, `scripts/i18n-review.mjs`. Không viết `'vi' | 'ja'` / `=== 'ja'` cho ngôn ngữ giao diện ở chỗ khác.
+- Runtime `src/i18n/index.ts`: từ điển là chunk tải lười; `main.tsx` chờ `initLocale()` rồi mới render. Đổi ngôn ngữ
   (`setLocale`) render lại cả cây (`LocaleRoot` key = ngôn ngữ, router giữ nguyên) → không tải lại trang; cập nhật `<html lang>`
-  và `<title>`. Lưu `jla:v1:locale`, **có** trong Xuất / Nhập tiến độ (`backup.locale`). Ngày / số: `formatDate`, `formatDateTime`,
-  `formatNumber` (Intl theo ngôn ngữ). Unit test nạp từ điển vi qua `src/i18n/testSetup.ts`.
+  và `<title>`. Lưu `jla:v1:locale`, **có** trong Xuất / Nhập tiến độ (`backup.locale`). Ngày / số theo Intl của ngôn ngữ:
+  `formatDate`, `formatDateTime`, `formatShortDate` (phiếu viết), `formatNumber`. Unit test nạp từ điển vi qua `src/i18n/testSetup.ts`.
+- **Cú pháp chuỗi** (tập con ICU, `formatMessage`): `{ten}`; `{n, number}`; số nhiều `{n, plural, =0 {…} one {# thẻ} other {# thẻ}}`
+  (Intl.PluralRules, `#` = số đã định dạng); `{x, select, a {…} other {…}}`. Tiếng Việt / Nhật không có số nhiều nên viết `{n} thẻ`;
+  ngôn ngữ có số nhiều viết `plural` ngay trong khóa đó (không cần khóa `_one` / `_other`).
+- **Câu có số phải trọn trong một khóa** (để ngôn ngữ khác tự đặt trật tự từ / số nhiều): không ghép `{số}{t('… thẻ')}` trong JSX.
+  Đơn vị đếm truyền dạng mã `CountUnit` (`src/i18n/units.ts`: word, char, radical, item, card, question) qua tham số `unit` và
+  `{unit, select, …}` (`common.unitCount`, `common.progressOf`, `lessonGrid.*`, `resumePrompt.*`). Phần cần định dạng riêng
+  trong câu (số đậm, số có hiệu ứng) dùng thẻ trong chuỗi + `tRich(key, params, { b: (s) => <strong>{s}</strong> })`
+  (`src/i18n/rich.tsx`), không tách câu.
 - **Không gọi `t()` lúc nạp module** (trước khi có từ điển): nhãn trong mảng / object cấp module dùng getter
   (`get label() { return t('…') }`); store tạo dữ liệu mặc định có chữ (sổ "Từ khó") phải khởi tạo lười. Bản dev báo
   `[i18n]` trên console nếu gọi sớm hoặc thiếu khóa; `tests/i18n.spec.ts` fail khi thấy cảnh báo này.
@@ -134,11 +145,32 @@
   giải thích của AI"); nội dung ở `src/lib/ai/content/{vi,ja}.ts` (không qua từ điển, bỏ qua khi quét). Khung giao diện của AI
   (nút, tiêu đề, placeholder, nhãn chế độ) theo ngôn ngữ giao diện. Dịch / tạo câu ví dụ (`complete.ts`) luôn ra tiếng Việt.
 - Font: `[lang='ja']:not(html)` dùng `--font-jp`; `<html lang="ja">` không đổi font giao diện (dữ liệu tiếng Việt giữ Be Vietnam Pro).
-- Phiếu luyện viết in chữ giao diện 日本語: `scripts/build-pdf-fonts.mjs` lấy thêm chữ của các khóa `layout.*`, `sources.*`,
-  `kanjiLessons.*` (… `PRINTED_KEYS`) vào subset Noto Sans JP → thêm khóa in trên phiếu thì sửa `PRINTED_KEYS` và chạy lại script.
+- Phiếu luyện viết in chữ giao diện: `scripts/build-pdf-fonts.mjs` lấy chữ của các khóa in trên phiếu (`PRINTED_KEYS`: `layout.*`,
+  `sources.*`, `kanjiLessons.*`, `writing.footer*`…) của MỌI ngôn ngữ đã đăng ký vào subset font Nhật + Latin → thêm khóa in trên
+  phiếu thì sửa `PRINTED_KEYS`; đổi bản dịch các khóa đó thì chạy lại script.
 - Tiếng Nhật: tự nhiên, ngắn kiểu app học (ホーム・学習・復習・ノート・マイページ・設定), câu thông báo dùng です・ます.
-- Test: `tests/i18n.spec.ts` (đổi ngôn ngữ không tải lại, dữ liệu vẫn tiếng Việt, AI mặc định tiếng Việt, PDF tiếng Nhật, chụp 7 màn
-  ở 390 / 1280px với `I18N_SHOTS=<thư mục>`, không tràn ngang, không lộ khóa).
+- Test: `src/i18n/i18n.test.ts` (chạy cho MỌI ngôn ngữ đã đăng ký: đủ khóa, tham số là tập con của bản vi, mọi chuỗi định dạng được
+  với số 1 và 5 không sót ngoặc, bản dịch không còn chữ Việt; plural / select / number); `tests/i18n.spec.ts` (đổi ngôn ngữ không tải
+  lại, dữ liệu vẫn tiếng Việt, AI mặc định tiếng Việt, PDF tiếng Nhật, chụp 7 màn ở 390 / 1280px với `I18N_SHOTS=<thư mục>`,
+  không tràn ngang, không lộ khóa).
+
+### Cách thêm ngôn ngữ mới (vd. tiếng Anh `en`)
+
+1. **Tạo từ điển** `src/i18n/en.ts`: chép `ja.ts`, đổi tên biến, dịch từng giá trị (giữ nguyên khóa và tên tham số `{ten}`).
+   Kiểu `Dict` bắt buộc đủ khóa. Câu có số dùng `plural`, vd. `"common.unitCount": "{n, plural, one {# {unit, select, word {word}
+   char {character} radical {radical} item {item} card {card} question {question} other {item}}} other {# {unit, select, word {words}
+   char {characters} radical {radicals} item {items} card {cards} question {questions} other {items}}}}"`. Thẻ `<b>…</b>`, `<n>…</n>`,
+   `<time>…</time>` giữ nguyên tên thẻ, đặt ở chỗ hợp ngữ pháp.
+2. **Đăng ký một dòng** trong `src/i18n/locales.ts`:
+   `en: { name: 'English', intl: 'en-US', title: 'Kotonoha | Learn Japanese', load: () => import('./en') },`
+   (thứ tự trong bảng = thứ tự trong Cài đặt; dòng đầu là ngôn ngữ mặc định / từ điển gốc, giữ `vi`).
+3. **Kiểm tra**: `npm test` (i18n.test tự chạy cho ngôn ngữ mới), `npm run lint`, `npm run build`,
+   `npm run i18n:review -- en` (bảng rà soát `docs/i18n-en-review.md`), `node scripts/build-pdf-fonts.mjs` (glyph cho chữ in trên phiếu).
+   Chụp màn bằng `tests/i18n.spec.ts` (đang viết cho `ja`: thêm bản cho ngôn ngữ mới nếu cần).
+- KHÔNG cần sửa gì khác: Cài đặt, Xuất / Nhập, `<html lang>`, `<title>`, ngày / số / số nhiều, script quét đều đọc bảng đăng ký.
+- Lưu ý: chữ Latin và chữ Nhật đã có font (giao diện và PDF). Hệ chữ khác (Hàn, Thái, Ả Rập…) phải thêm font vào `--font-sans`
+  (`src/index.css`) và vào `scripts/build-pdf-fonts.mjs`; ngôn ngữ viết phải sang trái cần thêm `dir`. Ngôn ngữ giải thích của AI là
+  việc riêng (`src/lib/ai/content/` + `ExplainLang`), không bắt buộc khi thêm ngôn ngữ giao diện.
 
 ## Quy tắc bắt buộc
 

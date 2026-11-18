@@ -9,6 +9,8 @@ import { ProgressBar } from './ProgressBar'
 import { Segmented } from './Segmented'
 import { Stagger, StaggerItem } from './Stagger'
 import { t } from '../i18n'
+import { tRich } from '../i18n/rich'
+import type { CountUnit } from '../i18n/units'
 
 const PER_PAGE = 40
 
@@ -54,7 +56,7 @@ function LessonTile({ href, index, preview, progress, current }: { href: string;
 interface Props<T extends { id: string }> {
   items: T[]
   /** Đơn vị đếm: "từ", "chữ", "bộ", "mục" */
-  unit: string
+  unit: CountUnit
   /** Tên bộ cho nhãn thanh tiến độ */
   title: string
   /** Đường dẫn tới bài thứ `index` (bắt đầu từ 0) */
@@ -103,7 +105,7 @@ export function LessonGrid<T extends { id: string }>({ items, unit, title, href,
       <section className="grid gap-4 rounded-2xl border border-line bg-surface p-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
         <div>
           <p className="text-sm text-muted">
-            <AnimatedNumber value={items.length} className="font-semibold text-ink" /> {unit}{t('lessonGrid.chiaThanh')}{lessons.length}{t('lessonGrid.bai2')}</p>
+            {tRich('lessonGrid.summary', { count: items.length, unit, lessons: lessons.length }, { b: () => <AnimatedNumber value={items.length} className="font-semibold text-ink" /> })}</p>
           <div className="mt-3 flex items-center gap-3">
             <ProgressBar {...stats} label={t('lessonGrid.tienDo', { title })} />
             <span className="shrink-0 text-sm tabular-nums text-muted">
@@ -120,7 +122,7 @@ export function LessonGrid<T extends { id: string }>({ items, unit, title, href,
                 setLessonSize(v)
                 setPage(null)
               }}
-              options={LESSON_SIZES.map((n) => ({ value: n, label: `${n} ${unit}` }))}
+              options={LESSON_SIZES.map((n) => ({ value: n, label: t('common.unitCount', { n, unit }) }))}
             />
           </div>
         </div>

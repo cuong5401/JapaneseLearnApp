@@ -1,7 +1,7 @@
 # Rà soát bản dịch giao diện 日本語
 
-Sinh tự động bằng `npm run i18n:review` từ `src/i18n/vi.ts` và `src/i18n/ja.ts` (1007 khóa).
-Sửa bản dịch trong `src/i18n/ja.ts` rồi chạy lại lệnh này. `{ten}` là tham số (số, tên…) được điền khi chạy.
+Sinh tự động bằng `npm run i18n:review` từ `src/i18n/vi.ts` và `src/i18n/ja.ts` (998 khóa).
+Sửa bản dịch trong `src/i18n/ja.ts` rồi chạy lại lệnh này. `{ten}` là tham số; `{n, plural, …}` / `{unit, select, …}` là số nhiều / chọn nhánh; `<b>…</b>` là phần được định dạng riêng.
 Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, cách dùng trợ số từ, câu dịch ví dụ) không nằm ở đây: luôn là tiếng Việt.
 
 ## aboutSources
@@ -192,7 +192,6 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `common.cheDoHoc` | Chế độ học | 学習モード |
 | `common.chinhXac` | Chính xác | 正解 |
 | `common.chonDapAn` | Chọn đáp án | 答えを選ぶ |
-| `common.chu` | chữ | 字 |
 | `common.chuHan` | Chữ Hán | 漢字 |
 | `common.chuaHoc` | Chưa học | 未学習 |
 | `common.daHoc` | Đã học | 学習済み |
@@ -223,14 +222,15 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `common.nguPhap` | Ngữ pháp {level} | 文法 {level} |
 | `common.nguPhap2` | Ngữ pháp | 文法 |
 | `common.onTap` | Ôn tập | 復習 |
+| `common.progressOf` | {learned}/{total} {unit, select, word {từ} char {chữ} radical {bộ} item {mục} card {thẻ} question {câu} other {mục}} | {learned}/{total} {unit, select, word {語} char {字} radical {部首} item {項目} card {枚} question {問} other {件}} |
 | `common.quiz` | Quiz | クイズ |
 | `common.soTay` | Sổ tay | ノート |
 | `common.tatCa` | Tất cả | すべて |
 | `common.thuLai` | Thử lại | 再試行 |
 | `common.trangChu` | Trang chủ | ホーム |
-| `common.tu` | từ | 語 |
 | `common.tuChuaChuNay` | {wordCount} từ chứa chữ này | この字を含む語 {wordCount} 語 |
 | `common.tuVung` | Từ vựng | 語彙 |
+| `common.unitCount` | {n} {unit, select, word {từ} char {chữ} radical {bộ} item {mục} card {thẻ} question {câu} other {mục}} | {n} {unit, select, word {語} char {字} radical {部首} item {項目} card {枚} question {問} other {件}} |
 | `common.viDu` | Ví dụ | 例文 |
 | `common.wrong` | Sai | 不正解 |
 | `common.xemKetQua` | Xem kết quả | 結果を見る |
@@ -321,8 +321,8 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 
 | Khóa | Tiếng Việt | 日本語 |
 |---|---|---|
-| `deckHub.daHoc` | Đã học  | 学習済み  |
-| `deckHub.daThuoc` | Đã thuộc  | 習得済み  |
+| `deckHub.learnedOf` | Đã học <b>{learned}</b>/{total} | 学習済み <b>{learned}</b>/{total} |
+| `deckHub.masteredOf` | Đã thuộc <b>{mastered}</b> | 習得 <b>{mastered}</b> |
 | `deckHub.theCuaBoNay` | {due} thẻ của bộ này đang đến hạn ôn | このセットのカード {due} 枚が復習時期です |
 | `deckHub.thuatNguVuotDe` | {length} thuật ngữ, vuốt để chấm nhớ / chưa nhớ | 用語 {length} 語。スワイプで覚えた／まだを判定 |
 | `deckHub.tienDoBoNay` | Tiến độ bộ này | このセットの進み具合 |
@@ -396,6 +396,7 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 
 | Khóa | Tiếng Việt | 日本語 |
 |---|---|---|
+| `flashcardSession.cardOf` | Thẻ {at}/{total} | {at}/{total} 枚目 |
 | `flashcardSession.chamDeLatThe` | {label}. Chạm để lật thẻ | {label}。タップでカードをめくる |
 | `flashcardSession.chuaNho` | Chưa nhớ | まだ |
 | `flashcardSession.chuaNho2` | Chưa nhớ {unknown} | まだ {unknown} |
@@ -409,8 +410,6 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `flashcardSession.matSauChamDe` | {label}, mặt sau. Chạm để lật lại | {label}、裏面。タップで表に戻す |
 | `flashcardSession.moiTheDaVao` | Mọi thẻ đã vào lịch ôn. Thẻ chưa nhớ sẽ quay lại sớm hơn. | すべてのカードが復習に入りました。「まだ」のカードは早めに出てきます。 |
 | `flashcardSession.nho` | Nhớ {known} | 覚えた {known} |
-| `flashcardSession.the` | Thẻ  | カード  |
-| `flashcardSession.the2` | thẻ | 枚 |
 | `flashcardSession.theHienTai` | Thẻ hiện tại | 現在のカード |
 | `flashcardSession.tronThe` | Trộn thẻ | シャッフル |
 | `flashcardSession.vuotTraiNeuChua` | Vuốt trái nếu chưa nhớ, vuốt phải nếu đã nhớ | まだなら左へ、覚えたなら右へスワイプ |
@@ -574,6 +573,7 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `home.dangTaiBaiHoc` | Đang tải bài học tiếp | 続きの課を読み込み中 |
 | `home.dangTaiChuHan` | Đang tải chữ Hán ngẫu nhiên | ランダム漢字を読み込み中 |
 | `home.dangTaiTuDi` | Đang tải từ đi kèm | 関連語を読み込み中 |
+| `home.dueCount` | <n>{n}</n> thẻ đến hạn | <n>{n}</n> 枚が復習時期 |
 | `home.hocBaiMoiThe` | Học bài mới, thẻ sẽ tự vào lịch ôn. | 新しい課を学ぶと、カードが自動で復習に入ります。 |
 | `home.hocTiep` | Học tiếp | 続きを学ぶ |
 | `home.kotonohaTrangChu` | Kotonoha – Trang chủ | Kotonoha – ホーム |
@@ -582,12 +582,10 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `home.onTapHomNay` | Ôn tập hôm nay | 今日の復習 |
 | `home.onXongDeGiu` | Ôn xong để giữ nhịp nhớ. | 復習を終えて記憶のリズムを保ちましょう。 |
 | `home.tatCa` | Tất cả → | すべて → |
-| `home.theDenHan` | thẻ đến hạn | 枚が復習時期 |
 | `home.tienDoBai` | Tiến độ bài {v} | 第{v}課の進み具合 |
 | `home.tiepTuc` | Tiếp tục | 続ける |
 | `home.tu` | {learned}/{total} từ | {learned}/{total} 語 |
 | `home.tu2` |  · từ {firstLevel} | ・{firstLevel} の語 |
-| `home.tu3` |  từ |  語 |
 | `home.tuCoChu` | Từ có chữ {kanji} | {kanji} を含む語 |
 | `home.xemChiTietChu` | Xem chi tiết chữ {kanji}, {hanViet} | {kanji}（{hanViet}）の詳細を見る |
 | `home.xemLichOn` | Xem lịch ôn | 復習予定を見る |
@@ -641,7 +639,6 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `kana.chonHangMuonLuyen` | Chọn hàng muốn luyện bằng ô đầu hàng. Chạm vào chữ để nghe và xem chi tiết. | 行の先頭のチェックで練習する行を選びます。字をタップすると発音と詳細が出ます。 |
 | `kana.chonItNhatMot` | Chọn ít nhất một hàng để luyện | 練習する行を 1 つ以上選んでください |
 | `kana.chonTatCa` | Chọn tất cả | すべて選択 |
-| `kana.chu` | chữ  | 字  |
 | `kana.chuYeu` | Chữ yếu ({v}) | 苦手な字（{v}） |
 | `kana.chuaCoChuNao` | Chưa có chữ nào trả lời sai | まだ間違えた字はありません |
 | `kana.chuaLuyenChuNao` | Chưa luyện chữ nào | まだ練習した字はありません |
@@ -653,6 +650,7 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `kana.luyenChuDaChon` | Luyện {count} chữ đã chọn | 選んだ {count} 字を練習 |
 | `kana.luyenChuYeu` | Luyện chữ yếu{v} | 苦手な字を練習{v} |
 | `kana.luyenKana` | Luyện kana | かなの練習 |
+| `kana.masteredOf` | Đã thuộc <b>{mastered}/{total}</b> chữ {script} | {script} 習得 <b>{mastered}/{total}</b> |
 | `kana.onNgauNhien` | Ôn ngẫu nhiên ({v}) | ランダム復習（{v}） |
 | `kana.onNgauNhien20` | Ôn ngẫu nhiên 20 chữ đã học | 学習済みの字からランダムに 20 字 |
 
@@ -729,7 +727,6 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 
 | Khóa | Tiếng Việt | 日本語 |
 |---|---|---|
-| `kanji.bo` | bộ | 部首 |
 | `kanji.bo2` | bộ {radical} {name} | 部首 {radical} {name} |
 | `kanji.bo3` | bộ {name} | 部首 {name} |
 | `kanji.bo4` | Bộ {radical}, {name} | 部首 {radical}、{name} |
@@ -877,15 +874,14 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | Khóa | Tiếng Việt | 日本語 |
 |---|---|---|
 | `lessonGrid.bai` | Bài {v}–{min} | 第{v}–{min}課 |
-| `lessonGrid.bai2` |  bài |  課 |
 | `lessonGrid.baiDaHoc` | Bài {v}, {text}, đã học {learned}/{total} | 第{v}課、{text}、学習済み {learned}/{total} |
 | `lessonGrid.cacBai` | Các bài | 課の一覧 |
-| `lessonGrid.chiaThanh` | , chia thành  | 、課の数  |
 | `lessonGrid.chuaCoMucNao` | Chưa có mục nào. | まだ項目がありません。 |
 | `lessonGrid.hocBai` | Học Bài {v} | 第{v}課を学ぶ |
 | `lessonGrid.hocTiepBai` | Học tiếp Bài {v} | 第{v}課の続きを学ぶ |
 | `lessonGrid.moiBai` | Mỗi bài | 1 課あたり |
-| `lessonGrid.soMoiBai` | Số {unit} mỗi bài | 1 課あたりの{unit}数 |
+| `lessonGrid.soMoiBai` | Số {unit, select, word {từ} char {chữ} radical {bộ} item {mục} card {thẻ} question {câu} other {mục}} mỗi bài | 1 課あたりの{unit, select, word {語} char {字} radical {部首} item {項目} card {枚} question {問} other {件}}数 |
+| `lessonGrid.summary` | <b>{count}</b> {unit, select, word {từ} char {chữ} radical {bộ} item {mục} card {thẻ} question {câu} other {mục}}, chia thành {lessons} bài | <b>{count}</b> {unit, select, word {語} char {字} radical {部首} item {項目} card {枚} question {問} other {件}}、{lessons} 課に分割 |
 | `lessonGrid.tienDo` | Tiến độ {title} | {title} の進み具合 |
 | `lessonGrid.tienDoBai` | Tiến độ bài {v} | 第{v}課の進み具合 |
 | `lessonGrid.trangDanhSachBai` | Trang danh sách bài | 課の一覧のページ |
@@ -959,7 +955,6 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `notebookPage.mauNayNghiaLa` | Mẫu này nghĩa là gì? | この文型の意味は？ |
 | `notebookPage.moDeXemGiai` | Mở để xem giải thích | 開いて説明を見る |
 | `notebookPage.moiMucDaCo` | Mọi mục đã có trong lịch ôn | すべての項目が復習に入っています |
-| `notebookPage.muc` | mục | 項目 |
 | `notebookPage.muc2` | {length} mục | {length} 項目 |
 | `notebookPage.mucKhongConTrong` | {length} mục không còn trong dữ liệu | データにない項目が {length} 件あります |
 | `notebookPage.quizSoTay` | Quiz sổ tay | ノートのクイズ |
@@ -1042,9 +1037,8 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `progress.daHoc` |  Đã học |  学習済み |
 | `progress.daThuoc` | {mastered} đã thuộc{v} | 習得 {mastered}{v} |
 | `progress.daThuocDangHoc` | {mastered} đã thuộc, {v} đang học | 習得 {mastered}、学習中 {v} |
-| `progress.daThuocKhoangCach` |  Đã thuộc (khoảng cách ôn từ  |  習得（復習間隔  |
 | `progress.duePart` | , {n} cần ôn | 、復習 {n} |
-| `progress.ngay` |  ngày) |  日以上） |
+| `progress.masteredLegend` |  Đã thuộc (khoảng cách ôn từ {n} ngày) |  習得（復習間隔 {n} 日以上） |
 | `progress.nguPhap` | Ngữ pháp {l} | 文法 {l} |
 | `progress.thuatNguChuyenNganh` | Thuật ngữ chuyên ngành | 専門用語 |
 | `progress.tienDo` | Tiến độ | 学習の進み具合 |
@@ -1110,9 +1104,9 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `radicalDetail.bo` | bộ {name} | 部首 {name} |
 | `radicalDetail.boChinhCuaChu` | Bộ chính của chữ theo Unicode Unihan. | Unicode Unihan による字の主な部首です。 |
 | `radicalDetail.boSoNet` | Bộ số {no} · {strokes} nét | 部首番号 {no}・{strokes} 画 |
+| `radicalDetail.charsInRadical` | {n} chữ Hán thuộc bộ này | この部首の漢字 {n} 字 |
 | `radicalDetail.chiTietBo` | Chi tiết bộ {radical} | 部首 {radical} の詳細 |
 | `radicalDetail.chu` | Chữ {ch}{v} | 字 {ch}{v} |
-| `radicalDetail.chuHanThuocBo` |  chữ Hán thuộc bộ này |  字がこの部首に属します |
 | `radicalDetail.chuaCoTrongDu` |  (chưa có trong dữ liệu) | （データにありません） |
 | `radicalDetail.daHocBoNay` | Đã học bộ này | この部首は学習済み |
 | `radicalDetail.dangKhac` | Dạng khác: | 別の形： |
@@ -1136,11 +1130,10 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | Khóa | Tiếng Việt | 日本語 |
 |---|---|---|
 | `resumePrompt.banDangLamDo` | Bạn đang làm dở bài này | この課は途中です |
-| `resumePrompt.cau` | câu | 問 |
-| `resumePrompt.daChamKetQua` | Đã chấm {answered} {unit}. Kết quả đã chấm vẫn nằm trong lịch ôn dù bạn chọn làm lại. | {answered} {unit}判定済みです。やり直しても、判定済みの結果は復習に残ります。 |
+| `resumePrompt.daChamKetQua` | Đã chấm {answered} {unit, select, word {từ} char {chữ} radical {bộ} item {mục} card {thẻ} question {câu} other {mục}}. Kết quả đã chấm vẫn nằm trong lịch ôn dù bạn chọn làm lại. | {answered} {unit, select, word {語} char {字} radical {部首} item {項目} card {枚} question {問} other {件}}判定済みです。やり直しても、判定済みの結果は復習に残ります。 |
 | `resumePrompt.lamLai` | Làm lại | 最初から |
 | `resumePrompt.tiepTuc` | Tiếp tục | 続ける |
-| `resumePrompt.tiepTucTu` | Tiếp tục từ {unit} {at}/{total}? | {at}/{total} {unit}目から続けますか？ |
+| `resumePrompt.tiepTucTu` | Tiếp tục từ {unit, select, word {từ} char {chữ} radical {bộ} item {mục} card {thẻ} question {câu} other {mục}} {at}/{total}? | {at}/{total} {unit, select, word {語} char {字} radical {部首} item {項目} card {枚} question {問} other {件}}目から続けますか？ |
 
 ## review
 
@@ -1161,6 +1154,7 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `review.kindDeck` | {kind}, {deck} | {kind}・{deck} |
 | `review.latThe` | Lật thẻ | カードをめくる |
 | `review.mauNayChuaTach` | Mẫu này chưa tách được ý nghĩa, mở trang chi tiết để xem. | この文型は意味をまだ取り出せていません。詳細ページで確認してください。 |
+| `review.nextIn` | Thẻ tiếp theo sau <time>{time}</time> | 次のカードまで <time>{time}</time> |
 | `review.nho` | Nhớ | 覚えた |
 | `review.nhoLaiCachDoc` | Nhớ lại cách đọc và nghĩa rồi lật thẻ. | 読み方と意味を思い出してから、カードをめくってください。 |
 | `review.onLuonBayGio` | Ôn luôn bây giờ | 今すぐ復習 |
@@ -1169,9 +1163,7 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `review.quenTrongPhien` | Quên trong phiên | 今回忘れた数 |
 | `review.so` | {radical} số {no} | {radical} 番号 {no} |
 | `review.so2` | {counter}: số + {counter2} | {counter}：数＋{counter2} |
-| `review.the` | thẻ | 枚 |
 | `review.theTiepTheoDen` | Thẻ tiếp theo đến hạn lúc {time}. | 次のカードは {time} に復習時期になります。 |
-| `review.theTiepTheoSau` | Thẻ tiếp theo sau  | 次のカードまで  |
 | `review.theVuaHocDang` | Thẻ vừa học đang ở bước nhắc lại ngắn. Chờ một chút để nhớ chắc hơn, hoặc ôn luôn. | 学習したばかりのカードは短い間隔で繰り返し中です。少し待つとより定着します。今すぐ復習もできます。 |
 | `review.xemGiaiThichDay` | Xem giải thích đầy đủ | 詳しい説明を見る |
 | `review.xongTheHetThe` | Xong {done} thẻ. Hết thẻ cần ôn. | {done} 枚完了。復習するカードはもうありません。 |
@@ -1425,11 +1417,10 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 
 | Khóa | Tiếng Việt | 日本語 |
 |---|---|---|
-| `useStudySession.cau` | câu | 問 |
 | `useStudySession.hocTiep` | Học tiếp | 学習を続ける |
 | `useStudySession.roiPhienHoc` | Rời phiên học? | 学習を中断しますか？ |
 | `useStudySession.roiTrang` | Rời trang | ページを離れる |
-| `useStudySession.tienDoDaDuoc` | Tiến độ đã được lưu ({unit} {answered}/{total}). Mở lại bài này để tiếp tục từ chỗ đang dừng. | 進み具合は保存されています（{answered}/{total} {unit}）。この課をもう一度開くと、続きから再開できます。 |
+| `useStudySession.tienDoDaDuoc` | Tiến độ đã được lưu ({unit, select, word {từ} char {chữ} radical {bộ} item {mục} card {thẻ} question {câu} other {mục}} {answered}/{total}). Mở lại bài này để tiếp tục từ chỗ đang dừng. | 進み具合は保存されています（{answered}/{total} {unit, select, word {語} char {字} radical {部首} item {項目} card {枚} question {問} other {件}}）。この課をもう一度開くと、続きから再開できます。 |
 
 ## useStudyStats
 

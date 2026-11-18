@@ -23,7 +23,7 @@ function DeckBody({ deckKey, items }: { deckKey: VocabDeckKey; items: VocabItem[
   return (
     <LessonGrid
       items={items}
-      unit={t('common.tu')}
+      unit="word"
       title={deckTitle({ kind: 'vocab', key: deckKey })}
       href={(i) => `/vocab/${deckKey}/${i + 1}`}
       preview={(l) =>

@@ -3,6 +3,7 @@ import { useBlocker, useLocation, type BlockerFunction } from 'react-router-dom'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { clearSession, leavesSession, readSession, sessionKey, writeSession, type SavedSession } from '../lib/studySession'
 import { t } from '../i18n'
+import type { CountUnit } from '../i18n/units'
 
 /**
  * Nhớ phiên học đang dở theo bài (sessionStorage, xem `lib/studySession.ts`).
@@ -34,7 +35,7 @@ export function useStudySession<S>(kind: string, ids: readonly string[]) {
  * Đã làm ≥ 3 câu mà chưa xong: bấm điều hướng / Back / đổi tab hỏi lại bằng hộp thoại của app.
  * Tiến độ đã lưu nên chỉ cần nói rõ là mở lại bài sẽ tiếp tục được.
  */
-export function useLeaveGuard(active: boolean, info: { answered: number; total: number; unit?: string }) {
+export function useLeaveGuard(active: boolean, info: { answered: number; total: number; unit?: CountUnit }) {
   // useBlocker gỡ blocker trong cleanup của useEffect (chạy trễ sau khi trang đã đổi): bấm Back ngay sau khi rời
   // trang thì blocker cũ vẫn chặn. Cờ đặt bằng layout effect (dọn đồng bộ khi unmount) + cờ "đang rời" chặn việc đó.
   const mounted = useRef(false)
@@ -59,7 +60,7 @@ export function useLeaveGuard(active: boolean, info: { answered: number; total: 
   }, [blocked, active, blocker])
 
   if (!blocked) return null
-  const unit = info.unit ?? t('useStudySession.cau')
+  const unit = info.unit ?? 'question'
   return (
     <ConfirmDialog
       title={t('useStudySession.roiPhienHoc')}

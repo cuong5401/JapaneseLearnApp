@@ -17,6 +17,7 @@ import { speak } from '../lib/speech'
 import { readJSON, writeJSON } from '../lib/storage'
 import type { KanaChar, KanaScript } from '../types'
 import { t } from '../i18n'
+import { tRich } from '../i18n/rich'
 
 /* Lựa chọn trên bảng (nhớ giữa các lần mở): bảng chữ đang xem và các hàng đã chọn. */
 interface ChartState {
@@ -139,10 +140,8 @@ export function Kana() {
   return (
     <div>
       <PageHeader title={t('kana.luyenKana')} back={{ to: '/', label: t('common.trangChu') }}>
-        <p className="text-sm text-muted" data-kana-mastered>{t('common.daThuoc')}{' '}
-          <strong className="text-lg text-ink tabular-nums">
-            {mastered}/{all.length}
-          </strong>{' '}{t('kana.chu')}{SCRIPT_LABELS[script]}
+        <p className="text-sm text-muted" data-kana-mastered>
+          {tRich('kana.masteredOf', { mastered, total: all.length, script: SCRIPT_LABELS[script] }, { b: (s) => <strong className="text-lg text-ink tabular-nums">{s}</strong> })}
         </p>
       </PageHeader>
 

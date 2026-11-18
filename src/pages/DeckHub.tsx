@@ -14,6 +14,7 @@ import { useStats } from '../hooks/useProgress'
 import type { TermCategory } from '../types'
 import { NotFound } from './NotFound'
 import { t } from '../i18n'
+import { tRich } from '../i18n/rich'
 
 /** Trang nhóm thuật ngữ chuyên ngành (dữ liệu đóng gói sẵn, không chia bài). */
 function TermHub({ category }: { category: TermCategory }) {
@@ -37,10 +38,8 @@ function TermHub({ category }: { category: TermCategory }) {
 
       <div className="rounded-xl border border-line bg-surface p-4">
         <div className="flex items-baseline justify-between text-sm">
-          <span>{t('deckHub.daHoc')}<strong className="tabular-nums">{stats.learned}</strong>/{stats.total}
-          </span>
-          <span className="text-muted">{t('deckHub.daThuoc')}<strong className="tabular-nums text-ink">{stats.mastered}</strong>
-          </span>
+          <span>{tRich('deckHub.learnedOf', { learned: stats.learned, total: stats.total }, { b: (s) => <strong className="tabular-nums">{s}</strong> })}</span>
+          <span className="text-muted">{tRich('deckHub.masteredOf', { mastered: stats.mastered }, { b: (s) => <strong className="tabular-nums text-ink">{s}</strong> })}</span>
         </div>
         <div className="mt-2.5">
           <ProgressBar {...stats} label={t('deckHub.tienDoBoNay')} />

@@ -10,6 +10,7 @@ import { usePrefixStats, type DeckStats } from '../hooks/useProgress'
 import { useCounterSummary, useGrammarStats, useKanaSummary } from '../hooks/useStudyStats'
 import { TERM_CATEGORIES, type DataManifest, type TermCategory, type VocabDeckKey } from '../types'
 import { t } from '../i18n'
+import type { CountUnit } from '../i18n/units'
 
 /**
  * /learn: mọi thứ để học, theo nhóm có tiêu đề nhỏ. Thẻ cỡ vừa, mỗi thẻ có tiến độ.
@@ -19,11 +20,11 @@ import { t } from '../i18n'
 const count = (m: DataManifest | undefined, path: string) => m?.files.find((f) => f.path === path)?.count
 
 /** Dòng tiến độ: thanh + "đã học/tổng". Giữ chiều cao cố định khi chưa có tổng số. */
-function StatLine({ stats, total, unit, label }: { stats: Pick<DeckStats, 'learned' | 'mastered'>; total?: number; unit: string; label: string }) {
+function StatLine({ stats, total, unit, label }: { stats: Pick<DeckStats, 'learned' | 'mastered'>; total?: number; unit: CountUnit; label: string }) {
   return (
     <span className="flex h-5 items-center gap-3">
       <ProgressBar total={total ?? 0} learned={stats.learned} mastered={stats.mastered} label={label} />
-      <span className="w-24 shrink-0 text-right text-xs text-muted tabular-nums">{total === undefined ? '…' : `${stats.learned}/${total} ${unit}`}</span>
+      <span className="w-24 shrink-0 text-right text-xs text-muted tabular-nums">{total === undefined ? '…' : t('common.progressOf', { learned: stats.learned, total, unit })}</span>
     </span>
   )
 }
@@ -67,7 +68,7 @@ function HubCard({
 const chip = 'inline-flex min-h-11 items-center rounded-lg border border-line px-3 text-sm font-medium hover:border-ai hover:text-ai'
 
 /** Một dòng bộ từ trong thẻ nhiều dòng (JLPT, Bộ từ khác, Thuật ngữ). */
-function DeckRow({ to, glyph, fit, name, sub, prefix, total, idPattern, unit = t('common.tu') }: { to: string; glyph: string; fit?: number; name: string; sub: string; prefix: string; total?: number; idPattern?: string; unit?: string }) {
+function DeckRow({ to, glyph, fit, name, sub, prefix, total, idPattern, unit = 'word' }: { to: string; glyph: string; fit?: number; name: string; sub: string; prefix: string; total?: number; idPattern?: string; unit?: CountUnit }) {
   const s = usePrefixStats(prefix, total ?? 0, idPattern)
   return (
     <li>
@@ -187,7 +188,7 @@ export function Learn() {
               <Link to="/kanji?tab=radicals" className={chip}>{t('common.boThu')}</Link>
             }
           >
-            <StatLine stats={kanji} total={kanjiTotal} unit={t('common.chu')} label={t('learn.tienDoChuHan')} />
+            <StatLine stats={kanji} total={kanjiTotal} unit="char" label={t('learn.tienDoChuHan')} />
           </HubCard>
         </StaggerItem>
         <StaggerItem as="li">

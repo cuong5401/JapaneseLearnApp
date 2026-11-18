@@ -47,7 +47,7 @@ export function RadicalDetail({ item, onPush }: { item: RadicalItem; onPush: (f:
         {learned ? t('radicalDetail.daHocBoNay') : t('common.danhDauDaHoc')}
       </Button>
       <h3 className="mt-6 mb-2 text-sm font-semibold text-muted">
-        {chars.length}{t('radicalDetail.chuHanThuocBo')}{chars.length === 0 && <span className="font-normal">{t('radicalDetail.chuaCoTrongDu')}</span>}
+        {t('radicalDetail.charsInRadical', { n: chars.length })}{chars.length === 0 && <span className="font-normal">{t('radicalDetail.chuaCoTrongDu')}</span>}
       </h3>
       {chars.length > 0 && (
         <ul className="grid min-h-48 grid-cols-[repeat(auto-fill,minmax(72px,1fr))] content-start gap-2" data-radical-chars>

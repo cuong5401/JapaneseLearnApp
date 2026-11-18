@@ -288,7 +288,7 @@ export function Kanji() {
       body = (
         <LessonGrid
           items={filtered}
-          unit={t('common.chu')}
+          unit="char"
           title={t('kanji.chuHan', { toLowerCase: levelLabel.toLowerCase() })}
           href={(i) => lessonHref(i)}
           preview={(l) => l.slice(0, 6).map((k) => k.kanji).join('')}
@@ -357,7 +357,7 @@ export function Kanji() {
           ) : (
             <LessonGrid
               items={radicals.data}
-              unit={t('kanji.bo')}
+              unit="radical"
               title={t('common.boThu')}
               href={(i) => lessonHref(i)}
               preview={(l) => l.slice(0, 6).map((r) => r.radical).join('')}

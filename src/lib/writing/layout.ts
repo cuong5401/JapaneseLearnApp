@@ -1,6 +1,6 @@
 import { displayKun, kunSegments } from '../readings'
 import { fadeCount, type WritingOptions } from './options'
-import { getLocale, t } from '../../i18n'
+import { formatShortDate, t } from '../../i18n'
 
 /**
  * Bố cục phiếu luyện viết (hàm thuần, đơn vị point = 1/72 inch, gốc tọa độ góc trên trái).
@@ -395,8 +395,5 @@ export function fileName(fileKey: string, ext: 'pdf' | 'docx') {
   return `Kotonoha-luyen-viet-${fileKey || 'phieu'}.${ext}`
 }
 
-export function formatDate(d: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0')
-  // Theo ngôn ngữ giao diện: 18/11/2026 (vi) · 2026/11/18 (ja)
-  return getLocale() === 'ja' ? `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}` : `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`
-}
+/** Ngày in trên phiếu, theo ngôn ngữ giao diện (Intl): 18/11/2026 (vi) · 2026/11/18 (ja). */
+export const formatDate = (d: Date): string => formatShortDate(d)
