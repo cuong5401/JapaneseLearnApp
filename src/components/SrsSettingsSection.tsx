@@ -41,7 +41,7 @@ export function SrsSettingsSection() {
           step={0.01}
           value={s.retention}
           onChange={(e) => srsSettings.set({ retention: Number(e.target.value) })}
-          className="mt-2 w-full accent-[var(--ai)]"
+          className="mt-1 h-11 w-full cursor-pointer accent-[var(--ai)]"
           aria-describedby="retention-help"
         />
         <span className="flex justify-between text-xs text-muted" aria-hidden>

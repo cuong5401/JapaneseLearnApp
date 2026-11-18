@@ -59,7 +59,7 @@ function GroupChips({ options, value, onChange }: { options: { value: string; la
             aria-pressed={on}
             data-group-chip={o.value || 'all'}
             onClick={() => onChange(o.value)}
-            className={`min-h-10 rounded-full border px-3.5 text-sm font-medium transition-colors ${
+            className={`min-h-11 rounded-full border px-3.5 text-sm font-medium transition-colors ${
               on ? 'border-ai bg-ai text-on-ai' : 'border-line bg-surface hover:border-ai'
             }`}
           >

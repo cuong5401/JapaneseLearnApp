@@ -272,7 +272,7 @@ export function StrokeOrderToggle({ char, label = 'Xem cách viết' }: { char: 
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-line px-3 text-sm font-medium text-ai hover:border-ai"
+        className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-line px-3 text-sm font-medium text-ai hover:border-ai"
       >
         <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
           <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z" />

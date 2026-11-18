@@ -1,6 +1,5 @@
 import { AnimatePresence, motion, useIsPresent } from 'motion/react'
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type RefObject } from 'react'
-import { createPortal } from 'react-dom'
 import { KANA_BY_ID } from '../../data/kana'
 import { kanaMatches } from '../../lib/answer'
 import { kanaProgress, type KanaStat } from '../../lib/kanaProgress'
@@ -30,6 +29,8 @@ import { GridCell } from '../GridCell'
 import { Button } from '../Pressable'
 import { Segmented } from '../Segmented'
 import { useDockQuiet } from '../../lib/ai/dock'
+import { useLeaveGuard, useStudySession } from '../../hooks/useStudySession'
+import { ResumePrompt } from '../study/ResumePrompt'
 
 /* ───────────── Cài đặt (nhớ lựa chọn lần trước) ───────────── */
 
@@ -497,45 +498,6 @@ function Result({
   )
 }
 
-/* ───────────── Hộp xác nhận thoát ───────────── */
-
-function ConfirmExit({ onStay, onLeave }: { onStay: () => void; onLeave: () => void }) {
-  const stayRef = useRef<HTMLButtonElement>(null)
-  useEffect(() => {
-    stayRef.current?.focus()
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onStay()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onStay])
-  return createPortal(
-    <div className="fixed inset-0 z-50 grid place-items-center bg-ink/40 p-4">
-      <motion.div
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="kana-exit-title"
-        initial={{ opacity: 0, scale: 0.96 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.15 }}
-        className="w-full max-w-sm rounded-2xl border border-line bg-surface p-5"
-      >
-        <h2 id="kana-exit-title" className="text-lg font-bold">
-          Thoát phiên luyện?
-        </h2>
-        <p className="mt-1 text-sm text-muted">Mức thuộc của các chữ đã trả lời vẫn được lưu. Phiên này sẽ không có màn tổng kết.</p>
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <button ref={stayRef} type="button" onClick={onStay} className="min-h-12 rounded-xl bg-ai font-semibold text-on-ai hover:opacity-90">
-            Luyện tiếp
-          </button>
-          <button type="button" onClick={onLeave} className="min-h-12 rounded-xl border border-beni font-semibold text-beni hover:bg-beni-soft">
-            Thoát
-          </button>
-        </div>
-      </motion.div>
-    </div>,
-    document.body,
-  )
-}
-
 /* ───────────── Flashcard ───────────── */
 
 const KANA_WORD_FILES = ['vocab/n5.json', 'vocab/n4.json']
@@ -587,23 +549,34 @@ interface Run {
   round: number
 }
 
-function Runner({ run, available, onRetryWrong, onRestart, onExit }: {
+/** Phiên luyện kana lưu trong sessionStorage: cài đặt + trạng thái hàng đợi (dữ liệu thuần). */
+interface KanaSnap {
   run: Run
+  s: SessionState
+}
+
+function Runner({ run, initial, available, onSave, onRetryWrong, onRestart, onExit }: {
+  run: Run
+  /** Trạng thái khi tiếp tục phiên dở */
+  initial?: SessionState
   available: QuestionMode[]
+  /** Lưu sau mỗi câu đã chấm (trạng thái đã chuyển sang câu tiếp) */
+  onSave: (s: SessionState) => void
   onRetryWrong: (ids: string[]) => void
   onRestart: () => void
   onExit: () => void
 }) {
   const mode = run.settings.mode as ModeChoice
-  const [s, setS] = useState(() => createSession(run.ids, run.settings.count, mode, available))
+  const [s, setS] = useState(() => initial ?? createSession(run.ids, run.settings.count, mode, available))
   const [verdict, setVerdict] = useState<Verdict>(null)
   const [startedAt] = useState(() => Date.now())
   const [elapsed, setElapsed] = useState(0)
-  const [confirming, setConfirming] = useState(false)
   const nextRef = useRef<HTMLButtonElement>(null)
 
   const head = s.queue[0]
   const k = head ? KANA_BY_ID.get(head.id) : undefined
+
+  const pending = useRef<SessionState | null>(null)
 
   const onAnswer = useCallback(
     (correct: boolean) => {
@@ -612,13 +585,18 @@ function Runner({ run, available, onRetryWrong, onRestart, onExit }: {
       setS(r.state)
       setVerdict(correct)
       kanaProgress.record(head.id, correct, r.firstAttempt)
+      // Tính sẵn câu tiếp theo và lưu: mở lại sẽ vào thẳng câu sau câu vừa chấm.
+      const next = advance(r.state, correct, mode, available)
+      pending.current = next
+      onSave(next)
     },
-    [verdict, head, s],
+    [verdict, head, s, mode, available, onSave],
   )
 
   const onNext = useCallback(() => {
     if (verdict === null) return
-    const next = advance(s, verdict, mode, available)
+    const next = pending.current ?? advance(s, verdict, mode, available)
+    pending.current = null
     setS(next)
     setVerdict(null)
     if (isFinished(next)) setElapsed(Date.now() - startedAt)
@@ -636,12 +614,14 @@ function Runner({ run, available, onRetryWrong, onRestart, onExit }: {
     if (verdict === false && head?.mode !== 'typing') nextRef.current?.focus()
   }, [verdict, head?.mode])
 
-  const exit = useCallback(() => (s.answers >= 3 && !isFinished(s) ? setConfirming(true) : onExit()), [s, onExit])
+  // Đã làm ≥ 3 câu: thoát (nút ×, Esc, Back, điều hướng) hỏi lại bằng hộp thoại chung, tiến độ đã lưu.
+  const exit = onExit
+  const leaveGuard = useLeaveGuard(s.answers >= 3 && !isFinished(s), { answered: s.done, total: s.planned })
 
   // Enter sang câu (khi focus không ở ô nhập/nút), Esc thoát.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !confirming) {
+      if (e.key === 'Escape') {
         e.preventDefault()
         exit()
         return
@@ -653,7 +633,7 @@ function Runner({ run, available, onRetryWrong, onRestart, onExit }: {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [verdict, onNext, exit, confirming])
+  }, [verdict, onNext, exit])
 
   if (isFinished(s)) {
     const wrongIds = Object.keys(s.mistakes)
@@ -723,7 +703,7 @@ function Runner({ run, available, onRetryWrong, onRestart, onExit }: {
         )}
       </div>
 
-      {confirming && <ConfirmExit onStay={() => setConfirming(false)} onLeave={onExit} />}
+      {leaveGuard}
     </div>
   )
 }
@@ -736,12 +716,36 @@ export function KanaSession({ chars, title, onExit }: { chars: KanaChar[]; title
   const voice = useJapaneseVoice()
   const [settings, setSettings] = useState(loadSettings)
   const [run, setRun] = useState<Run | null>(null)
+  const [resumeState, setResumeState] = useState<SessionState | undefined>(undefined)
+  const memory = useStudySession<KanaSnap>('kana', chars.map((c) => c.id))
   useDockQuiet(run !== null)
   const available: QuestionMode[] = voice ? ['typing', 'choice', 'reverse', 'listen'] : ['typing', 'choice', 'reverse']
 
   const start = (ids: string[], next: PracticeSettings) => {
+    memory.clear()
+    setResumeState(undefined)
     setRun((r) => ({ ids, settings: next, round: (r?.round ?? 0) + 1 }))
     window.scrollTo(0, 0)
+  }
+
+  if (memory.offer && !run) {
+    const saved = memory.offer
+    return (
+      <div className="pt-4">
+        <ResumePrompt
+          answered={saved.answered}
+          total={saved.total}
+          onResume={() => {
+            const ok = saved.state.run?.ids?.every((id) => KANA_BY_ID.has(id)) && Array.isArray(saved.state.s?.queue)
+            if (!ok) return memory.restart()
+            setResumeState(saved.state.s)
+            setRun({ ...saved.state.run, round: 1 })
+            memory.dismiss()
+          }}
+          onRestart={memory.restart}
+        />
+      </div>
+    )
   }
 
   if (!run)
@@ -770,7 +774,9 @@ export function KanaSession({ chars, title, onExit }: { chars: KanaChar[]; title
     <Runner
       key={run.round}
       run={run}
+      initial={resumeState}
       available={available}
+      onSave={(s) => memory.save({ run, s }, s.done, s.planned)}
       // Luyện lại chữ sai: mỗi chữ một lần, cùng kiểu câu hỏi.
       onRetryWrong={(ids) => start(ids, { ...run.settings, count: 'each' })}
       onRestart={() => start(run.ids, run.settings)}

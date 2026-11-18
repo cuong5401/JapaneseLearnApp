@@ -23,7 +23,7 @@ function Row({ c, active, onOpen }: { c: Conversation; active: boolean; onOpen: 
           onChange={(e) => setTitle(e.target.value)}
           className="h-10 min-w-0 flex-1 rounded-lg border-2 border-line bg-paper px-2 text-sm outline-none focus:border-ai pointer-coarse:text-base"
         />
-        <button type="submit" className="min-h-10 rounded-lg bg-ai px-3 text-sm font-semibold text-on-ai">
+        <button type="submit" className="min-h-11 rounded-lg bg-ai px-3 text-sm font-semibold text-on-ai">
           Lưu
         </button>
       </form>
@@ -44,17 +44,17 @@ function Row({ c, active, onOpen }: { c: Conversation; active: boolean; onOpen: 
         </span>
       </button>
       <div className="flex shrink-0 pr-1">
-        <button type="button" onClick={() => chats.togglePin(c.id)} aria-label={c.pinned ? `Bỏ ghim ${c.title}` : `Ghim ${c.title}`} title={c.pinned ? 'Bỏ ghim' : 'Ghim'} className="grid size-9 place-items-center rounded-lg text-muted hover:bg-surface hover:text-ink">
+        <button type="button" onClick={() => chats.togglePin(c.id)} aria-label={c.pinned ? `Bỏ ghim ${c.title}` : `Ghim ${c.title}`} title={c.pinned ? 'Bỏ ghim' : 'Ghim'} className="grid size-11 place-items-center rounded-lg text-muted hover:bg-surface hover:text-ink">
           <svg viewBox="0 0 24 24" className="size-4" fill={c.pinned ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" aria-hidden>
             <path d="M16 3H8v2l1 1v5l-3 3v2h5v6h2v-6h5v-2l-3-3V6l1-1z" />
           </svg>
         </button>
-        <button type="button" onClick={() => setEditing(true)} aria-label={`Đổi tên ${c.title}`} title="Đổi tên" className="grid size-9 place-items-center rounded-lg text-muted hover:bg-surface hover:text-ink">
+        <button type="button" onClick={() => setEditing(true)} aria-label={`Đổi tên ${c.title}`} title="Đổi tên" className="grid size-11 place-items-center rounded-lg text-muted hover:bg-surface hover:text-ink">
           <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
             <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z" />
           </svg>
         </button>
-        <button type="button" onClick={() => chats.remove(c.id)} aria-label={`Xóa ${c.title}`} title="Xóa" className="grid size-9 place-items-center rounded-lg text-muted hover:bg-beni-soft hover:text-beni">
+        <button type="button" onClick={() => chats.remove(c.id)} aria-label={`Xóa ${c.title}`} title="Xóa" className="grid size-11 place-items-center rounded-lg text-muted hover:bg-beni-soft hover:text-beni">
           <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
             <path d="M5 7h14M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
           </svg>
@@ -95,16 +95,16 @@ export function HistoryList({ list, activeId, onOpen, onNew }: { list: Conversat
                 setConfirm(false)
                 onNew()
               }}
-              className="min-h-9 rounded-lg bg-beni px-3 text-sm font-semibold text-on-ai"
+              className="min-h-11 rounded-lg bg-beni px-3 text-sm font-semibold text-on-ai"
             >
               Xóa tất cả
             </button>
-            <button type="button" onClick={() => setConfirm(false)} className="min-h-9 rounded-lg border border-line px-3 text-sm">
+            <button type="button" onClick={() => setConfirm(false)} className="min-h-11 rounded-lg border border-line px-3 text-sm">
               Giữ lại
             </button>
           </div>
         ) : (
-          <button type="button" onClick={() => setConfirm(true)} className="mx-2 min-h-9 self-start rounded-lg px-2 text-sm text-muted hover:text-beni">
+          <button type="button" onClick={() => setConfirm(true)} className="mx-2 min-h-11 self-start rounded-lg px-2 text-sm text-muted hover:text-beni">
             Xóa tất cả
           </button>
         ))}

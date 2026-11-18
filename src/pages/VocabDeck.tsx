@@ -53,11 +53,11 @@ function DeckBody({ deckKey, items }: { deckKey: VocabDeckKey; items: VocabItem[
       links={
         info.level && (
           <span className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-            <Link to={`/kanji?level=${info.level}`} className="font-medium text-ai hover:underline">
+            <Link to={`/kanji?level=${info.level}`} className="inline-flex min-h-11 items-center font-medium text-ai hover:underline">
               Chữ Hán xuất hiện từ {info.level}
             </Link>
             {!PUBLIC_BUILD && (
-              <Link to={`/grammar/${deckKey}`} className="font-medium text-ai hover:underline">
+              <Link to={`/grammar/${deckKey}`} className="inline-flex min-h-11 items-center font-medium text-ai hover:underline">
                 Ngữ pháp {info.level}
               </Link>
             )}

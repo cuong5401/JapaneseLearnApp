@@ -17,7 +17,7 @@ export function ColorPicker({ value, onChange, label = 'Màu sổ tay' }: { valu
           aria-label={COLOR_LABEL[c]}
           title={COLOR_LABEL[c]}
           onClick={() => onChange(c)}
-          className={`grid size-10 place-items-center rounded-lg border-2 transition-colors ${value === c ? 'border-ink' : 'border-transparent hover:border-line'}`}
+          className={`grid size-11 place-items-center rounded-lg border-2 transition-colors ${value === c ? 'border-ink' : 'border-transparent hover:border-line'}`}
         >
           <BookColor color={c} className="size-6" />
         </button>

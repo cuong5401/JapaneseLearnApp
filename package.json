@@ -13,6 +13,7 @@
     "test:e2e": "playwright test",
     "icons": "node scripts/gen-icons.mjs",
     "check:secrets": "node scripts/check-secrets.mjs",
+    "audit:ux": "node scripts/ux-audit.mjs",
     "test:e2e:preview": "playwright test -c playwright.preview.config.ts"
   },
   "dependencies": {
@@ -30,6 +31,7 @@
     "wanakana": "^5.3.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.65.0",
     "@tailwindcss/vite": "^4.3.4",
     "@types/node": "^24.19.2",

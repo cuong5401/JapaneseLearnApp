@@ -68,7 +68,7 @@ export function AssistantBubble({ text, error, streaming, onRetry }: { text: str
           <p role="alert" className="mt-2 flex flex-wrap items-center gap-2 text-sm font-medium text-beni">
             {error}
             {onRetry && (
-              <button type="button" onClick={onRetry} className="min-h-9 rounded-lg border border-beni px-3 text-sm hover:bg-beni-soft">
+              <button type="button" onClick={onRetry} className="min-h-11 rounded-lg border border-beni px-3 text-sm hover:bg-beni-soft">
                 Thử lại
               </button>
             )}
@@ -130,7 +130,7 @@ export function ModeChips({ mode, onChange, compact = false }: { mode: ChatMode;
           aria-pressed={mode === m.id}
           data-mode={m.id}
           onClick={() => onChange(m.id)}
-          className={`shrink-0 rounded-full border font-medium whitespace-nowrap ${compact ? 'min-h-9 px-3 text-xs' : 'min-h-10 px-3.5 text-sm'} ${
+          className={`shrink-0 rounded-full border font-medium whitespace-nowrap ${compact ? 'min-h-11 px-3 text-xs' : 'min-h-11 px-3.5 text-sm'} ${
             mode === m.id ? 'border-ai bg-ai text-on-ai' : 'border-line bg-surface hover:border-ai'
           }`}
         >

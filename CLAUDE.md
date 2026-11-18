@@ -23,6 +23,7 @@
 | `npm test` | Vitest (`src/**/*.test.ts`) |
 | `npm run test:e2e` | Playwright trên dev server: project `desktop`, `iphone` (WebKit), `android` |
 | `npm run test:e2e:preview` | Playwright trên bản build (cần `npm run build` trước), base production |
+| `npm run audit:ux` | Rà soát UX toàn app trên bản build (cần `npx vite preview --port 4190` chạy sẵn): console, tràn ngang, chữ bị cắt, vùng chạm, fixed che nội dung, axe, CLS, bàn phím ở 390/768/1280/1440 × sáng/tối → `test-results/ux-audit/ux-audit.md` (~15 phút, không chạy trong CI) |
 | `npm run check:secrets` | Quét repo + `dist/` tìm chuỗi giống API key |
 | `npm run icons` | Sinh icon PWA trong `public/icons/` |
 | `python scripts/convert_xlsx.py <file.xlsx> public/data` | Sinh lại dữ liệu từ Excel (cần `openpyxl`) |
@@ -206,6 +207,27 @@
   gõ cách đọc. Chọn cặp (`pickPairs`): đến hạn → bất quy tắc chưa học → hay sai → còn lại.
   **Chỉ ghi lịch ôn** (`shouldTrack`) khi trả lời sai, ô bất quy tắc, hoặc đã có thẻ (tránh hàng trăm thẻ ô thường).
 
+## Giữ vị trí cuộn, phiên học dở
+
+- `src/hooks/useScrollRestore.ts` (Layout, mọi trang, `history.scrollRestoration = 'manual'`): lưu scrollY theo `location.key` +
+  đường dẫn (sessionStorage `jla:scroll:`). PUSH / REPLACE sang trang khác → lên đầu; POP (Back / Forward / F5) sang trang khác →
+  chờ hết skeleton `main [role=status][aria-label^="Đang tải"]` và trang đủ cao (tối đa 5 giây) rồi cuộn MỘT lần; người dùng tự
+  cuộn / chạm / bấm phím lúc chờ thì thôi. Đổi tham số cùng trang (?k=, ?tab=) không đụng vị trí cuộn. Trang mới nhớ chờ dữ liệu
+  bằng skeleton có `role="status" aria-label="Đang tải…"`. Không còn `useScrollMemory` riêng từng trang.
+- `LessonGrid`: trang đang xem ở `?trang=N` (đếm từ 1, `replace`); không có thì trang chứa bài học tiếp theo.
+- **Phiên học dở** (`src/lib/studySession.ts` + `src/hooks/useStudySession.tsx`): Flashcard, Quiz, ChoiceQuiz, CounterQuiz, Ôn tập,
+  luyện kana lưu vào sessionStorage `jla:session:<loại>:<pathname>:<hash id đã sắp xếp>` mỗi lần chấm một câu (chỉ id + vị trí +
+  kết quả, quá 12 giờ thì bỏ; chấm xong lượt thì xóa). Mở lại bài: `ResumePrompt` "Tiếp tục từ câu 8/20?" (Tiếp tục / Làm lại).
+  Đã chấm ≥ 3 câu mà chưa xong: rời trang (điều hướng, Back, đổi ?tab= / ?mode= / ?luyen=; bỏ qua ?xem, ?k, ?trang) hỏi bằng
+  `ConfirmDialog` (không dùng `window.confirm`) "Tiến độ đã được lưu". `useLeaveGuard` = `useBlocker` + cờ mounted đặt bằng
+  layout effect: useBlocker gỡ blocker trong useEffect cleanup (trễ) nên Back ngay sau khi rời trang từng bị blocker cũ chặn.
+  Kana: bộ chữ đang luyện (?luyen=1) nhớ ở `jla:kana-practice-open` để F5 mở lại. Không vào file xuất tiến độ (SRS đã có kết quả).
+- Thẻ flashcard: nút lật là `<button role="button" data-flip-card>` trong suốt phủ cả thẻ, mặt thẻ nằm trên với
+  `pointer-events-none` (trừ nút / link bên trong) → không lồng nút trong nút (axe). Khung thẻ trên cùng có `data-flashcard-top`
+  (test đọc chữ mặt thẻ ở đây). Focus ở nút lật thì phím ← → Z vẫn chạy, Space / Enter để nút tự bấm.
+- Test: `tests/preview/ux.spec.ts` (CI): tràn ngang, console / request lỗi, vùng chạm < 44px (Pixel 7), Back khôi phục cuộn +
+  `?trang=`, tiếp tục phiên quiz / flashcard, hộp xác nhận khi rời (điều hướng, Back, Esc). Unit: `studySession.test.ts`.
+
 ## Không layout shift (bắt buộc)
 
 - `html { scrollbar-gutter: stable }`: trang dài/ngắn, khóa cuộn không làm lệch ngang.
@@ -216,6 +238,9 @@
 - Danh sách đã biết trước số lượng (`words.length`, `wordCount`, số chữ của bộ): render ngay đúng số hàng skeleton
   (`SkeletonRows`, `DetailSkeleton` trong `LoadState.tsx`) cao bằng hàng thật, khối tối thiểu 2 hàng; nhãn chờ dữ liệu
   giữ chiều cao dòng. Không dùng `PageSkeleton` chung chung trong panel.
+- Sheet chi tiết (từ / chữ Hán / trợ số từ) dùng `BottomSheet tall` (cao cố định 88dvh): nội dung tải lười không làm sheet nhảy.
+  Khối câu ví dụ luôn giữ cao 3 câu, kể cả khi "Chưa tìm thấy ví dụ" (Tatoeba hết giờ chờ 6 giây). Ô chờ dữ liệu phải có cùng
+  số dòng với khi tải xong (vd. phiếu luyện viết hiện đủ các cấp và 30 ô bài khi chưa có dữ liệu).
 - Test: `tests/layout-stability.spec.ts` (đo `getBoundingClientRect`, CLS < 0.02).
 
 ## Ngăn xếp panel chi tiết
@@ -231,7 +256,9 @@
   class `.dark` (chỉ đổi giá trị biến). Không viết mã màu trực tiếp trong component.
 - `GridCell`: ô giấy tập viết (khung + chữ thập), cỡ chữ theo container (`cqw`), không theo viewport.
 - Font Be Vietnam Pro + Noto Sans JP (`lang="ja"` → `font-jp`). Icon là SVG, không dùng emoji.
-- Nút ≥ 44px (`min-h-11`). Tôn trọng reduced motion (`MotionConfig reducedMotion="user"`).
+- Nút ≥ 44px (`min-h-11` / `size-11`); nút biểu tượng nhỏ trong danh sách dày dùng `size-9 pointer-coarse:size-11`, Segmented `sm`
+  `pointer-coarse:min-h-11 min-w-11`. Link cả thẻ dùng "stretched link" (`after:absolute after:inset-0`, nút trong thẻ `relative z-10`).
+  Ngoại lệ còn lại: tab Hỏi AI dính mép 28×64 (16×64 khi học) – đạt WCAG 2.5.8 AA (≥ 24px). Tôn trọng reduced motion (`MotionConfig reducedMotion="user"`).
 - Mobile trước: < 768px có bottom nav (5 mục), < 1024px có header; ≥ 1024px có sidebar.
 - iPhone Safari: input/textarea/select ≥ 16px trên màn cảm ứng (`pointer-coarse:text-base`), không khóa zoom
   trong viewport; `touch-action: manipulation`; `overscroll-behavior: none` (html/body), vùng cuộn trong dùng
@@ -259,7 +286,9 @@
 - Sổ tay (nhiều sổ, màu; nhấn giữ nút đánh dấu để lưu nhanh). Tìm kiếm toàn cục (phím `/`), vẽ tay tìm kanji.
 - "Hỏi AI": trang `/ai` + khung chat nổi ở mọi trang (`AiDock`, tab lề phải kéo được, Back/Esc thu gọn, chip
   "Hỏi về …" theo mục đang xem). Chế độ: tra từ, ngữ pháp, hội thoại, sửa câu.
-  Desktop: khung 400×600, chuyển trang vẫn mở. Điện thoại (`DOCK_PHONE`: < 768px hoặc màn cảm ứng): sheet gần toàn
+  Desktop: khung 400×600, chuyển trang vẫn mở. Tab dính mép phải không được đè nội dung: main có lề phải ≥ 40px từ md
+  (`md:pr-10`, `lg:px-10`), drawer chi tiết desktop chừa dải 40px không cuộn bên phải (`pr-10`, vùng cuộn bên trong) cho tab.
+  Panel cạnh lưới desktop (Chữ Hán, Cách đếm): Esc bỏ mục đang xem (`useEscapeClose`, nhường sheet / khung AI / ô nhập). Điện thoại (`DOCK_PHONE`: < 768px hoặc màn cảm ứng): sheet gần toàn
   màn hình + lớp nền (chạm thì lắc, không đóng), khóa cuộn, bám bàn phím qua `visualViewport` (ẩn bottom nav),
   bấm bottom nav/header thì thu gọn + chuyển trang (replace mục lịch sử của khung), vuốt header sang phải để thu gọn.
   Chữ gõ dở / vị trí cuộn giữ trong `dockMemory`. Test: `tests/dock.mobile.spec.ts` (chạy cả dev và bản build).
@@ -275,7 +304,7 @@
 - **Không dùng `AnimatePresence mode="wait"` (exit, giữ trang cũ bằng FrozenOutlet) cho chuyển trang.** Trang đang thoát
   vẫn chạy hook (`useSearchParams`…) và hiệu ứng thoát lồng nhau; chỉ cần một cái không hoàn tất là trang mới không
   bao giờ mount → vùng main trắng (sidebar vẫn còn, URL đã đổi). Layout giờ render `<Outlet />` trong `motion.div key={pathname}`
-  chỉ có hiệu ứng vào (opacity/y ~200ms), cuộn lên đầu bằng `useLayoutEffect` (chạy trước `useScrollMemory` của trang mới).
+  chỉ có hiệu ứng vào (opacity/y ~200ms). Vị trí cuộn do `useScrollRestore` (gắn ở Layout) lo cho mọi trang (xem "Giữ vị trí cuộn").
   Vùng main bọc `MainErrorBoundary` + route `errorElement` (`src/components/ErrorPanel.tsx`: có lỗi + nút "Thử lại" / "Tải lại",
   không bao giờ để trống).
 - **Trang đang rời đi không được ghi URL.** Mọi `setParams` / `navigate(-n)` của trang riêng (`/kanji`, `useDetailStack`)

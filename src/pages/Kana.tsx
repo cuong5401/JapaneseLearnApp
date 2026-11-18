@@ -9,7 +9,7 @@ import { KanaChart, LevelLegend } from '../components/kana/KanaChart'
 import { KanaDetail } from '../components/kana/KanaDetail'
 import { KanaSession } from '../components/kana/KanaSession'
 import { WritingSheetLink } from '../components/writing/WritingSheetLink'
-import { KANA_ROWS, SCRIPT_LABELS, kanaOf, rowsOf, type KanaRow } from '../data/kana'
+import { KANA_BY_ID, KANA_ROWS, SCRIPT_LABELS, kanaOf, rowsOf, type KanaRow } from '../data/kana'
 import { DESKTOP, useMediaQuery } from '../hooks/useMediaQuery'
 import { kanaLevel, useKanaStats, weakest } from '../lib/kanaProgress'
 import { shuffleWith } from '../lib/kanaSession'
@@ -40,6 +40,28 @@ interface Practice {
   chars: KanaChar[]
 }
 
+/** Phiên luyện đang mở (?luyen=1) nhớ trong tab: F5 / Back-Forward vẫn mở lại đúng bộ chữ đang luyện. */
+const PRACTICE_KEY = 'jla:kana-practice-open'
+
+function loadPractice(): Practice | null {
+  try {
+    const s = JSON.parse(sessionStorage.getItem(PRACTICE_KEY) ?? 'null') as { title?: unknown; ids?: unknown } | null
+    if (!s || typeof s.title !== 'string' || !Array.isArray(s.ids)) return null
+    const chars = s.ids.map((id) => KANA_BY_ID.get(String(id))).filter((k): k is KanaChar => k !== undefined)
+    return chars.length ? { title: s.title, chars } : null
+  } catch {
+    return null
+  }
+}
+
+function savePractice(p: Practice) {
+  try {
+    sessionStorage.setItem(PRACTICE_KEY, JSON.stringify({ title: p.title, ids: p.chars.map((c) => c.id) }))
+  } catch {
+    // bỏ qua
+  }
+}
+
 export function Kana() {
   const [chart, setChartState] = useState(loadChart)
   const [params, setParams] = useSearchParams()
@@ -47,7 +69,7 @@ export function Kana() {
   const stats = useKanaStats()
   const desktop = useMediaQuery(DESKTOP)
   const [picked, setPicked] = useState<KanaChar | null>(null)
-  const [practice, setPractice] = useState<Practice | null>(null)
+  const [practice, setPractice] = useState<Practice | null>(() => (params.has('luyen') ? loadPractice() : null))
 
   const setChart = (next: ChartState) => {
     setChartState(next)
@@ -70,13 +92,14 @@ export function Kana() {
   const startPractice = (p: Practice) => {
     if (p.chars.length === 0) return
     setPractice(p)
+    savePractice(p)
     setParams({ luyen: '1' })
     window.scrollTo(0, 0)
   }
+  // Không xóa `practice` ở đây: lệnh rời có thể bị hộp "Rời phiên học?" chặn lại; ?luyen mất thì tự về bảng chữ.
   const exitPractice = useCallback(() => {
     if (window.history.state?.idx > 0) navigate(-1)
     else setParams({}, { replace: true })
-    setPractice(null)
   }, [navigate, setParams])
 
   const toggleRow = (row: KanaRow) => {

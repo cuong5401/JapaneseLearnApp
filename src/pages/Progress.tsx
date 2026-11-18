@@ -24,7 +24,7 @@ function Row({ to, title, prefix, total, idPattern }: { to: string; title: strin
   return (
     <StaggerItem as="li" className="py-3.5">
       <div className="flex items-baseline justify-between gap-3">
-        <Link to={to} className="font-semibold hover:text-ai">
+        <Link to={to} className="inline-flex min-h-11 items-center gap-1 font-semibold hover:text-ai">
           {title}
         </Link>
         <span className="text-sm tabular-nums text-muted">
@@ -50,7 +50,7 @@ function KanaRow({ script, label, ja }: { script: KanaScript; label: string; ja:
   return (
     <StaggerItem as="li" className="py-3.5">
       <div className="flex items-baseline justify-between gap-3">
-        <Link to="/kana" className="font-semibold hover:text-ai">
+        <Link to="/kana" className="inline-flex min-h-11 items-center gap-1 font-semibold hover:text-ai">
           {label}{' '}
           <span lang="ja" className="font-jp font-normal text-muted">
             {ja}

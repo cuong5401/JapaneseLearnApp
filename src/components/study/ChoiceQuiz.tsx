@@ -8,6 +8,8 @@ import { shuffle } from '../../lib/answer'
 import { isInteractiveTarget } from '../../lib/keyboard'
 import { progress } from '../../lib/progress'
 import { quizGrade } from '../../lib/srs'
+import { useLeaveGuard, useStudySession } from '../../hooks/useStudySession'
+import { ResumePrompt } from './ResumePrompt'
 
 const SHAKE = { x: [0, -8, 8, -8, 8, -8, 8, 0] }
 
@@ -35,6 +37,13 @@ export interface ChoiceQuizConfig<T> {
 interface Question<T> {
   item: T
   options: string[]
+}
+
+/** Lượt quiz lưu trong sessionStorage (mục lưu bằng id). */
+interface ChoiceSnap {
+  questions: { item: string; options: string[] }[]
+  right: number
+  hinted: number
 }
 
 function buildChoiceQuestions<T extends { id: string }>(items: readonly T[], pool: readonly T[], cfg: ChoiceQuizConfig<T>, length = items.length): Question<T>[] {
@@ -71,6 +80,7 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
   const [removed, setRemoved] = useState<string[]>([])
   const [hintedCount, setHintedCount] = useState(0)
   const hinted = removed.length > 0
+  const memory = useStudySession<ChoiceSnap>(`choice:${cfg.title}`, items.map((x) => x.id))
 
   const q = questions[index]
   const finished = index >= questions.length
@@ -83,7 +93,29 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
     if (ok) setRight((r) => r + 1)
     if (hinted) setHintedCount((c) => c + 1)
     progress.grade(q.item.id, quizGrade(ok, hinted))
+    memory.save(
+      { questions: questions.map((x) => ({ item: x.item.id, options: x.options })), right: right + (ok ? 1 : 0), hinted: hintedCount + (hinted ? 1 : 0) },
+      index + 1,
+      questions.length,
+    )
   }
+  const resume = () => {
+    const saved = memory.offer
+    const byId = new Map([...pool, ...items].map((x) => [x.id, x]))
+    const qs = saved?.state.questions.map((x) => {
+      const item = byId.get(x.item)
+      return item ? { item, options: x.options } : null
+    })
+    if (!saved || !qs || qs.some((x) => !x)) return memory.restart()
+    setQuestions(qs as Question<T>[])
+    setIndex(saved.answered)
+    setRight(saved.state.right)
+    setHintedCount(saved.state.hinted)
+    setPicked(null)
+    setRemoved([])
+    memory.dismiss()
+  }
+  const leaveGuard = useLeaveGuard(!finished && index + (answered ? 1 : 0) >= 3, { answered: index + (answered ? 1 : 0), total: questions.length })
   const hint = () => {
     if (!q || answered || hinted) return
     const right = cfg.answer(q.item)
@@ -97,7 +129,7 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
 
   // Phím 1–4 và Enter: dùng ref-less closure mới mỗi lần render qua effect phụ thuộc.
   useEffect(() => {
-    if (finished || !q) return
+    if (finished || !q || memory.offer) return
     const onKey = (e: KeyboardEvent) => {
       if (isInteractiveTarget(e)) return
       const n = Number(e.key)
@@ -111,6 +143,9 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
+
+  if (memory.offer)
+    return <ResumePrompt answered={memory.offer.answered} total={memory.offer.total} onResume={resume} onRestart={memory.restart} />
 
   if (questions.length === 0 || questions.some((x) => x.options.length < 2))
     return <p className="rounded-2xl border border-line bg-surface p-6 text-center text-muted">Chưa đủ mục khác nhau để làm quiz. Cần ít nhất 2 đáp án khác nhau.</p>
@@ -131,6 +166,7 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
         </p>
         <Button
           onClick={() => {
+            memory.clear()
             setQuestions(buildChoiceQuestions(items, pool, cfg, length))
             setIndex(0)
             setRight(0)
@@ -163,6 +199,7 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
         />
       }
     >
+      {leaveGuard}
       <p className="mb-4 text-sm text-muted lg:hidden">
         Câu {index + 1}/{questions.length}
       </p>

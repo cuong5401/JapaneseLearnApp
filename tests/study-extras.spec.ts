@@ -90,8 +90,9 @@ for (const width of WIDTHS) {
       await page.locator('[role=button][aria-label*="Chạm để lật"]').first().click()
       const back = page.locator('[role=button][aria-label*="mặt sau"]')
       await expect(back).toBeVisible()
-      await expect(back).toContainText('Bộ số 1')
-      await expect(back).toContainText('Chữ Hán thuộc bộ này')
+      const face = page.locator('[data-flashcard-top]')
+      await expect(face).toContainText('Bộ số 1')
+      await expect(face).toContainText('Chữ Hán thuộc bộ này')
       await page.keyboard.press('ArrowRight')
       await expect.poll(async () => (await cards(page)).includes('rd-001')).toBe(true)
 

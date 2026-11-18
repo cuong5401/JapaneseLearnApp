@@ -1,4 +1,5 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useCards, useStats } from '../hooks/useProgress'
 import { LESSON_SIZES, continueLesson, lessonProgress, splitLessons, type LessonProgress, type LessonState } from '../lib/lessons'
 import { setLessonSize, useLessonSize } from '../lib/settings'
@@ -72,8 +73,21 @@ export function LessonGrid<T extends { id: string }>({ items, unit, title, href,
   const allIds = useMemo(() => items.map((w) => w.id), [items])
   const stats = useStats(allIds)
   const pages = Math.ceil(lessons.length / PER_PAGE)
-  const [page, setPage] = useState(() => Math.floor(next / PER_PAGE))
+  // Trang đang xem nằm trên URL (?trang=3, đếm từ 1): Back / F5 về đúng trang. Không có thì là trang chứa bài học tiếp.
+  const [params, setParams] = useSearchParams()
+  const trang = Number(params.get('trang'))
+  const page = Number.isInteger(trang) && trang >= 1 ? trang - 1 : Math.floor(next / PER_PAGE)
   const shownPage = Math.min(page, Math.max(0, pages - 1))
+  const setPage = (p: number | null) =>
+    setParams(
+      (prev) => {
+        const q = new URLSearchParams(prev)
+        if (p === null) q.delete('trang')
+        else q.set('trang', String(p + 1))
+        return q
+      },
+      { replace: true, preventScrollReset: true },
+    )
 
   if (items.length === 0) return <p className="rounded-2xl border border-line bg-surface p-6 text-center text-muted">Chưa có mục nào.</p>
 
@@ -98,7 +112,7 @@ export function LessonGrid<T extends { id: string }>({ items, unit, title, href,
               value={size}
               onChange={(v) => {
                 setLessonSize(v)
-                setPage(0)
+                setPage(null)
               }}
               options={LESSON_SIZES.map((n) => ({ value: n, label: `${n} ${unit}` }))}
             />
@@ -124,7 +138,7 @@ export function LessonGrid<T extends { id: string }>({ items, unit, title, href,
               type="button"
               aria-current={p === shownPage ? 'page' : undefined}
               onClick={() => setPage(p)}
-              className={`min-h-10 rounded-lg border px-3 text-sm tabular-nums ${
+              className={`min-h-11 rounded-lg border px-3 text-sm tabular-nums ${
                 p === shownPage ? 'border-ai bg-ai-soft font-semibold text-ai' : 'border-line text-muted hover:text-ink'
               }`}
             >

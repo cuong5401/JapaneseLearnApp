@@ -76,7 +76,7 @@ export function SourcePicker(p: Props) {
             />
             <p className="mt-3 mb-2 text-sm text-muted">Chọn một hoặc nhiều bài (giống cách chia bài ở trang Chữ Hán):</p>
             <div className="flex max-h-56 flex-wrap gap-2 overflow-y-auto overscroll-contain p-0.5" data-writing-lessons>
-              {(p.lessons ?? Array.from({ length: 6 }, () => null)).map((l, i) => {
+              {(p.lessons ?? Array.from({ length: 30 }, () => null)).map((l, i) => {
                 const n = i + 1
                 const on = s.lessons.includes(n)
                 if (!l) return <span key={i} className="inline-block h-11 w-24 animate-pulse rounded-lg bg-sunken" />

@@ -14,6 +14,8 @@ import { quizGrade } from '../../lib/srs'
 import { speechText } from '../../lib/speech'
 import type { VocabItem } from '../../types'
 import type { SessionLink } from './FlashcardSession'
+import { ResumePrompt } from './ResumePrompt'
+import { useLeaveGuard, useStudySession } from '../../hooks/useStudySession'
 
 type Mode = 'choice' | 'typing'
 const LENGTH = 10
@@ -25,6 +27,15 @@ interface Question {
   /** Trắc nghiệm: hỏi từ tiếng Nhật chọn nghĩa, hoặc ngược lại */
   direction: 'ja-vi' | 'vi-ja'
   options: VocabItem[]
+}
+
+type Answer = { item: VocabItem; correct: boolean; hinted?: boolean }
+
+/** Lượt quiz lưu trong sessionStorage: chỉ id, dựng lại từ `items` + `pool`. */
+interface QuizSnap {
+  mode: Mode
+  questions: { item: string; direction: Question['direction']; options: string[] }[]
+  answers: { item: string; correct: boolean; hinted?: boolean }[]
 }
 
 /** Từ dùng được cho chế độ gõ: phải có cách đọc. */
@@ -154,7 +165,7 @@ function Result({
           </ButtonLink>
         )}
       </div>
-      <ButtonLink to={back.to} className="mt-4 inline-flex min-h-10 items-center text-sm font-medium text-ai hover:underline">
+      <ButtonLink to={back.to} className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-ai hover:underline">
         {back.label}
       </ButtonLink>
     </div>
@@ -178,10 +189,11 @@ export function QuizSession({
   const [index, setIndex] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
   const [typed, setTyped] = useState('')
-  const [answers, setAnswers] = useState<{ item: VocabItem; correct: boolean; hinted?: boolean }[]>([])
+  const [answers, setAnswers] = useState<Answer[]>([])
   // Gợi ý: trắc nghiệm bỏ 2 đáp án sai, gõ cách đọc hiện chữ đầu; đúng sau khi xem gợi ý thì chấm Khó (Hard)
   const [hinted, setHinted] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const memory = useStudySession<QuizSnap>('quiz', items.map((w) => w.id))
 
   const finished = index >= questions.length
   const q = questions[index]
@@ -191,9 +203,46 @@ export function QuizSession({
   const record = (correct: boolean, choice: string) => {
     if (!q || answered) return
     setPicked(choice)
-    setAnswers((a) => [...a, { item: q.item, correct, hinted }])
+    const nextAnswers = [...answers, { item: q.item, correct, hinted }]
+    setAnswers(nextAnswers)
     progress.grade(q.item.id, quizGrade(correct, hinted))
+    // Lưu ngay sau khi chấm: mở lại bài sẽ tiếp tục từ câu sau câu này.
+    if (mode)
+      memory.save(
+        {
+          mode,
+          questions: questions.map((x) => ({ item: x.item.id, direction: x.direction, options: x.options.map((o) => o.id) })),
+          answers: nextAnswers.map((a) => ({ item: a.item.id, correct: a.correct, hinted: a.hinted })),
+        },
+        nextAnswers.length,
+        questions.length,
+      )
   }
+
+  const resume = () => {
+    const saved = memory.offer?.state
+    const byId = new Map([...pool, ...items].map((w) => [w.id, w]))
+    const qs = saved?.questions.map((x) => {
+      const item = byId.get(x.item)
+      const options = x.options.map((id) => byId.get(id))
+      return item && options.every(Boolean) ? { item, direction: x.direction, options: options as VocabItem[] } : null
+    })
+    const ans = saved?.answers.map((a) => {
+      const item = byId.get(a.item)
+      return item ? { item, correct: a.correct, hinted: a.hinted } : null
+    })
+    if (!saved || !qs || !ans || qs.some((x) => !x) || ans.some((x) => !x)) return memory.restart()
+    setQuestions(qs as Question[])
+    setAnswers(ans as Answer[])
+    setIndex(ans.length)
+    setPicked(null)
+    setTyped('')
+    setHinted(false)
+    setMode(saved.mode)
+    memory.dismiss()
+  }
+
+  const leaveGuard = useLeaveGuard(mode !== null && !finished && answers.length >= 3, { answered: answers.length, total: questions.length })
 
   const next = () => {
     setIndex((i) => i + 1)
@@ -207,7 +256,7 @@ export function QuizSession({
 
   // Phím tắt trắc nghiệm: 1–4 chọn, Enter sang câu.
   useEffect(() => {
-    if (mode !== 'choice' || finished) return
+    if (mode !== 'choice' || finished || memory.offer) return
     const onKey = (e: KeyboardEvent) => {
       if (isInteractiveTarget(e)) return
       const n = Number(e.key)
@@ -224,6 +273,9 @@ export function QuizSession({
     return () => window.removeEventListener('keydown', onKey)
   })
 
+  if (memory.offer)
+    return <ResumePrompt answered={memory.offer.answered} total={memory.offer.total} onResume={resume} onRestart={memory.restart} />
+
   if (!mode)
     return (
       <Setup
@@ -236,6 +288,7 @@ export function QuizSession({
     )
 
   const restart = () => {
+    memory.clear()
     setQuestions([])
     setIndex(0)
     setPicked(null)
@@ -282,6 +335,7 @@ export function QuizSession({
 
   return (
     <StudyLayout aside={aside}>
+        {leaveGuard}
         <div className="mb-5 flex items-center gap-3 text-sm text-muted">
           <span className="tabular-nums lg:hidden">
             Câu {index + 1}/{questions.length}
@@ -316,7 +370,7 @@ export function QuizSession({
                   ) : (
                     <p className="mt-3 text-[clamp(1.375rem,7cqw,1.875rem)] font-semibold">{q.item.meaning}</p>
                   )}
-                  <p lang="ja" className="mt-3 flex min-h-9 items-center justify-center gap-3 font-jp text-muted">
+                  <p lang="ja" className="mt-3 flex min-h-11 items-center justify-center gap-3 font-jp text-muted">
                     {answered && (
                       <>
                         {q.item.word}

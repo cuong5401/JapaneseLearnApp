@@ -33,7 +33,7 @@ export function Segmented<T extends string | number>({
             aria-checked={active}
             onClick={() => onChange(o.value)}
             className={`relative shrink-0 rounded-lg font-medium whitespace-nowrap transition-colors ${
-              size === 'sm' ? 'min-h-9 px-3 text-sm' : 'min-h-11 px-4'
+              size === 'sm' ? 'min-h-9 px-3 text-sm pointer-coarse:min-h-11 pointer-coarse:min-w-11' : 'min-h-11 px-4'
             } ${active ? 'text-ink' : 'text-muted hover:text-ink'}`}
           >
             {active && (

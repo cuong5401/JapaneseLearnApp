@@ -58,7 +58,7 @@ function Extras({ item }: { item: VocabItem }) {
       {links > 0 && (
         <>
           {bits.length > 0 && '. '}
-          <Link to={`/word/${item.id}`} className="font-medium text-ai hover:underline">
+          <Link to={`/word/${item.id}`} className="relative z-10 font-medium text-ai hover:underline">
             {item.parent ? 'Xem từ chính' : `${item.related!.length} từ liên quan`}
           </Link>
         </>
@@ -139,11 +139,12 @@ function WordList({ items, start }: { items: VocabItem[]; start: number }) {
 
       <Stagger as="ol" className="space-y-2 md:hidden">
         {items.map((w, i) => (
-          <StaggerItem as="li" key={w.id} className="flex items-start gap-3 rounded-xl border border-line bg-surface p-3.5">
+          <StaggerItem as="li" key={w.id} className="relative flex items-start gap-3 rounded-xl border border-line bg-surface p-3.5">
             <span className="w-7 shrink-0 pt-1 text-xs tabular-nums text-muted">{start + i + 1}</span>
             <span className="min-w-0 flex-1">
               <span className="flex flex-wrap items-baseline gap-x-2">
-                <Link to={`/word/${w.id}`} lang="ja" className="font-jp text-lg font-semibold">
+                {/* Cả thẻ là vùng chạm mở từ (::after phủ thẻ); nút nghe / lưu nằm trên. */}
+                <Link to={`/word/${w.id}`} lang="ja" className="font-jp text-lg font-semibold after:absolute after:inset-0 after:rounded-xl after:content-['']">
                   {w.word}
                 </Link>
                 {w.reading && w.reading !== w.word && (
@@ -157,7 +158,7 @@ function WordList({ items, start }: { items: VocabItem[]; start: number }) {
               <span className="mt-1 block">{w.meaning}</span>
               <Extras item={w} />
             </span>
-            <span className="flex shrink-0 flex-col items-center gap-1">
+            <span className="relative z-10 flex shrink-0 flex-col items-center gap-1">
               <SpeakButton text={speechText(w)} size="sm" />
               <BookmarkButton itemRef={w.id} label={w.word} size="sm" />
             </span>

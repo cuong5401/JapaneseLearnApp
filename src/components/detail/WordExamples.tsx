@@ -25,7 +25,7 @@ function IconButton({ label, onClick, children, title }: { label: string; onClic
       onClick={onClick}
       aria-label={label}
       title={title ?? label}
-      className="grid size-9 shrink-0 place-items-center rounded-full border border-line bg-surface text-ai hover:bg-ai-soft"
+      className="grid size-9 shrink-0 place-items-center rounded-full border border-line bg-surface text-ai hover:bg-ai-soft pointer-coarse:size-11"
     >
       <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
         {children}
@@ -93,7 +93,7 @@ function Sentence({ it, terms, wordId, canTranslate, onTranslate }: { it: Exampl
               target="_blank"
               rel="noreferrer noopener"
               title={`Tatoeba, CC BY 2.0 FR${it.owner ? `, ${it.owner}` : ''}${it.audioBy ? `; âm thanh: ${it.audioBy}` : ''}`}
-              className="hover:text-ai hover:underline"
+              className="py-4 hover:text-ai hover:underline"
               data-example-source
             >
               Tatoeba
@@ -126,17 +126,18 @@ export function WordExamples({ item }: { item: VocabItem }) {
   const canMore = state.status === 'ready' && (state.entry.items.length > 3 || state.entry.next !== null)
   return (
     <section className="mt-5 border-t border-line pt-4" aria-labelledby={`ex-${item.id}`} data-examples data-examples-status={state.status}>
-      <div className="flex min-h-9 items-center justify-between gap-3">
+      <div className="flex min-h-11 items-center justify-between gap-3">
         <h3 id={`ex-${item.id}`} className="font-semibold">
           Ví dụ
         </h3>
         {canMore && (
-          <button type="button" onClick={() => void more()} disabled={state.status === 'ready' && state.more} className="min-h-9 rounded-lg px-2.5 text-sm font-medium text-ai hover:bg-ai-soft disabled:opacity-50">
+          <button type="button" onClick={() => void more()} disabled={state.status === 'ready' && state.more} className="min-h-11 rounded-lg px-2.5 text-sm font-medium text-ai hover:bg-ai-soft disabled:opacity-50">
             {state.status === 'ready' && state.more ? 'Đang tải…' : 'Ví dụ khác'}
           </button>
         )}
       </div>
-      <ul className={`divide-y divide-line ${state.status === 'empty' ? '' : 'min-h-[calc(21rem+2px)]'}`} aria-live="polite" aria-busy={state.status === 'loading'}>
+      {/* Luôn giữ đúng chiều cao 3 câu, kể cả khi không có câu (Tatoeba hết giờ chờ sau 6 giây): khối không co lại làm nhảy phần dưới. */}
+      <ul className="min-h-[calc(21rem+2px)] divide-y divide-line" aria-live="polite" aria-busy={state.status === 'loading'}>
         {state.status === 'loading' &&
           [0, 1, 2].map((i) => (
             <li key={i} className={`py-2.5 ${ROW}`} aria-hidden>
@@ -145,7 +146,14 @@ export function WordExamples({ item }: { item: VocabItem }) {
               <Skeleton className="mt-2 h-3 w-14" />
             </li>
           ))}
-        {state.status === 'empty' && <li className="py-3 text-sm text-muted">Chưa tìm thấy ví dụ.</li>}
+        {state.status === 'empty' && (
+          <li className="grid min-h-[calc(21rem+2px)] place-items-center px-4 text-center text-sm text-muted">
+            <span>
+              Chưa tìm thấy ví dụ.
+              <span className="mt-1 block text-xs">Mở lại khi có mạng, hoặc thêm khóa AI trong Cài đặt để AI tạo câu.</span>
+            </span>
+          </li>
+        )}
         {shown.map((it) => (
           <Sentence key={it.key} it={it} terms={terms} wordId={item.id} canTranslate={ai.hasKey} onTranslate={() => translate(it.key)} />
         ))}

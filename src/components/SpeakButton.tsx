@@ -20,7 +20,7 @@ export function SpeakButton({ text, label = 'Nghe phát âm', size = 'md' }: Pro
     }
   }
 
-  const dims = size === 'sm' ? 'size-9' : 'size-11'
+  const dims = size === 'sm' ? 'size-9 pointer-coarse:size-11' : 'size-11'
 
   return (
     <span className="inline-flex flex-col items-center">

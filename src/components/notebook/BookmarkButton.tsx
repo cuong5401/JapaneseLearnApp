@@ -45,7 +45,7 @@ export function BookmarkButton({ itemRef, label = 'mục này', size = 'md', cla
     if (Math.hypot(e.clientX - hold.current.x, e.clientY - hold.current.y) > MOVE_TOLERANCE) clear()
   }
 
-  const dims = size === 'sm' ? 'size-9' : 'size-11'
+  const dims = size === 'sm' ? 'size-9 pointer-coarse:size-11' : 'size-11'
   return (
     <button
       type="button"

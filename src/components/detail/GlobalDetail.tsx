@@ -33,7 +33,7 @@ export function GlobalDetail() {
 
   if (!desktop)
     return (
-      <BottomSheet open={open} onClose={close} label="Chi tiết">
+      <BottomSheet open={open} onClose={close} label="Chi tiết" tall>
         <Suspense fallback={<PageSkeleton rows={4} />}>
               <DetailStackView frames={stack.frames} onPush={stack.push} onBack={stack.back} />
             </Suspense>
@@ -49,20 +49,23 @@ export function GlobalDetail() {
             role="dialog"
             aria-modal="true"
             aria-label="Chi tiết"
-            className="absolute inset-y-0 right-0 w-[min(440px,100vw)] overflow-y-auto overscroll-contain border-l border-line bg-paper p-6 shadow-[-8px_0_30px_rgb(0_0_0/0.15)]"
+            // Dải 40px bên phải không cuộn: tab Hỏi AI (28px, dính mép) nằm trong dải này, không đè nội dung / thanh cuộn.
+            className="absolute inset-y-0 right-0 flex w-[min(480px,100vw)] border-l border-line bg-paper pr-10 shadow-[-8px_0_30px_rgb(0_0_0/0.15)]"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', stiffness: 420, damping: 42 }}
           >
+            <div className="min-w-0 flex-1 overflow-y-auto overscroll-contain p-6" data-detail-scroll>
             <div className="mb-2 flex justify-end">
-              <button type="button" onClick={close} className="-mt-2 -mr-2 min-h-10 rounded-lg px-3 text-sm text-muted hover:text-ink">
+              <button type="button" onClick={close} className="-mt-2 -mr-2 min-h-11 rounded-lg px-3 text-sm text-muted hover:text-ink">
                 Đóng
               </button>
             </div>
             <Suspense fallback={<PageSkeleton rows={4} />}>
               <DetailStackView frames={stack.frames} onPush={stack.push} onBack={stack.back} />
             </Suspense>
+            </div>
           </motion.aside>
         </div>
       )}

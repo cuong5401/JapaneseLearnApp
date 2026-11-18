@@ -141,14 +141,14 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
             aria-pressed={drawing}
             title="Vẽ chữ để tìm"
             data-draw-toggle
-            className={`grid size-10 shrink-0 place-items-center rounded-lg ${drawing ? 'bg-ai-soft text-ai' : 'text-muted hover:bg-sunken hover:text-ink'}`}
+            className={`grid size-11 shrink-0 place-items-center rounded-lg ${drawing ? 'bg-ai-soft text-ai' : 'text-muted hover:bg-sunken hover:text-ink'}`}
           >
             <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z" />
               <path d="m13.5 6.5 4 4" />
             </svg>
           </button>
-          <button type="button" onClick={onClose} className="min-h-10 rounded-lg px-3 text-sm text-muted hover:bg-sunken hover:text-ink">
+          <button type="button" onClick={onClose} className="min-h-11 rounded-lg px-3 text-sm text-muted hover:bg-sunken hover:text-ink">
             Đóng
           </button>
         </div>
@@ -168,7 +168,8 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
           </motion.div>
         )}
 
-        <div ref={listRef} id="search-results" role="listbox" aria-label="Kết quả tìm kiếm" className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
+        {/* Chỉ là listbox khi có kết quả (listbox rỗng / chỉ có lời nhắn thì sai vai trò ARIA). */}
+        <div ref={listRef} id="search-results" role={flat.length > 0 && deferred.trim() ? 'listbox' : undefined} aria-label="Kết quả tìm kiếm" className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
           {files.status === 'error' && (
             <p className="m-3 rounded-lg bg-beni-soft p-3 text-sm text-beni">
               Một số dữ liệu chưa tải được.{' '}
@@ -187,8 +188,8 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
             <>
               {GROUPS.map((g, gi) =>
                 results[g.kind].length ? (
-                  <section key={g.kind} className="mb-2">
-                    <h3 className="px-3 pt-2 pb-1 text-xs font-semibold text-muted">
+                  <section key={g.kind} role="group" aria-labelledby={`sr-group-${g.kind}`} className="mb-2">
+                    <h3 id={`sr-group-${g.kind}`} className="px-3 pt-2 pb-1 text-xs font-semibold text-muted">
                       {g.title} ({results[g.kind].length})
                     </h3>
                     {results[g.kind].map((doc, j) => {

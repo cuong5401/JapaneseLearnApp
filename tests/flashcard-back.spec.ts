@@ -21,8 +21,10 @@ for (const width of [390, 1280]) {
       await card.click()
       const back = page.locator('[role=button][aria-label*="mặt sau"]')
       await expect(back).toBeVisible()
-      await expect(back).not.toContainText('cách viết')
-      await expect(back.locator('[data-stroke-toggle], svg[aria-label*="thứ tự nét"]')).toHaveCount(0)
+      // Nội dung mặt thẻ nằm cạnh nút lật (không lồng nút trong nút): đọc từ khung thẻ trên cùng.
+      const face = page.locator('[data-flashcard-top]')
+      await expect(face).not.toContainText('cách viết')
+      await expect(face.locator('[data-stroke-toggle], svg[aria-label*="thứ tự nét"]')).toHaveCount(0)
       await expect.poll(() => box(page, '[role=button][aria-label*="mặt sau"]')).toEqual(before)
     })
 

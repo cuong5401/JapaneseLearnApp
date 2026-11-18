@@ -1,8 +1,9 @@
 import { motion } from 'motion/react'
-import { Suspense, lazy, useEffect, useLayoutEffect, type MouseEvent } from 'react'
+import { Suspense, lazy, useEffect, type MouseEvent } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { THEME_LABEL, useTheme, type ThemeChoice } from '../hooks/useTheme'
 import { useDockNavClick } from '../hooks/useDockNavClick'
+import { useScrollRestore } from '../hooks/useScrollRestore'
 import { useDueIds } from '../hooks/useProgress'
 import { isInteractiveTarget } from '../lib/keyboard'
 import { NAV, NAV_GROUPS, navActive } from '../lib/nav'
@@ -63,7 +64,7 @@ export function ThemeIcon({ choice }: { choice: ThemeChoice }) {
 
 function Logo({ onClick }: { onClick?: (e: MouseEvent) => void }) {
   return (
-    <Link to="/" onClick={onClick} className="flex items-center gap-2.5 font-bold tracking-tight">
+    <Link to="/" onClick={onClick} className="flex min-h-11 items-center gap-2.5 font-bold tracking-tight">
       <span lang="ja" className="grid size-9 place-items-center rounded-[3px] bg-ai font-jp text-xl text-on-ai">
         言
       </span>
@@ -90,11 +91,8 @@ export function Layout() {
   // Điện thoại, khung Hỏi AI đang mở: bấm điều hướng thì thu gọn khung và chuyển trang trong một lần bấm.
   const dockNav = useDockNavClick()
 
-  // Đổi trang thì cuộn lên đầu. Layout effect: chạy trước useScrollMemory của trang mới (passive effect),
-  // nên Back vẫn khôi phục đúng vị trí cũ sau đó.
-  useLayoutEffect(() => {
-    window.scrollTo(0, 0)
-  }, [pathname])
+  // Vào trang mới: lên đầu trang. Back / F5: chờ dữ liệu xong rồi về đúng vị trí cũ (mọi trang).
+  useScrollRestore()
 
   // Phím "/" mở tìm kiếm (trừ khi đang gõ trong ô nhập).
   useEffect(() => {
@@ -235,7 +233,8 @@ export function Layout() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[900px] px-4 pt-6 md:px-6 md:pt-8 lg:max-w-[1200px] lg:px-10 lg:pt-10">
+      {/* Lề phải md+ ≥ 40px: chừa chỗ cho tab Hỏi AI (28px) dính lề phải, không đè nội dung / thanh cuộn panel. */}
+      <main className="mx-auto w-full max-w-[900px] px-4 pt-6 md:pr-10 md:pl-6 md:pt-8 lg:max-w-[1200px] lg:px-10 lg:pt-10">
         {/*
           KHÔNG dùng AnimatePresence mode="wait" / exit / giữ trang cũ cho chuyển trang: trang đang thoát vẫn chạy
           hook và hiệu ứng thoát lồng nhau, chỉ cần một cái không hoàn tất là trang mới không bao giờ mount

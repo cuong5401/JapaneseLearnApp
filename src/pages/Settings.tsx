@@ -115,7 +115,7 @@ function AiSection() {
                 aiSettings.removeKey(realProvider)
                 setCheck(null)
               }}
-              className="min-h-9 rounded-lg border border-beni px-3 text-sm text-beni hover:bg-beni-soft"
+              className="min-h-11 rounded-lg border border-beni px-3 text-sm text-beni hover:bg-beni-soft"
             >
               Xóa key
             </button>

@@ -27,6 +27,8 @@ import { isInteractiveTarget } from '../../lib/keyboard'
 import { progress } from '../../lib/progress'
 import { quizGrade } from '../../lib/srs'
 import type { CounterEntry } from '../../types'
+import { useLeaveGuard, useStudySession } from '../../hooks/useStudySession'
+import { ResumePrompt } from './ResumePrompt'
 
 const LENGTH = 10
 const SHAKE = { x: [0, -8, 8, -8, 8, -8, 8, 0] }
@@ -147,6 +149,11 @@ export function CounterQuiz({ counters, pool }: { counters: CounterEntry[]; pool
   const [typed, setTyped] = useState('')
   const [results, setResults] = useState<boolean[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
+  // Câu hỏi là dữ liệu thuần (cặp số + trợ số từ, câu ví dụ): lưu nguyên vào sessionStorage.
+  const memory = useStudySession<{ kind: CounterQuizKind; questions: Question[]; results: boolean[] }>(
+    'counter-quiz',
+    counters.map((c) => c.id),
+  )
 
   const q = questions[index]
   const finished = index >= questions.length
@@ -155,6 +162,7 @@ export function CounterQuiz({ counters, pool }: { counters: CounterEntry[]; pool
   const right = results.filter(Boolean).length
 
   const restart = (k = kind) => {
+    memory.clear()
     setKind(k)
     setQuestions(buildCounterQuiz(counters, pool, k))
     setIndex(0)
@@ -172,7 +180,9 @@ export function CounterQuiz({ counters, pool }: { counters: CounterEntry[]; pool
           ? choice === q.pair.readings[0] || acceptedReadings(q.pair.counter, q.pair.key).has(choice)
           : acceptedReadings(q.pair.counter, q.pair.key).has(normalizeReading(choice))
     setPicked(choice)
-    setResults((r) => [...r, ok])
+    const nextResults = [...results, ok]
+    setResults(nextResults)
+    memory.save({ kind, questions, results: nextResults }, nextResults.length, questions.length)
     if (q.t === 'choose') grade(counterRef(q.counter.id), ok, false)
     else grade(q.pair.id, ok, q.pair.irregular)
   }
@@ -181,9 +191,21 @@ export function CounterQuiz({ counters, pool }: { counters: CounterEntry[]; pool
     setTyped('')
     setIndex((i) => i + 1)
   }
+  const resume = () => {
+    const saved = memory.offer?.state
+    if (!saved || !Array.isArray(saved.questions) || !Array.isArray(saved.results)) return memory.restart()
+    setKind(saved.kind)
+    setQuestions(saved.questions)
+    setResults(saved.results)
+    setIndex(saved.results.length)
+    setPicked(null)
+    setTyped('')
+    memory.dismiss()
+  }
+  const leaveGuard = useLeaveGuard(!finished && results.length >= 3, { answered: results.length, total: questions.length })
 
   useEffect(() => {
-    if (finished || !q || q.t === 'type') return
+    if (finished || !q || q.t === 'type' || memory.offer) return
     const onKey = (e: KeyboardEvent) => {
       if (isInteractiveTarget(e)) return
       const n = Number(e.key)
@@ -196,6 +218,9 @@ export function CounterQuiz({ counters, pool }: { counters: CounterEntry[]; pool
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
+
+  if (memory.offer)
+    return <ResumePrompt answered={memory.offer.answered} total={memory.offer.total} onResume={resume} onRestart={memory.restart} />
 
   const kindPicker = (
     <div className="mb-4">
@@ -243,6 +268,7 @@ export function CounterQuiz({ counters, pool }: { counters: CounterEntry[]; pool
   return (
     <>
       {kindPicker}
+      {leaveGuard}
       <StudyLayout
         aside={
           <SessionPanel

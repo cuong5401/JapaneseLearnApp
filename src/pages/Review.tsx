@@ -21,6 +21,8 @@ import { useCards, useNow, useReviewQueue } from '../hooks/useProgress'
 import { kanjiOfRadical } from '../data/radicalKanji'
 import { CounterBack, CounterFront } from '../components/study/counterFaces'
 import type { Grade, StudyEntry } from '../types'
+import { ResumePrompt } from '../components/study/ResumePrompt'
+import { useLeaveGuard, useStudySession } from '../hooks/useStudySession'
 
 /** 4 mức chấm FSRS: Quên (Again) / Khó (Hard) / Nhớ (Good) / Dễ (Easy), phím 1–4. */
 const GRADES: { q: Grade; label: string; cls: string }[] = [
@@ -155,6 +157,8 @@ const SHORTCUTS = [
   { keys: ['4'], label: 'Dễ' },
 ]
 
+const NO_IDS: string[] = []
+
 const clock = (ms: number) => {
   const s = Math.max(0, Math.ceil(ms / 1000))
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
@@ -196,6 +200,13 @@ export function Review() {
   const [lapses, setLapses] = useState(0)
   // Đếm số lần đã chấm để làm key, thẻ quên quay lại vẫn có hiệu ứng chuyển.
   const [turn, setTurn] = useState(0)
+  // Phiên ôn: thẻ nào đến hạn đã nằm trong lịch ôn, chỉ cần nhớ số đã ôn / quên trong phiên.
+  const memory = useStudySession<{ done: number; lapses: number }>('review', NO_IDS)
+  const { save } = memory
+  useEffect(() => {
+    if (turn > 0 && queue) save({ done, lapses }, turn, turn + queue.length)
+  }, [turn, done, lapses, queue, save])
+  const leaveGuard = useLeaveGuard(turn >= 3 && Boolean(queue?.length), { answered: turn, total: turn + (queue?.length ?? 0), unit: 'thẻ' })
 
   const id = queue?.[0]
   const entry = id ? lookup.entries.get(id) : undefined
@@ -226,7 +237,7 @@ export function Review() {
     gradeRef.current = grade
   })
   useEffect(() => {
-    if (!id) return
+    if (!id || memory.offer) return
     const onKey = (e: KeyboardEvent) => {
       if (isInteractiveTarget(e)) return
       if (!shown && (e.key === ' ' || e.key === 'Enter')) {
@@ -236,10 +247,31 @@ export function Review() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [id, shown])
+  }, [id, shown, memory.offer])
 
   if (lookup.status === 'error') return <LoadError error={lookup.error} onRetry={lookup.retry} />
   if (queue === null) return <PageSkeleton header rows={4} />
+
+  if (memory.offer && queue.length > 0) {
+    const saved = memory.offer
+    return (
+      <div className={STUDY_PAGE}>
+        <PageHeader title="Ôn tập" />
+        <ResumePrompt
+          answered={saved.answered}
+          total={saved.answered + queue.length}
+          unit="thẻ"
+          onResume={() => {
+            setDone(saved.state.done ?? 0)
+            setLapses(saved.state.lapses ?? 0)
+            setTurn(saved.answered)
+            memory.dismiss()
+          }}
+          onRestart={memory.restart}
+        />
+      </div>
+    )
+  }
 
   if (!entry || !card) {
     const soon = upcoming && upcoming.due - now <= LEARN_AHEAD_MS ? upcoming : null
@@ -290,6 +322,7 @@ export function Review() {
       </PageHeader>
 
       <StudyLayout aside={aside}>
+        {leaveGuard}
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={turn}

@@ -104,7 +104,7 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef, head
             aria-label="Mở rộng toàn màn hình"
             title="Mở rộng toàn màn hình"
             data-dock-expand
-            className="ml-auto grid size-10 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
+            className="ml-auto grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
           >
             <ExpandIcon />
           </button>
@@ -114,7 +114,7 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef, head
             aria-label="Thu gọn"
             title="Thu gọn (Esc)"
             data-dock-collapse
-            className="grid size-10 place-items-center rounded-lg text-2xl leading-none text-muted hover:bg-sunken hover:text-ink"
+            className="grid size-11 place-items-center rounded-lg text-2xl leading-none text-muted hover:bg-sunken hover:text-ink"
           >
             <span aria-hidden>›</span>
           </button>
@@ -169,7 +169,7 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef, head
                       setDraft(context.text)
                       inputRef.current?.focus({ preventScroll: true })
                     }}
-                    className="mb-1.5 inline-flex min-h-9 max-w-full items-center gap-1.5 rounded-full border border-ai/40 bg-ai-soft px-3 text-sm font-medium text-ai hover:border-ai"
+                    className="mb-1.5 inline-flex min-h-11 max-w-full items-center gap-1.5 rounded-full border border-ai/40 bg-ai-soft px-3 text-sm font-medium text-ai hover:border-ai"
                   >
                     <span className="shrink-0">Hỏi về</span>
                     <span lang="ja" className="truncate font-jp">

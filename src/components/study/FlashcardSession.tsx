@@ -12,6 +12,7 @@ import { Celebration } from '../Celebration'
 import { Button, ButtonLink } from '../Pressable'
 import { SessionPanel, StudyLayout } from '../StudyLayout'
 import { vocabFaces, type FacesRenderer } from './faces'
+import { ResumePrompt } from './ResumePrompt'
 import { BookmarkButton } from '../notebook/BookmarkButton'
 import { shuffle } from '../../lib/answer'
 import { isInteractiveTarget } from '../../lib/keyboard'
@@ -20,6 +21,7 @@ import { flashcardGrade } from '../../lib/srs'
 import { readJSON, writeJSON } from '../../lib/storage'
 import type { SrsCard, VocabItem } from '../../types'
 import { useDockQuiet } from '../../lib/ai/dock'
+import { useLeaveGuard, useStudySession } from '../../hooks/useStudySession'
 
 export interface SessionLink {
   to: string
@@ -27,6 +29,14 @@ export interface SessionLink {
 }
 
 type Verdict = 'known' | 'unknown'
+
+/** Phiên flashcard lưu trong sessionStorage (chỉ id, không lưu cả mục). */
+interface FlashSnap {
+  queue: string[]
+  pos: number
+  results: Record<string, Verdict>
+  history: { id: string; prev: unknown }[]
+}
 type Dir = -1 | 1
 interface CardHandle {
   flyOut: (dir: Dir) => void
@@ -120,14 +130,23 @@ function StackCard<T extends { id: string }>({ item, faces, label, depth, flippe
         if (dragged.current) return
         if (top) onFlip()
       }}
-      role={top ? 'button' : undefined}
-      tabIndex={top ? 0 : -1}
       aria-hidden={!top}
-      aria-label={top ? (flipped ? `${label(item)}, mặt sau. Chạm để lật lại` : `${label(item)}. Chạm để lật thẻ`) : undefined}
+      data-flashcard-top={top || undefined}
     >
       {top ? (
         <>
-          {faces(item, flipped)}
+          {/*
+            Nút lật là lớp trong suốt phủ cả thẻ; mặt thẻ nằm trên nhưng không nhận chạm (trừ nút nghe / link bên trong),
+            nên chạm vào thẻ = bấm nút lật, mà không có nút nào lồng trong nút (axe nested-interactive).
+          */}
+          <button
+            type="button"
+            role="button"
+            aria-label={flipped ? `${label(item)}, mặt sau. Chạm để lật lại` : `${label(item)}. Chạm để lật thẻ`}
+            data-flip-card
+            className="absolute inset-0 cursor-[inherit] rounded-2xl"
+          />
+          <div className="pointer-events-none relative h-full [&_a]:pointer-events-auto [&_button]:pointer-events-auto">{faces(item, flipped)}</div>
           {/* Nút đánh dấu ở góc thẻ: không lật thẻ, không kéo thẻ. */}
           {bookmark && (
             <div className="absolute top-2 right-2 z-10">
@@ -214,10 +233,10 @@ function Summary({
         </Button>
       </div>
       <div className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm">
-        <button type="button" onClick={onUndo} className="min-h-10 text-muted hover:text-ink">
+        <button type="button" onClick={onUndo} className="min-h-11 text-muted hover:text-ink">
           Hoàn tác thẻ cuối
         </button>
-        <ButtonLink to={back.to} className="inline-flex min-h-10 items-center font-medium text-ai hover:underline">
+        <ButtonLink to={back.to} className="inline-flex min-h-11 items-center font-medium text-ai hover:underline">
           {back.label}
         </ButtonLink>
       </div>
@@ -274,6 +293,10 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
   const [history, setHistory] = useState<{ id: string; prev: unknown }[]>([])
   const [hintSeen, setHintSeen] = useState(() => readJSON('swipe-hint-seen', false))
   const topRef = useRef<CardHandle>(null)
+  const sourceIds = source.map((w) => w.id)
+  const memory = useStudySession<FlashSnap>(`flashcard`, sourceIds)
+  // Chỉ lưu sau thao tác của người dùng (chấm, hoàn tác, bắt đầu lại), không lưu đè lúc vừa mở bài.
+  const dirty = useRef(false)
 
   const done = pos >= queue.length
   const known = Object.values(results).filter((r) => r === 'known').length
@@ -288,6 +311,7 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
       setResults((r) => ({ ...r, [item.id]: dir > 0 ? 'known' : 'unknown' }))
       setFlipped(false)
       setPos((p) => p + 1)
+      dirty.current = true
       if (!hintSeen) {
         setHintSeen(true)
         writeJSON('swipe-hint-seen', true)
@@ -308,6 +332,7 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
     })
     setFlipped(false)
     setPos((p) => Math.max(0, p - 1))
+    dirty.current = true
   }, [history, grader])
 
   const startSession = (items: T[]) => {
@@ -316,11 +341,40 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
     setResults({})
     setHistory([])
     setFlipped(false)
+    dirty.current = true
   }
 
+  // Mỗi lần chấm một thẻ: lưu lượt đang làm để lỡ rời trang / F5 vẫn tiếp tục được.
+  const { save } = memory
   useEffect(() => {
+    if (!dirty.current) return
+    dirty.current = false
+    save({ queue: queue.map((w) => w.id), pos, results, history } satisfies FlashSnap, pos, queue.length)
+  }, [queue, pos, results, history, save])
+
+  const resume = () => {
+    const saved = memory.offer?.state
+    const byId = new Map(source.map((w) => [w.id, w]))
+    const items = saved?.queue.map((id) => byId.get(id)).filter((w): w is T => w !== undefined) ?? []
+    if (saved && items.length === saved.queue.length) {
+      setQueue(items)
+      setPos(saved.pos)
+      setResults(saved.results)
+      setHistory(saved.history)
+      setFlipped(false)
+      memory.dismiss()
+    } else memory.restart()
+  }
+
+  const leaveGuard = useLeaveGuard(!done && pos >= 3 && !memory.offer, { answered: pos, total: queue.length, unit: 'thẻ' })
+
+  useEffect(() => {
+    if (memory.offer) return
     const onKey = (e: KeyboardEvent) => {
-      if (isInteractiveTarget(e)) return
+      // Focus ở nút lật thẻ: Space / Enter để nút tự bấm (lật), các phím tắt khác vẫn dùng được.
+      const onCard = e.target instanceof Element && e.target.closest('[data-flip-card]') !== null
+      if (onCard && (e.key === ' ' || e.key === 'Enter')) return
+      if (e.ctrlKey || e.metaKey || e.altKey || (isInteractiveTarget(e) && !onCard)) return
       const key = e.key.toLowerCase()
       if (key === 'z') return undo()
       if (done) return
@@ -333,7 +387,7 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [done, undo])
+  }, [done, undo, memory.offer])
 
   const visible = queue.slice(pos, pos + 3)
 
@@ -348,8 +402,12 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
     />
   )
 
+  if (memory.offer)
+    return <ResumePrompt answered={memory.offer.answered} total={memory.offer.total} unit="thẻ" onResume={resume} onRestart={memory.restart} />
+
   return (
     <StudyLayout aside={aside}>
+        {leaveGuard}
         {done ? (
           <Summary
             back={back}
@@ -371,7 +429,7 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
               <button
                 type="button"
                 onClick={() => startSession(shuffle(source))}
-                className="ml-auto min-h-9 rounded-lg px-2 text-sm text-muted hover:bg-sunken hover:text-ink"
+                className="ml-auto min-h-11 rounded-lg px-2 text-sm text-muted hover:bg-sunken hover:text-ink"
               >
                 Trộn thẻ
               </button>
@@ -422,9 +480,9 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
                 </svg>
               </Button>
             </div>
-            <div className="mt-2 flex h-10 justify-center">
+            <div className="mt-2 flex h-11 justify-center">
               {history.length > 0 && (
-                <button type="button" onClick={undo} className="min-h-10 px-3 text-sm text-muted hover:text-ink">
+                <button type="button" onClick={undo} className="min-h-11 px-3 text-sm text-muted hover:text-ink">
                   Hoàn tác thẻ vừa chấm
                 </button>
               )}

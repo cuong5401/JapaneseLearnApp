@@ -58,7 +58,7 @@ function RadicalChip({ ch, onPush }: { ch: string; onPush: Push }) {
     <button
       type="button"
       onClick={() => onPush({ t: 'r', no })}
-      className="mt-2 inline-flex min-h-9 items-center gap-2 rounded-lg border border-line px-2.5 text-sm hover:border-ai"
+      className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-lg border border-line px-2.5 text-sm hover:border-ai"
     >
       <span className="text-muted">Bộ</span>
       {r ? (

@@ -22,8 +22,8 @@ import { useEntries, useKanjiIndex, useRadicals } from '../hooks/useData'
 import { useDetailStack } from '../hooks/useDetailStack'
 import { useOwnPage } from '../hooks/useOwnPage'
 import { WIDE_PANEL, useMediaQuery } from '../hooks/useMediaQuery'
+import { useEscapeClose } from '../hooks/useEscapeClose'
 import { useCards } from '../hooks/useProgress'
-import { useScrollMemory } from '../hooks/useScrollMemory'
 import type { Frame } from '../lib/detailStack'
 import { KANJI_LEVEL_OPTIONS, filterByLevel, type KanjiLevelFilter } from '../lib/kanjiLessons'
 import { splitLessons } from '../lib/lessons'
@@ -239,7 +239,6 @@ export function Kanji() {
   const size = useLessonSize()
   const wide = useMediaQuery(WIDE_PANEL)
   const stack = useDetailStack('k')
-  useScrollMemory(section === 'chars' ? Boolean(index.data) : Boolean(radicals.data))
 
   const levelOptions = useMemo(
     () =>
@@ -398,6 +397,8 @@ export function Kanji() {
   // Panel luôn giữ chỗ 360px ở desktop (chế độ danh sách) để chọn mục / đổi tab không làm cột trái đổi độ rộng.
   const frames = stack.frames.length ? stack.frames : defaultFrame ? [defaultFrame] : []
   const showPanel = wide && mode === 'list'
+  // Desktop: Esc đóng chữ đang xem trong panel (về chữ mặc định).
+  useEscapeClose(showPanel && stack.frames.length > 0, () => stack.close(true))
 
   return (
     <div>
@@ -448,7 +449,7 @@ export function Kanji() {
       </div>
 
       {!showPanel && (
-        <BottomSheet open={stack.frames.length > 0} onClose={() => stack.close(true)} label="Chi tiết">
+        <BottomSheet open={stack.frames.length > 0} onClose={() => stack.close(true)} label="Chi tiết" tall>
           <DetailStackView frames={stack.frames} onPush={stack.push} onBack={stack.back} />
         </BottomSheet>
       )}

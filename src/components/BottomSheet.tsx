@@ -7,13 +7,18 @@ interface Props {
   onClose: () => void
   label: string
   children: ReactNode
+  /**
+   * Chi tiết tải lười / dài ngắn khác nhau (từ, chữ Hán, trợ số từ): sheet cao cố định 88dvh để nội dung tải xong
+   * hay đổi khung không làm sheet nhảy lên (CLS); nội dung dài cuộn trong sheet.
+   */
+  tall?: boolean
 }
 
 /** Các sheet đang mở, mới nhất ở cuối: Esc chỉ đóng sheet trên cùng (sheet lồng nhau). */
 const openSheets: object[] = []
 
 /** Bảng trượt từ dưới lên (điện thoại/tablet). Kéo tay cầm xuống, chạm nền mờ hoặc Esc để đóng. */
-export function BottomSheet({ open, onClose, label, children }: Props) {
+export function BottomSheet({ open, onClose, label, children, tall = false }: Props) {
   const controls = useDragControls()
   const sheetRef = useRef<HTMLDivElement>(null)
 
@@ -55,7 +60,7 @@ export function BottomSheet({ open, onClose, label, children }: Props) {
             aria-modal="true"
             aria-label={label}
             tabIndex={-1}
-            className="absolute inset-x-0 bottom-0 mx-auto max-h-[88dvh] max-w-[640px] overflow-y-auto overscroll-contain rounded-t-2xl bg-paper pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgb(0_0_0/0.18)] outline-none"
+            className={`absolute inset-x-0 bottom-0 mx-auto max-h-[88dvh] ${tall ? 'h-[88dvh]' : ''} max-w-[640px] overflow-y-auto overscroll-contain rounded-t-2xl bg-paper pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgb(0_0_0/0.18)] outline-none`}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -79,7 +84,7 @@ export function BottomSheet({ open, onClose, label, children }: Props) {
               <button
                 type="button"
                 onClick={onClose}
-                className="-mt-1 min-h-10 rounded-lg px-3 text-sm text-muted hover:text-ink"
+                className="-mt-1 min-h-11 rounded-lg px-3 text-sm text-muted hover:text-ink"
               >
                 Đóng
               </button>

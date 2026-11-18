@@ -63,7 +63,7 @@ function HubCard({
   )
 }
 
-const chip = 'inline-flex min-h-9 items-center rounded-lg border border-line px-3 text-sm font-medium hover:border-ai hover:text-ai'
+const chip = 'inline-flex min-h-11 items-center rounded-lg border border-line px-3 text-sm font-medium hover:border-ai hover:text-ai'
 
 /** Một dòng bộ từ trong thẻ nhiều dòng (JLPT, Bộ từ khác, Thuật ngữ). */
 function DeckRow({ to, glyph, fit, name, sub, prefix, total, idPattern, unit = 'từ' }: { to: string; glyph: string; fit?: number; name: string; sub: string; prefix: string; total?: number; idPattern?: string; unit?: string }) {

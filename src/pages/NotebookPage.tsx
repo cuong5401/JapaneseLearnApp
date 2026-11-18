@@ -370,7 +370,7 @@ export function NotebookPage() {
               <div className="mt-6 rounded-xl border border-kihada bg-kihada-soft p-4 text-sm">
                 <p className="font-semibold">{missing.length} mục không còn trong dữ liệu</p>
                 <p className="mt-0.5 text-muted">Dữ liệu đã thay đổi nên không tìm thấy các mục này.</p>
-                <button type="button" onClick={() => missing.forEach(remove)} className="mt-2 min-h-10 rounded-lg border border-ink/20 px-3 font-medium hover:bg-surface">
+                <button type="button" onClick={() => missing.forEach(remove)} className="mt-2 min-h-11 rounded-lg border border-ink/20 px-3 font-medium hover:bg-surface">
                   Gỡ các mục này khỏi sổ
                 </button>
               </div>

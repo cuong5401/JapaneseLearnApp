@@ -14,9 +14,9 @@ import { pairFaces } from '../components/study/counterFaces'
 import { useCounters } from '../hooks/useData'
 import { useDetailStack } from '../hooks/useDetailStack'
 import { WIDE_PANEL, useMediaQuery } from '../hooks/useMediaQuery'
+import { useEscapeClose } from '../hooks/useEscapeClose'
 import { useOwnPage } from '../hooks/useOwnPage'
 import { useCards } from '../hooks/useProgress'
-import { useScrollMemory } from '../hooks/useScrollMemory'
 import { counterRef, groupCounters, matchCounter, numberLabel, pickPairs, shouldTrack, type CounterPair } from '../lib/counters'
 import { isSaved, useNotebooks } from '../lib/notebooks'
 import { progress } from '../lib/progress'
@@ -249,7 +249,6 @@ export function Counters() {
   const mode = (MODES.some((m) => m.value === params.get('mode')) ? params.get('mode') : 'list') as Mode
   const level = (LEVEL_OPTIONS.some((o) => o.value === params.get('cap')) ? params.get('cap') : 'all') as LevelFilter
   const only = params.get('ct')
-  useScrollMemory(Boolean(data.data))
 
   const setParam = (set: Record<string, string | null>) =>
     setParams(
@@ -323,7 +322,7 @@ export function Counters() {
             <span lang="ja" className="rounded-lg bg-ai-soft px-2.5 py-1 font-jp font-semibold text-ai">
               {onlyItem.counter} {onlyItem.reading}
             </span>
-            <button type="button" onClick={() => setParam({ ct: null })} className="min-h-9 rounded-lg px-2 font-medium text-ai hover:bg-ai-soft">
+            <button type="button" onClick={() => setParam({ ct: null })} className="min-h-11 rounded-lg px-2 font-medium text-ai hover:bg-ai-soft">
               Luyện tất cả
             </button>
           </p>
@@ -342,6 +341,8 @@ export function Counters() {
   }
 
   const showPanel = wide && mode === 'list'
+  // Desktop: Esc đóng trợ số từ đang xem trong panel.
+  useEscapeClose(showPanel && stack.frames.length > 0, () => stack.close())
 
   return (
     <div>
@@ -369,7 +370,7 @@ export function Counters() {
       </div>
 
       {!showPanel && (
-        <BottomSheet open={stack.frames.length > 0} onClose={() => stack.close()} label="Chi tiết trợ số từ">
+        <BottomSheet open={stack.frames.length > 0} onClose={() => stack.close()} label="Chi tiết trợ số từ" tall>
           <DetailStackView frames={stack.frames} onPush={stack.push} onBack={stack.back} />
         </BottomSheet>
       )}

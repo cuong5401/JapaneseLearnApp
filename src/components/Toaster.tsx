@@ -29,7 +29,7 @@ export function Toaster() {
                   toast.action!.run()
                   dismissToast()
                 }}
-                className="min-h-9 rounded-lg px-3 font-semibold text-kihada hover:bg-paper/10"
+                className="min-h-11 rounded-lg px-3 font-semibold text-kihada hover:bg-paper/10"
               >
                 {toast.action.label}
               </button>
