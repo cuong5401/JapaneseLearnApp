@@ -350,7 +350,7 @@ export function Counters() {
 
   return (
     <div>
-      <PageHeader title={t('common.cachDem')} back={{ to: '/learn', label: t('common.hoc') }}>
+      <PageHeader title={t('common.cachDem')}>
         <span lang="ja" className="font-jp text-lg text-muted">
           助数詞
         </span>

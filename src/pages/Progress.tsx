@@ -100,7 +100,7 @@ export function Progress() {
 
   return (
     <div>
-      <PageHeader title={tr('progress.tienDo')} back={{ to: '/me', label: tr('common.caNhan') }} />
+      <PageHeader title={tr('progress.tienDo')} />
 
       <dl className="grid grid-cols-3 divide-x divide-line rounded-xl border border-line bg-surface">
         {totals.map((t) => (

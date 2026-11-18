@@ -10,7 +10,7 @@ import { GRAY, NUMBER_SIZE, buildScene, fileName, fitText, geometry, headerCells
 import { MIN_NUMBER_PT, numberLabels, numberSize } from './numbers'
 import { DEFAULT_OPTIONS, fadeCount, sanitizeOptions, type WritingOptions } from './options'
 import { buildPdf } from './pdf'
-import { kanaRowChars, makeItem, notebookChars, parseCustom, parseSource, sourceTitle } from './sources'
+import { formatRanges, kanaRowChars, makeItem, makeRadicalItem, notebookChars, parseCustom, parseRanges, parseSource, sourceParams, sourceTitle } from './sources'
 
 const ROOT = resolve(__dirname, '../../..')
 const json = (p: string) => JSON.parse(readFileSync(resolve(ROOT, p), 'utf8'))
@@ -224,6 +224,31 @@ describe('nguồn chữ', () => {
       { kind: 'char', item: { id: 'ch-7483', char: '璃' } },
     ])
     expect(chars).toEqual(['日', '本', '語', '璃'])
+  })
+})
+
+describe('nguồn Bộ thủ', () => {
+  it('theo bài hoặc theo số bộ, đồng bộ URL', () => {
+    expect(parseSource(new URLSearchParams('src=radical&bai=2,3'))).toEqual({ kind: 'radical', lessons: [2, 3], nos: [] })
+    const byNo = parseSource(new URLSearchParams('src=radical&so=9,1-3,300'))
+    expect(byNo).toEqual({ kind: 'radical', lessons: [], nos: [1, 2, 3, 9] })
+    expect(sourceParams(byNo)).toEqual({ src: 'radical', so: '1-3,9' })
+    expect(sourceTitle(byNo).fileKey).toBe('bo-thu-so1-3_9')
+    expect(sourceTitle(parseSource(new URLSearchParams('src=radical&bai=1'))).title).toBe('Bộ thủ · Bài 1')
+  })
+
+  it('parseRanges / formatRanges', () => {
+    expect(parseRanges('1-5, 3，30 x 214-216', 214)).toEqual([1, 2, 3, 4, 5, 30, 214])
+    expect(parseRanges('', 214)).toEqual([])
+    expect(formatRanges([1, 2, 3, 5, 7, 8])).toBe('1-3,5,7-8')
+  })
+
+  it('hàng tiêu đề: "Bộ 9 · NHÂN" | biến thể | ý nghĩa', () => {
+    const item = makeRadicalItem({ no: 9, radical: '人', name: 'nhân', meaning: 'người', strokes: 2, variants: ['亻'] })
+    const cells = headerCells(item, 1, DEFAULT_OPTIONS)
+    expect(cells.map((c) => c.parts.join(c.joiner))).toEqual(['Bộ 9 · NHÂN', '亻', 'người'])
+    const plain = headerCells(makeRadicalItem({ no: 1, radical: '一', name: 'nhất', meaning: 'số một', strokes: 1 }), 1, DEFAULT_OPTIONS)
+    expect(plain[1].parts).toEqual(['—'])
   })
 })
 

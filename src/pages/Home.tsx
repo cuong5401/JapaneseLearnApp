@@ -1,18 +1,16 @@
 import { KanjiReadingsCompact } from '../components/detail/KanjiReadings'
 import { AnimatePresence, motion } from 'motion/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { GridCell } from '../components/GridCell'
 import { LoadError, Skeleton } from '../components/LoadState'
 import { ButtonLink } from '../components/Pressable'
 import { ProgressBar } from '../components/ProgressBar'
 import { SpeakButton } from '../components/SpeakButton'
-import { DECK_ID_PREFIX, LEVEL_DECKS, VOCAB_DECK_INFO, deckTitle, isCurrentId } from '../data'
-import { useEntries, useKanjiIndex, useManifest, useVocab } from '../hooks/useData'
+import { DECK_ID_PREFIX, deckTitle, isCurrentId } from '../data'
+import { useEntries, useKanjiIndex, useVocab } from '../hooks/useData'
 import { useDetailStack } from '../hooks/useDetailStack'
-import { useCards, useDueIds, useNow, usePrefixStats } from '../hooks/useProgress'
-import { useCounterSummary, useGrammarStats, useKanaSummary } from '../hooks/useStudyStats'
+import { useCards, useDueIds, useNow } from '../hooks/useProgress'
 import { dueForecast } from '../lib/forecast'
 import { continueLesson, lessonProgress, splitLessons } from '../lib/lessons'
 import { useLessonSize } from '../lib/settings'
@@ -20,24 +18,21 @@ import { fetchKanjiWords } from '../lib/kanjiWordsApi'
 import { kanjiPool, mergeKanjiWords, pickRandom, pushRecent, readRecent, type CardWord } from '../lib/randomKanji'
 import { speechText } from '../lib/speech'
 import { webWords } from '../lib/webWords'
-import type { DataManifest, KanjiEntry, SrsCard, VocabDeckKey } from '../types'
+import type { KanjiEntry, SrsCard, VocabDeckKey } from '../types'
 import { t } from '../i18n'
 import { tRich } from '../i18n/rich'
 
 /**
  * Trang chủ gọn: desktop 1280×800 nằm trong một màn hình (không cuộn), điện thoại tối đa ~2 màn.
  *  1. Ôn tập hôm nay | Học tiếp (cùng chiều cao)
- *  2. Chữ Hán ngẫu nhiên (thu gọn: chữ, Hán Việt, 2 từ)
- *  3. Lối tắt nhỏ (điện thoại cuộn ngang, desktop lưới 5 cột) + "Tất cả" sang /learn
- * Các khối lớn (từ vựng JLPT, bộ từ khác, thuật ngữ…) ở trang Học (/learn).
+ *  2. Chữ Hán ngẫu nhiên: chữ, Hán Việt, On / Kun, 5 từ ví dụ (mỗi từ 1 dòng: chữ, cách đọc, nghĩa cắt "…", nút nghe)
+ * Không có khối lối tắt: các bộ học ở trang Học (/learn), vào bằng điều hướng chính.
  */
 
 const CARD = 'flex h-full flex-col rounded-2xl border border-line bg-surface p-4 sm:p-5'
 
-const fileCount = (m: DataManifest | undefined, path: string) => m?.files.find((f) => f.path === path)?.count
-
-/** Số từ đi kèm trên thẻ chữ Hán ngẫu nhiên (bản thu gọn). */
-const MAX_WORDS = 2
+/** Số từ ví dụ của chữ Hán ngẫu nhiên: luôn giữ đủ ngần ấy hàng (hàng trống cùng chiều cao) để khối không đổi chiều cao. */
+const MAX_WORDS = 5
 
 const isOnline = () => typeof navigator === 'undefined' || navigator.onLine !== false
 
@@ -94,7 +89,7 @@ function DiceIcon() {
   )
 }
 
-/* ───────────── Hàng 2: chữ Hán ngẫu nhiên (thu gọn) ───────────── */
+/* ───────────── Hàng 2: chữ Hán ngẫu nhiên + 5 từ ví dụ ───────────── */
 
 function RandomKanji({ kanji, onOpenKanji, onOpenWord }: { kanji: KanjiEntry; onOpenKanji: () => void; onOpenWord: (id: string) => void }) {
   const { words, total, loading } = useKanjiWords(kanji)
@@ -128,7 +123,7 @@ function RandomKanji({ kanji, onOpenKanji, onOpenWord }: { kanji: KanjiEntry; on
                 {w.word}
               </span>
               {w.reading && w.reading !== w.word && (
-                <span lang="ja" className="min-w-0 shrink truncate font-jp text-sm text-muted">
+                <span lang="ja" className="max-w-[45%] shrink-0 truncate font-jp text-sm text-muted">
                   {w.reading}
                 </span>
               )}
@@ -220,9 +215,10 @@ function RandomKanjiCard() {
               <Skeleton className="h-4 w-40 bg-surface/60" />
             </div>
           </div>
-          <div className="flex-1 space-y-1">
-            <Skeleton className="h-11 bg-surface/60" />
-            <Skeleton className="h-11 bg-surface/60" />
+          <div className="flex-1 space-y-0.5">
+            {Array.from({ length: MAX_WORDS }, (_, i) => (
+              <Skeleton key={i} className="h-11 bg-surface/60" />
+            ))}
           </div>
         </div>
       )}
@@ -324,76 +320,7 @@ function ContinueCard() {
   )
 }
 
-/* ───────────── Hàng 3: lối tắt ───────────── */
-
-function Tile({ to, glyph, title, line, fit }: { to: string; glyph: string; title: string; line: string; fit?: number }) {
-  return (
-    <Link
-      to={to}
-      className="flex h-full min-h-[4.5rem] items-center gap-3 rounded-xl border border-line bg-surface p-2.5 transition-colors hover:border-ai"
-      data-shortcut={to}
-    >
-      <GridCell fit={fit} className="size-11 font-bold text-ai">
-        {glyph}
-      </GridCell>
-      <span className="min-w-0">
-        <span className="block truncate font-semibold">{title}</span>
-        <span className="block truncate text-xs text-muted tabular-nums">{line}</span>
-      </span>
-    </Link>
-  )
-}
-
-function LevelTile({ deck, manifest }: { deck: VocabDeckKey; manifest?: DataManifest }) {
-  const info = VOCAB_DECK_INFO[deck]
-  const total = fileCount(manifest, info.path)
-  const s = usePrefixStats(DECK_ID_PREFIX[deck], total ?? 0)
-  return <Tile to={`/vocab/${deck}`} glyph={info.level ?? info.ja[0]} fit={0.36} title={info.name} line={total !== undefined ? t('home.tu', { learned: s.learned, total }) : '…'} />
-}
-
-function Shortcuts({ manifest }: { manifest?: DataManifest }) {
-  const kanjiTotal = fileCount(manifest, 'kanji/kanji.json')
-  const kanji = usePrefixStats('kj', kanjiTotal ?? 0)
-  const grammar = useGrammarStats(manifest)
-  const kana = useKanaSummary()
-  const counters = useCounterSummary(manifest)
-  const items = [
-    { to: '/kanji', glyph: '漢', title: t('common.chuHan'), line: kanjiTotal !== undefined ? t('home.chu', { learned: kanji.learned, kanjiTotal }) : '…' },
-    { to: '/grammar', glyph: '文', title: t('common.nguPhap2'), line: grammar.line },
-    { to: '/kana', glyph: 'あ', title: t('common.kana'), line: t('home.daThuoc', { mastered: kana.mastered, total: kana.total }) },
-    { to: '/learn/counters', glyph: '本', title: t('common.cachDem'), line: counters.line },
-  ]
-  return (
-    <section aria-labelledby="shortcuts" data-shortcuts>
-      <div className="mb-2 flex items-center justify-between">
-        <h2 id="shortcuts" className="text-sm font-medium text-muted">{t('home.loiTat')}</h2>
-        <Link to="/learn" className="-mr-2 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-medium text-ai hover:bg-ai-soft md:hidden">{t('home.tatCa')}</Link>
-      </div>
-      {/* Điện thoại: một hàng cuộn ngang (scroll-snap); từ tablet: lưới 5 cột. */}
-      <ul data-hscroll className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-2 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] md:mx-0 md:grid md:snap-none md:grid-cols-5 md:overflow-visible md:px-0 md:pb-0">
-        {LEVEL_DECKS.map((k) => (
-          <li key={k} className="w-36 shrink-0 snap-start md:w-auto">
-            <LevelTile deck={k} manifest={manifest} />
-          </li>
-        ))}
-        {items.map((it) => (
-          <li key={it.to} className="w-36 shrink-0 snap-start md:w-auto">
-            <Tile {...it} />
-          </li>
-        ))}
-        <li className="hidden md:block">
-          <Link
-            to="/learn"
-            className="flex h-full min-h-[4.5rem] items-center justify-center gap-2 rounded-xl border border-dashed border-ai/50 font-semibold text-ai transition-colors hover:bg-ai-soft"
-          >{t('home.tatCa')}</Link>
-        </li>
-      </ul>
-    </section>
-  )
-}
-
 export function Home() {
-  const manifest = useManifest()
   return (
     <div className="space-y-4 lg:space-y-5">
       <h1 className="sr-only">{t('home.kotonohaTrangChu')}</h1>
@@ -402,8 +329,6 @@ export function Home() {
         <ContinueCard />
       </div>
       <RandomKanjiCard />
-      {manifest.status === 'error' && <LoadError error={manifest.error} onRetry={manifest.retry} />}
-      <Shortcuts manifest={manifest.data} />
     </div>
   )
 }

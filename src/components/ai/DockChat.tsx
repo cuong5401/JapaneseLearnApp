@@ -5,10 +5,10 @@ import { useAiPageContext } from '../../hooks/useAiPageContext'
 import { useChatSend } from '../../hooks/useChatSend'
 import { aiDock, dockMemory, useAiDock } from '../../lib/ai/dock'
 import { useChats } from '../../lib/ai/history'
-import { MODES } from '../../lib/ai/prompts'
+import { DEFAULT_MODE, modeInfo } from '../../lib/ai/prompts'
 import { useAiSettings } from '../../lib/ai/settings'
 import { lockedScrollY } from '../../lib/scrollLock'
-import { ChatThread, Composer, ModeChips } from './ChatParts'
+import { ChatThread, Composer, ConversationTitle, PlusIcon } from './ChatParts'
 import { t as tr } from '../../i18n'
 
 interface Props {
@@ -42,7 +42,8 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef, head
   const chat = useAiChat()
   const context = useAiPageContext()
   const active = list.find((c) => c.id === dock.convId) ?? null
-  const mode = dock.mode
+  // Cuộc đang mở giữ chế độ của nó; màn cuộc mới dùng chế độ đang chọn (mặc định Hỗn hợp).
+  const mode = active?.mode ?? dock.mode
   const [draft, setDraftState] = useState(() => dockMemory.draft)
   const setDraft = (s: string) => {
     dockMemory.draft = s
@@ -50,7 +51,13 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef, head
   }
   const scrollRef = useRef<HTMLDivElement>(null)
   const send = useChatSend(active, (id) => aiDock.setConv(id))
-  const placeholder = MODES.find((m) => m.id === mode)!.placeholder
+  const placeholder = modeInfo(mode).placeholder
+  const newChat = () => {
+    aiDock.setConv(null)
+    aiDock.setMode(DEFAULT_MODE)
+    setDraft('')
+    inputRef.current?.focus({ preventScroll: true })
+  }
 
   // Câu hỏi gửi từ nút "Hỏi AI" / bảng vẽ: tự gửi nếu đã có key, chưa có thì điền sẵn.
   // Hoãn một nhịp (như trang /ai) để StrictMode chạy effect hai lần không gửi trùng.
@@ -58,7 +65,13 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef, head
     if (!dock.request) return
     const t = setTimeout(() => {
       const r = aiDock.takeRequest()
-      if (r && !send(r.text, { mode: r.mode, image: r.image })) setDraft(r.text)
+      // Nút "Hỏi AI" / ảnh vẽ tay: luôn mở cuộc MỚI với chế độ phù hợp (không qua màn chọn chế độ).
+      if (!r) return
+      if (!send(r.text, { mode: r.mode, image: r.image, fresh: true })) {
+        aiDock.setConv(null)
+        aiDock.setMode(r.mode)
+        setDraft(r.text)
+      }
     }, 0)
     return () => clearTimeout(t)
   }, [dock.request]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -99,11 +112,21 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef, head
             </span>{tr('common.hoiAi')}</h2>
           <button
             type="button"
+            onClick={newChat}
+            aria-label={tr('chatParts.newChat')}
+            title={tr('chatParts.newChat')}
+            data-dock-new
+            className="ml-auto grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
+          >
+            <PlusIcon />
+          </button>
+          <button
+            type="button"
             onClick={() => onExpand(active?.id ?? null)}
             aria-label={tr('dockChat.moRongToanMan')}
             title={tr('dockChat.moRongToanMan')}
             data-dock-expand
-            className="ml-auto grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
+            className="grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
           >
             <ExpandIcon />
           </button>
@@ -118,9 +141,7 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef, head
             <span aria-hidden>›</span>
           </button>
         </div>
-        <div className="mt-1.5">
-          <ModeChips mode={mode} onChange={aiDock.setMode} compact />
-        </div>
+        <ConversationTitle active={active} className="mt-0.5 h-6 px-1" />
       </div>
 
       {!settings.hasKey ? (
@@ -139,7 +160,7 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef, head
             }}
             className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3"
           >
-            <ChatThread active={active} mode={mode} live={chat.live} busy={chat.busy} onRetry={(c) => void chat.retry(c.id, c.mode)} />
+            <ChatThread active={active} mode={mode} onPickMode={aiDock.setMode} compact live={chat.live} busy={chat.busy} onRetry={(c) => void chat.retry(c.id, c.mode)} />
           </div>
           <div data-dock-composer style={{ touchAction: 'none' }} className="shrink-0 border-t border-line">
             <Composer
@@ -160,6 +181,8 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef, head
                     type="button"
                     data-ai-context
                     onClick={() => {
+                      // Hỏi về mục đang xem: bắt đầu cuộc mới với chế độ phù hợp.
+                      aiDock.setConv(null)
                       aiDock.setMode(context.mode)
                       setDraft(context.text)
                       inputRef.current?.focus({ preventScroll: true })

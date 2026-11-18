@@ -30,7 +30,7 @@ function TermHub({ category }: { category: TermCategory }) {
 
   return (
     <div>
-      <PageHeader title={deckTitle(deck)} back={{ to: '/', label: t('common.trangChu') }}>
+      <PageHeader title={deckTitle(deck)}>
         <span lang="ja" className="font-jp text-lg text-muted">
           {TERM_INFO[category].ja}
         </span>
@@ -80,7 +80,7 @@ export function TermStudy({ mode }: { mode: 'flashcards' | 'quiz' }) {
   const back = { to: deckPath(deck), label: t('deckHub.ve', { deckTitle: deckTitle(deck) }) }
   return (
     <div className={STUDY_PAGE}>
-      <PageHeader title={mode === 'flashcards' ? 'Flashcard' : 'Quiz'} back={{ to: deckPath(deck), label: deckTitle(deck) }} />
+      <PageHeader title={mode === 'flashcards' ? t('common.flashcard') : t('common.quiz')} />
       {mode === 'flashcards' ? (
         <FlashcardSession key={deck.category} items={words} back={back} />
       ) : (

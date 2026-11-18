@@ -102,7 +102,7 @@ it.owner ? `, ${it.owner}` : ''}${it.audioBy ? t('wordExamples.amThanh', { audio
         </p>
       </div>
       {(it.audioId || speechSupported) && (
-        <IconButton label={t('wordExamples.ngheCau', { ja: it.ja })} title={it.audioId ? t('wordExamples.ngheGiongThatTatoeba') : 'Nghe'} onClick={() => play(it)}>
+        <IconButton label={t('wordExamples.ngheCau', { ja: it.ja })} title={it.audioId ? t('wordExamples.ngheGiongThatTatoeba') : t('common.listen')} onClick={() => play(it)}>
           <path d="M11 5 6 9H3v6h3l5 4V5Z" />
           <path d="M15.5 8.5a5 5 0 0 1 0 7" />
         </IconButton>

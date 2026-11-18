@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { rowsOf } from '../../data/kana'
 import { KANJI_LEVEL_OPTIONS, type KanjiLevelFilter } from '../../lib/kanjiLessons'
 import type { Notebook } from '../../lib/notebooks'
-import type { WritingSource } from '../../lib/writing/sources'
-import type { KanaScript, KanjiEntry } from '../../types'
+import { formatRanges, parseRanges, type WritingSource } from '../../lib/writing/sources'
+import type { KanaScript, KanjiEntry, RadicalItem } from '../../types'
 import { BookColor } from '../notebook/BookColor'
 import { Segmented } from '../Segmented'
 import { t } from '../../i18n'
@@ -13,6 +13,9 @@ type Kind = WritingSource['kind']
 const KINDS: { value: Kind; label: string }[] = [
   { value: 'kanji', get label() {
     return t('sourcePicker.baiChuHan')
+  } },
+  { value: 'radical', get label() {
+    return t('common.boThu')
   } },
   { value: 'notebook', get label() {
     return t('common.soTay')
@@ -57,6 +60,78 @@ interface Props {
   onCustomText: (t: string) => void
   /** Ký tự bị bỏ khi tự nhập */
   dropped: string[]
+  /** Bộ thủ của từng bài (chia như tab Bộ thủ; null = đang tải) */
+  radicalLessons: RadicalItem[][] | null
+}
+
+/** Bộ thủ: chọn theo bài (chip) hoặc theo số bộ ("1-20, 30"). */
+function RadicalPicker({ s, lessons, onChange }: { s: Extract<WritingSource, { kind: 'radical' }>; lessons: RadicalItem[][] | null; onChange: (s: WritingSource) => void }) {
+  const byNo = s.nos.length > 0
+  const [text, setText] = useState(() => formatRanges(s.nos).replace(/,/g, ', '))
+  return (
+    <>
+      <Segmented
+        size="sm"
+        label={t('sourcePicker.radicalMode')}
+        value={byNo ? 'nos' : 'lessons'}
+        onChange={(m) => {
+          if (m === 'lessons') onChange({ kind: 'radical', lessons: [1], nos: [] })
+          else {
+            const nos = parseRanges(text, 214)
+            onChange({ kind: 'radical', lessons: [], nos: nos.length ? nos : parseRanges('1-20', 214) })
+            if (!nos.length) setText('1-20')
+          }
+        }}
+        options={[
+          { value: 'lessons', label: t('sourcePicker.radicalByLesson') },
+          { value: 'nos', label: t('sourcePicker.radicalByNo') },
+        ]}
+      />
+      {byNo ? (
+        <label className="mt-3 block">
+          <span className="mb-1.5 block text-sm text-muted">{t('sourcePicker.radicalNosLabel')}</span>
+          <input
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value)
+              const nos = parseRanges(e.target.value, 214)
+              if (nos.length) onChange({ kind: 'radical', lessons: [], nos })
+            }}
+            inputMode="numeric"
+            className="h-11 w-full max-w-xs rounded-xl border-2 border-line bg-surface px-3 outline-none focus:border-ai pointer-coarse:text-base"
+            data-writing-radical-nos
+          />
+          <span className="mt-1 block text-sm text-muted">{t('sourcePicker.radicalNosHelp', { n: s.nos.length })}</span>
+        </label>
+      ) : (
+        <>
+          <p className="mt-3 mb-2 text-sm text-muted">{t('sourcePicker.radicalLessonsHelp')}</p>
+          <div className="flex max-h-56 flex-wrap gap-2 overflow-y-auto overscroll-contain p-0.5" data-writing-radical-lessons>
+            {(lessons ?? Array.from({ length: 12 }, () => null)).map((l, i) => {
+              const n = i + 1
+              const on = s.lessons.includes(n)
+              if (!l) return <span key={i} className="inline-block h-11 w-24 animate-pulse rounded-lg bg-sunken" />
+              return (
+                <Chip
+                  key={n}
+                  on={on}
+                  onClick={() => {
+                    const next = on ? s.lessons.filter((x) => x !== n) : [...s.lessons, n].sort((a, b) => a - b)
+                    if (next.length) onChange({ ...s, lessons: next })
+                  }}
+                >
+                  {t('sourcePicker.bai2', { n })}
+                  <span lang="ja" className="font-jp text-xs text-muted" aria-hidden>
+                    {l.slice(0, 3).map((r) => r.radical).join('')}
+                  </span>
+                </Chip>
+              )
+            })}
+          </div>
+        </>
+      )}
+    </>
+  )
 }
 
 export function SourcePicker(p: Props) {
@@ -66,6 +141,7 @@ export function SourcePicker(p: Props) {
     if (k === 'kanji') p.onChange({ kind: 'kanji', level: 'N5', lessons: [1] })
     else if (k === 'notebook') p.onChange({ kind: 'notebook', id: p.books[0]?.id ?? '' })
     else if (k === 'kana') p.onChange({ kind: 'kana', script: 'hiragana', rows: ['h-basic-a'] })
+    else if (k === 'radical') p.onChange({ kind: 'radical', lessons: [1], nos: [] })
     else p.onChange({ kind: 'custom', text: '' })
   }
 
@@ -133,6 +209,8 @@ export function SourcePicker(p: Props) {
           ) : (
             <p className="text-sm text-muted">{t('sourcePicker.chuaCoSoTay')}</p>
           ))}
+
+        {s.kind === 'radical' && <RadicalPicker s={s} lessons={p.radicalLessons} onChange={p.onChange} />}
 
         {s.kind === 'kana' && <KanaRows script={s.script} rows={s.rows} onChange={(script, rows) => p.onChange({ kind: 'kana', script, rows })} />}
 

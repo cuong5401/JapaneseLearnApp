@@ -28,8 +28,8 @@ async function expectPage(page: Page, expected: string | RegExp) {
   await expect(page.getByRole('heading', { name: 'Không tìm thấy trang này' })).toHaveCount(0)
 }
 
-/** Ô lối tắt N5 ở trang chủ. */
-const n5Deck = (page: Page) => page.locator('[data-shortcuts] a[href$="/vocab/n5"]')
+/** Dòng N5 ở trang Học. */
+const n5Deck = (page: Page) => page.locator('a[data-learn-row="/vocab/n5"]')
 
 const dockState = (page: Page) => page.locator('[data-ai-dock]').getAttribute('data-ai-dock')
 
@@ -63,15 +63,15 @@ test('khung AI mở: chuyển qua Học, Cá nhân, bài từ vựng, Sổ tay �
   await go(/Học$/, `${BASE}learn`)
   await go(/Cá nhân/, `${BASE}me`)
   if (phone) {
-    // Điện thoại: sheet che nội dung trang, đi tới bài từ vựng qua Trang chủ → thẻ N5 khi khung đã thu gọn.
-    await go(/Trang chủ/, BASE, false)
+    // Điện thoại: sheet che nội dung trang, đi tới bài từ vựng qua Học → dòng N5 khi khung đã thu gọn.
+    await go(/Học$/, `${BASE}learn`, false)
     await n5Deck(page).click()
     await expectPage(page, `${BASE}vocab/n5`)
     await page.getByRole('link', { name: /^Bài 1,/ }).first().click()
     await expectPage(page, `${BASE}vocab/n5/1`)
     await openDock(page)
   } else {
-    await go(/Trang chủ/, BASE)
+    await go(/Học$/, `${BASE}learn`)
     await n5Deck(page).click()
     await expectPage(page, `${BASE}vocab/n5`)
     await page.getByRole('link', { name: /^Bài 1,/ }).first().click()
@@ -109,9 +109,9 @@ test('link / bookmark hỏng có basename lặp được tự sửa khi mở app
 test('bấm Ngữ pháp rồi bấm ngay Trang chủ: không bị kéo về /grammar/n5', async ({ page }, info) => {
   const phone = info.project.name === 'preview-phone'
   for (let i = 0; i < 3; i++) {
-    await page.goto(BASE)
-    await expectPage(page, BASE)
-    await page.locator('[data-shortcuts] a[href$="/grammar"]').click()
+    await page.goto(`${BASE}learn`)
+    await expectPage(page, `${BASE}learn`)
+    await page.locator('a[data-learn-row="/grammar"]').click()
     // không chờ trang Ngữ pháp tải xong / chuyển cấp
     await nav(page, phone).getByRole('link', { name: /Trang chủ/ }).click()
     await page.waitForTimeout(1500)

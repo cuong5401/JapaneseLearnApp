@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { chats, MAX_CONVERSATIONS, type Conversation } from '../../lib/ai/history'
-import { MODES } from '../../lib/ai/prompts'
+import { ModeBadge } from './ChatParts'
 import { t } from '../../i18n'
 
-const modeLabel = (m: Conversation['mode']) => MODES.find((x) => x.id === m)?.label ?? ''
 
 function Row({ c, active, onOpen }: { c: Conversation; active: boolean; onOpen: () => void }) {
   const [editing, setEditing] = useState(false)
@@ -38,12 +37,13 @@ function Row({ c, active, onOpen }: { c: Conversation; active: boolean; onOpen: 
           )}
           <span className="truncate text-sm font-medium">{c.title}</span>
         </span>
-        <span className="block truncate text-xs text-muted">
-          {t('historyList.meta', { mode: modeLabel(c.mode), count: c.messages.length })}
+        <span className="flex items-center gap-2 text-xs text-muted">
+          <ModeBadge mode={c.mode} />
+          {t('historyList.meta', { count: c.messages.length })}
         </span>
       </button>
       <div className="flex shrink-0 pr-1">
-        <button type="button" onClick={() => chats.togglePin(c.id)} aria-label={c.pinned ? t('historyList.boGhim2', { title: c.title }) : `Ghim ${c.title}`} title={c.pinned ? t('historyList.boGhim') : 'Ghim'} className="grid size-11 place-items-center rounded-lg text-muted hover:bg-surface hover:text-ink">
+        <button type="button" onClick={() => chats.togglePin(c.id)} aria-label={c.pinned ? t('historyList.boGhim2', { title: c.title }) : t('historyList.pin2', { title: c.title })} title={c.pinned ? t('historyList.boGhim') : t('historyList.pin')} className="grid size-11 place-items-center rounded-lg text-muted hover:bg-surface hover:text-ink">
           <svg viewBox="0 0 24 24" className="size-4" fill={c.pinned ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" aria-hidden>
             <path d="M16 3H8v2l1 1v5l-3 3v2h5v6h2v-6h5v-2l-3-3V6l1-1z" />
           </svg>

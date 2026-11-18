@@ -11,7 +11,8 @@ interface MdNode {
 }
 
 /**
- * Plugin remark: chữ 漢字{かんじ} trong văn bản → <ruby>漢字<rt>かんじ</rt></ruby>.
+ * Plugin remark: chữ 漢字{かんじ} trong văn bản → <ruby>漢字<rt>かんじ</rt></ruby>; romaji / cách đọc sai chỗ trong ngoặc
+ * nhọn → chữ nhỏ mờ không ngoặc (xem splitFurigana).
  * Không đụng tới khối code / inline code (furigana trong code giữ nguyên chữ).
  */
 function remarkFurigana() {
@@ -21,7 +22,13 @@ function remarkFurigana() {
     for (const child of node.children) {
       if (child.type === 'text' && child.value && child.value.includes('{')) {
         for (const part of splitFurigana(child.value)) {
-          if (!part.ruby) next.push({ type: 'text', value: part.text })
+          if (part.note)
+            // Romaji / cách đọc AI viết nhầm trong ngoặc nhọn: bỏ ngoặc, chữ nhỏ mờ.
+            next.push({
+              type: 'furiganaNote',
+              data: { hName: 'span', hProperties: { className: 'ml-0.5 text-xs text-muted', 'data-furigana-note': '' }, hChildren: [{ type: 'text', value: part.text }] },
+            })
+          else if (!part.ruby) next.push({ type: 'text', value: part.text })
           else
             next.push({
               type: 'ruby',

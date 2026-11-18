@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useDetailStack } from '../../hooks/useDetailStack'
 import type { Conversation, LocalHit, StoredMessage } from '../../lib/ai/history'
 import { extractWords } from '../../lib/ai/parse'
-import { MODES, type ChatMode } from '../../lib/ai/prompts'
+import { MODES, modeInfo, type ChatMode } from '../../lib/ai/prompts'
 import { PROVIDERS } from '../../lib/ai/providers'
 import type { LiveAnswer } from '../../lib/ai/session'
 import { AiWordCard } from './AiWordCard'
@@ -109,52 +109,77 @@ export function SetupCard() {
   )
 }
 
-/** Chip chọn chế độ (Tra từ, Ngữ pháp…). `compact`: hàng cuộn ngang cho khung chat nổi. */
-export function ModeChips({ mode, onChange, compact = false }: { mode: ChatMode; onChange: (m: ChatMode) => void; compact?: boolean }) {
+/** Nhãn nhỏ chế độ của cuộc trò chuyện (cạnh tên cuộc, trong lịch sử). */
+export function ModeBadge({ mode, className = '' }: { mode: ChatMode; className?: string }) {
   return (
-    <div
-      role="group"
-      aria-label={t('chatParts.cheDo')}
-      className={compact ? '-mx-1 flex gap-1.5 overflow-x-auto overscroll-x-contain px-1 pb-1 [scrollbar-width:none]' : 'flex flex-wrap gap-2'}
-    >
-      {MODES.map((m) => (
-        <button
-          key={m.id}
-          type="button"
-          aria-pressed={mode === m.id}
-          data-mode={m.id}
-          onClick={() => onChange(m.id)}
-          className={`shrink-0 rounded-full border font-medium whitespace-nowrap ${compact ? 'min-h-11 px-3 text-xs' : 'min-h-11 px-3.5 text-sm'} ${
-            mode === m.id ? 'border-ai bg-ai text-on-ai' : 'border-line bg-surface hover:border-ai'
-          }`}
-        >
-          {m.label}
-        </button>
-      ))}
+    <span data-mode-badge={mode} className={`inline-flex shrink-0 items-center rounded-full bg-ai-soft px-2 py-0.5 text-[11px] font-semibold text-ai ${className}`}>
+      {modeInfo(mode).label}
+    </span>
+  )
+}
+
+/**
+ * Màn trống của cuộc trò chuyện mới: 5 thẻ chọn chế độ (Hỗn hợp chọn sẵn). Có thể gõ câu hỏi luôn ở ô bên dưới
+ * (dùng chế độ đang chọn). Chế độ cố định theo cuộc trò chuyện sau khi gửi câu đầu.
+ */
+export function ModePicker({ mode, onChange, compact = false }: { mode: ChatMode; onChange: (m: ChatMode) => void; compact?: boolean }) {
+  return (
+    <div data-mode-picker>
+      <p id="mode-picker-title" className="font-semibold">
+        {t('chatParts.chooseMode')}
+      </p>
+      <p className="mt-0.5 text-sm text-muted">{t('chatParts.chooseModeHint')}</p>
+      <div role="radiogroup" aria-labelledby="mode-picker-title" className={`mt-3 grid gap-2 ${compact ? '' : 'sm:grid-cols-2'}`}>
+        {MODES.map((m) => {
+          const on = mode === m.id
+          return (
+            <button
+              key={m.id}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              data-mode={m.id}
+              onClick={() => onChange(m.id)}
+              className={`flex min-h-14 items-center gap-3 rounded-xl border-2 px-3 py-2 text-left transition-colors ${
+                on ? 'border-ai bg-ai-soft' : 'border-line bg-surface hover:border-ai/60'
+              }`}
+            >
+              <span lang="ja" aria-hidden className={`grid size-9 shrink-0 place-items-center rounded-[3px] border font-jp text-base ${on ? 'border-ai bg-ai text-on-ai' : 'border-cell-line text-ai'}`}>
+                {m.glyph}
+              </span>
+              <span className="min-w-0">
+                <span className={`block text-sm font-semibold ${on ? 'text-ai' : ''}`}>{m.label}</span>
+                <span className="block truncate text-xs text-muted">{m.desc}</span>
+              </span>
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
 
-/** Tin nhắn của một cuộc + câu trả lời đang hiện dần; cuộc trống thì hiện gợi ý theo chế độ. */
-export function ChatThread({ active, mode, live, busy, onRetry, footnote }: {
+/** Tin nhắn của một cuộc + câu trả lời đang hiện dần; cuộc mới (chưa có tin) thì hiện thẻ chọn chế độ. */
+export function ChatThread({ active, mode, onPickMode, live, busy, onRetry, footnote, compact = false }: {
   active: Conversation | null
+  /** Chế độ đang chọn cho cuộc mới */
   mode: ChatMode
+  onPickMode: (m: ChatMode) => void
   live: LiveAnswer
   busy: boolean
   onRetry: (c: Conversation) => void
   footnote?: ReactNode
+  compact?: boolean
 }) {
-  const info = MODES.find((m) => m.id === mode)!
   const lastIndex = (active?.messages.length ?? 0) - 1
   const streamingHere = live && live.convId === active?.id
   return (
     <div className="space-y-4" aria-live="polite">
       {!active || active.messages.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line p-6 text-center text-muted">
-          <p className="font-medium text-ink">{info.label}</p>
-          <p className="mt-1 text-sm">{info.placeholder}</p>
-          {footnote && <p className="mt-3 text-xs">{footnote}</p>}
-        </div>
+        <>
+          <ModePicker mode={active?.mode ?? mode} onChange={onPickMode} compact={compact} />
+          {footnote && <p className="text-xs text-muted">{footnote}</p>}
+        </>
       ) : (
         active.messages.map((m, i) =>
           m.role === 'user' ? (
@@ -166,6 +191,26 @@ export function ChatThread({ active, mode, live, busy, onRetry, footnote }: {
       )}
       {streamingHere && <AssistantBubble text={live.text} streaming />}
     </div>
+  )
+}
+
+/** Tên cuộc trò chuyện đang xem + nhãn chế độ (cố định theo cuộc). */
+export function ConversationTitle({ active, className = '' }: { active: Conversation | null; className?: string }) {
+  if (!active) return null
+  return (
+    <p className={`flex min-w-0 items-center gap-2 ${className}`} data-conversation-title>
+      <span className="truncate text-sm font-medium">{active.title}</span>
+      <ModeBadge mode={active.mode} />
+    </p>
+  )
+}
+
+/** Icon "+" của nút Cuộc trò chuyện mới. */
+export function PlusIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+      <path d="M12 5v14M5 12h14" />
+    </svg>
   )
 }
 

@@ -1,48 +1,52 @@
 import { t } from '../i18n'
+import { sectionOf, type RootPath } from './routeTree'
+
 export interface NavItem {
-  to: string
+  to: RootPath
   glyph: string
   label: string
-  /** Các trang con (đường dẫn cũ giữ nguyên) làm mục này sáng: đang ở /kanji thì "Học" sáng. */
-  match: string[]
   /** Nhóm trong sidebar desktop (có tiêu đề nhỏ) */
   group: 'study' | 'me'
 }
 
 /**
  * Điều hướng chính 5 mục (sidebar desktop, nav trên tablet, thanh đáy điện thoại). Hỏi AI là tab nổi ở lề phải
- * (AiDock), không nằm trong điều hướng. Đường dẫn cũ (/kanji, /grammar, /progress, /settings…) vẫn dùng được và làm
- * mục cha tương ứng sáng.
+ * (AiDock), không nằm trong điều hướng. Mục nào sáng do cây cha – con (`routeTree.ts`) quyết định: /kanji, /vocab/…,
+ * /grammar/… → "Học"; /progress, /settings, /ai → "Cá nhân".
  */
+const item = (to: RootPath, glyph: string, key: Parameters<typeof t>[0], group: NavItem['group']): NavItem => ({
+  to,
+  glyph,
+  get label() {
+    return t(key)
+  },
+  group,
+})
+
 export const NAV: NavItem[] = [
-  { to: '/', glyph: '家', get label() {
-    return t('common.trangChu')
-  }, match: [], group: 'study' },
-  { to: '/learn', glyph: '学', get label() {
-    return t('common.hoc')
-  }, match: ['/learn', '/vocab', '/word', '/kanji', '/grammar', '/kana', '/terms', '/writing', '/level'], group: 'study' },
-  { to: '/review', glyph: '復', get label() {
-    return t('common.onTap')
-  }, match: ['/review'], group: 'study' },
-  { to: '/notebooks', glyph: '帳', get label() {
-    return t('common.soTay')
-  }, match: ['/notebooks'], group: 'study' },
-  { to: '/me', glyph: '私', get label() {
-    return t('common.caNhan')
-  }, match: ['/me', '/progress', '/settings'], group: 'me' },
+  item('/', '家', 'common.trangChu', 'study'),
+  item('/learn', '学', 'common.hoc', 'study'),
+  item('/review', '復', 'common.onTap', 'study'),
+  item('/notebooks', '帳', 'common.soTay', 'study'),
+  item('/me', '私', 'common.caNhan', 'me'),
 ]
 
 export const NAV_GROUPS: { key: NavItem['group']; title: string }[] = [
-  { key: 'study', get title() {
-    return t('nav.hocTap')
-  } },
-  { key: 'me', get title() {
-    return t('nav.cuaBan')
-  } },
+  {
+    key: 'study',
+    get title() {
+      return t('nav.hocTap')
+    },
+  },
+  {
+    key: 'me',
+    get title() {
+      return t('nav.cuaBan')
+    },
+  },
 ]
 
-/** Mục điều hướng đang chọn theo đường dẫn (cả trang con). */
-export function navActive(item: NavItem, pathname: string): boolean {
-  if (item.to === '/') return pathname === '/'
-  return item.match.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+/** Mục điều hướng đang chọn: trang gốc chứa đường dẫn hiện tại theo cây cha – con. */
+export function navActive(nav: NavItem, pathname: string): boolean {
+  return sectionOf(pathname) === nav.to
 }

@@ -51,23 +51,71 @@ export function extractWords(text: string): { body: string; words: AiWord[] } {
   }
 }
 
-export type FuriganaPart = { text: string; ruby?: string }
+/**
+ * Một đoạn sau khi tách furigana:
+ *  - `ruby`: chữ Hán + cách đọc (hiện <ruby>);
+ *  - `note`: phần trong ngoặc nhọn KHÔNG phải furigana hợp lệ (romaji, cách đọc đứng sau kana…): bỏ ngoặc, hiện chữ nhỏ mờ.
+ */
+export type FuriganaPart = { text: string; ruby?: string; note?: boolean }
 
-/** Cụm chữ Hán (kèm 々〆ヶ) đứng ngay trước {kana} → ruby. Phần khác giữ nguyên. */
-const RUBY = /([㐀-鿿豈-﫿々〆ヶ]+)\{([぀-ヿー・\s]+)\}/g
+const KANJI = /[㐀-鿿豈-﫿々〆ヶ]/
+const KANJI_RUN = /[㐀-鿿豈-﫿々〆ヶ]+$/
+const KANA_ONLY = /^[぀-ヿー・\s]+$/
+/** Romaji / ghi chú cách đọc AI hay viết nhầm vào ngoặc nhọn: "gatsu", "a.u", "o-kane". */
+const ROMAJI = /^[A-Za-zÀ-ɏ.'’\-\s]+$/
+/** Ngoặc nhọn ngắn trên một dòng (không lồng). */
+const BRACE = /(\s?)\{([^{}\n]{1,40})\}/g
 
+/**
+ * Tách furigana dạng 漢字{かな}. Chỉ thành <ruby> khi NGAY trước `{` (không khoảng trắng) là chữ Hán và trong ngoặc
+ * toàn kana. Trường hợp khác:
+ *  - romaji ("がつ {gatsu}", "あ.う {a.u}", "日{nichi}") → bỏ ngoặc, `note` (chữ nhỏ mờ);
+ *  - kana đứng sau kana / sau khoảng trắng ("がつ{がつ}") → trùng phần chữ trước thì bỏ hẳn, khác thì thành `note`;
+ *  - nội dung khác (chữ Việt, ký hiệu mẫu ngữ pháp…) → giữ nguyên văn.
+ */
 export function splitFurigana(text: string): FuriganaPart[] {
   const out: FuriganaPart[] = []
   let last = 0
-  for (const m of text.matchAll(RUBY)) {
+  const push = (t: string) => {
+    if (!t) return
+    const prev = out[out.length - 1]
+    if (prev && !prev.ruby && !prev.note) prev.text += t
+    else out.push({ text: t })
+  }
+  for (const m of text.matchAll(BRACE)) {
     const i = m.index ?? 0
-    if (i > last) out.push({ text: text.slice(last, i) })
-    out.push({ text: m[1], ruby: m[2].trim() })
+    const space = m[1]
+    const inner = m[2].trim()
+    const before = text.slice(last, i)
+    const kanaInside = KANA_ONLY.test(inner)
+    const kanjiRun = before.match(KANJI_RUN)
+    if (!space && kanaInside && kanjiRun) {
+      push(before.slice(0, before.length - kanjiRun[0].length))
+      out.push({ text: kanjiRun[0], ruby: inner })
+    } else if (ROMAJI.test(inner) && /[A-Za-z]/.test(inner)) {
+      push(before)
+      out.push({ text: inner, note: true })
+    } else if (kanaInside) {
+      // Cách đọc sau kana: lặp lại đúng chữ đứng trước thì bỏ, khác thì hiện nhỏ.
+      push(before)
+      if (!before.replace(/\s+$/, '').endsWith(inner)) out.push({ text: inner, note: true })
+    } else {
+      push(before + m[0])
+    }
     last = i + m[0].length
   }
-  if (last < text.length) out.push({ text: text.slice(last) })
+  push(text.slice(last))
   return out
 }
 
-/** Bỏ furigana (đọc to, tiêu đề cuộc trò chuyện, tìm kiếm): 日本{にほん} → 日本. */
-export const stripFurigana = (text: string) => text.replace(RUBY, '$1')
+/** Bỏ furigana và ghi chú romaji (đọc to, tiêu đề cuộc trò chuyện, tìm kiếm): 日本{にほん} → 日本, がつ {gatsu} → がつ. */
+export const stripFurigana = (text: string) =>
+  text.includes('{')
+    ? splitFurigana(text)
+        .filter((p) => !p.note)
+        .map((p) => p.text)
+        .join('')
+    : text
+
+/** Có ít nhất một chữ Hán (dùng trong test / kiểm tra nhanh). */
+export const hasKanji = (s: string) => KANJI.test(s)

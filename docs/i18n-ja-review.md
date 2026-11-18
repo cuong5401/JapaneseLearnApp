@@ -1,6 +1,6 @@
 # Rà soát bản dịch giao diện 日本語
 
-Sinh tự động bằng `npm run i18n:review` từ `src/i18n/vi.ts` và `src/i18n/ja.ts` (998 khóa).
+Sinh tự động bằng `npm run i18n:review` từ `src/i18n/vi.ts` và `src/i18n/ja.ts` (1027 khóa).
 Sửa bản dịch trong `src/i18n/ja.ts` rồi chạy lại lệnh này. `{ten}` là tham số; `{n, plural, …}` / `{unit, select, …}` là số nhiều / chọn nhánh; `<b>…</b>` là phần được định dạng riêng.
 Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, cách dùng trợ số từ, câu dịch ví dụ) không nằm ở đây: luôn là tiếng Việt.
 
@@ -38,13 +38,20 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | Khóa | Tiếng Việt | 日本語 |
 |---|---|---|
 | `aiMode.conversation` | Luyện hội thoại | 会話練習 |
+| `aiMode.conversationDesc` | AI đóng vai, chỉ lỗi sau mỗi lượt | AI が役を演じ、毎回誤りを指摘 |
 | `aiMode.conversationPlaceholder` | Ví dụ: Đóng vai nhân viên cửa hàng tiện lợi | 例：コンビニの店員役をしてください |
 | `aiMode.correct` | Sửa câu tiếng Nhật | 日本語の添削 |
+| `aiMode.correctDesc` | Sửa câu, giải thích lỗi, cách nói tự nhiên | 添削・誤りの説明・自然な言い方 |
 | `aiMode.correctPlaceholder` | Dán câu tiếng Nhật cần sửa | 添削してほしい日本語を貼り付け |
 | `aiMode.grammar` | Giải thích ngữ pháp | 文法の説明 |
+| `aiMode.grammarDesc` | Ý nghĩa, cách nối, sắc thái, ví dụ | 意味・接続・ニュアンス・例文 |
 | `aiMode.grammarPlaceholder` | Ví dụ: ～うちに khác ～間に thế nào? | 例：～うちに と ～間に の違いは？ |
 | `aiMode.lookup` | Tra từ | 語の検索 |
+| `aiMode.lookupDesc` | Nghĩa, cách đọc, ví dụ, từ dễ nhầm | 意味・読み・例文・紛らわしい語 |
 | `aiMode.lookupPlaceholder` | Từ cần tra: 把握, はあく… | 調べたい語：把握、はあく… |
+| `aiMode.mixed` | Hỗn hợp | おまかせ |
+| `aiMode.mixedDesc` | Hỏi gì cũng được, AI tự nhận biết | 何でも質問、AI が内容を判断 |
+| `aiMode.mixedPlaceholder` | Hỏi gì cũng được: từ, ngữ pháp, sửa câu… | 何でも質問：語・文法・添削… |
 
 ## aiWordCard
 
@@ -149,7 +156,8 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `chatParts.anhKhungVe` | [Ảnh khung vẽ] | ［手書き画像］ |
 | `chatParts.bamKiemTraKet` | Bấm "Kiểm tra kết nối", rồi quay lại đây để hỏi. | 「接続を確認」を押してから、ここに戻って質問してください。 |
 | `chatParts.cauHoi` | Câu hỏi | 質問 |
-| `chatParts.cheDo` | Chế độ | モード |
+| `chatParts.chooseMode` | Chọn kiểu trò chuyện | 会話の種類を選ぶ |
+| `chatParts.chooseModeHint` | Hoặc gõ câu hỏi ngay bên dưới. | 下の欄にそのまま質問を入力することもできます。 |
 | `chatParts.coTrongDuLieu` | Có trong dữ liệu Kotonoha | Kotonoha のデータにあります |
 | `chatParts.dangTraLoi` | Đang trả lời… | 回答中… |
 | `chatParts.dung` | Dừng | 停止 |
@@ -160,6 +168,8 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `chatParts.layApiKey` | Lấy API key: | API キーの取得： |
 | `chatParts.moCaiDatAi` | Mở Cài đặt AI | AI の設定を開く |
 | `chatParts.moCaiDatMuc` | Mở Cài đặt → mục AI, chọn nhà cung cấp và dán key. | 設定 → AI を開き、プロバイダーを選んでキーを貼り付けてください。 |
+| `chatParts.modeOf` | Chế độ: {mode} | モード：{mode} |
+| `chatParts.newChat` | Cuộc trò chuyện mới | 新しい会話 |
 | `chatParts.thietLapHoiAi` | Thiết lập Hỏi AI | AIに質問の設定 |
 | `chatParts.tuVungTrongCau` | Từ vựng trong câu trả lời | 回答に出てきた語彙 |
 
@@ -554,7 +564,9 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `historyList.doiTen2` | Đổi tên {title} | {title} の名前を変更 |
 | `historyList.luu` | Lưu | 保存 |
 | `historyList.luuToiDaCuoc` | Lưu tối đa {MAX_CONVERSATIONS} cuộc trên máy này; cuộc thứ {v} sẽ xóa cuộc cũ nhất chưa ghim. | この端末には最大 {MAX_CONVERSATIONS} 件まで保存します。{v} 件目からは、ピン留めしていない一番古い会話が消えます。 |
-| `historyList.meta` | {mode} · {count} tin | {mode}・{count} 件 |
+| `historyList.meta` | {count} tin | {count} 件 |
+| `historyList.pin` | Ghim | ピン留め |
+| `historyList.pin2` | Ghim {title} | {title} をピン留め |
 | `historyList.tenCuocTroChuyen` | Tên cuộc trò chuyện | 会話の名前 |
 | `historyList.xoa` | Xóa {title} | {title} を削除 |
 | `historyList.xoaCaCuoc` | Xóa cả {length} cuộc? | {length} 件すべて削除しますか？ |
@@ -577,11 +589,9 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `home.hocBaiMoiThe` | Học bài mới, thẻ sẽ tự vào lịch ôn. | 新しい課を学ぶと、カードが自動で復習に入ります。 |
 | `home.hocTiep` | Học tiếp | 続きを学ぶ |
 | `home.kotonohaTrangChu` | Kotonoha – Trang chủ | Kotonoha – ホーム |
-| `home.loiTat` | Lối tắt | ショートカット |
 | `home.ngayMaiThe` | Ngày mai: {tomorrow} thẻ | 明日：{tomorrow} 枚 |
 | `home.onTapHomNay` | Ôn tập hôm nay | 今日の復習 |
 | `home.onXongDeGiu` | Ôn xong để giữ nhịp nhớ. | 復習を終えて記憶のリズムを保ちましょう。 |
-| `home.tatCa` | Tất cả → | すべて → |
 | `home.tienDoBai` | Tiến độ bài {v} | 第{v}課の進み具合 |
 | `home.tiepTuc` | Tiếp tục | 続ける |
 | `home.tu` | {learned}/{total} từ | {learned}/{total} 語 |
@@ -815,6 +825,7 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `layout.giaoDien` | Giao diện | 表示 |
 | `layout.giaoDien2` | Giao diện: {toLowerCase} | 表示：{toLowerCase} |
 | `layout.luyenViet` | LUYỆN VIẾT · {title} | 書き取り練習・{title} |
+| `layout.radicalHead` | Bộ {no} · {name} | 部首 {no}・{name} |
 | `layout.so` | Số {n} | No.{n} |
 | `layout.so2` | {toUpperCase}: Số {n} | {toUpperCase}：No.{n} |
 | `layout.timKiem` | Tìm kiếm | 検索 |
@@ -827,25 +838,35 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | Khóa | Tiếng Việt | 日本語 |
 |---|---|---|
 | `learn.boTuKhac` | Bộ từ khác | その他の単語帳 |
-| `learn.chonBaiChuHan` | Chọn bài chữ Hán, sổ tay, hàng kana hoặc tự nhập chữ; có thứ tự nét, ô tô mờ, xem trước đúng bản in. | 漢字の課・ノート・かなの行・自由入力から字を選べます。筆順、なぞり用の薄い字つきで、印刷どおりにプレビューできます。 |
-| `learn.chuBoThu` | {kanjiTotal} chữ, {radicalTotal} bộ thủ | {kanjiTotal} 字、部首 {radicalTotal} |
 | `learn.chuHanN5Bai` | Chữ Hán N5 bài 1 | 漢字 N5 第1課 |
-| `learn.chuNguPhapVa` | Chữ, ngữ pháp và cách đếm | 漢字・文法・助数詞 |
-| `learn.chuyenNganhVaLuyen` | Chuyên ngành và luyện viết | 専門用語と書き取り練習 |
+| `learn.countersSub` | 助数詞: 本、枚、匹、人… | 本・枚・匹・人… |
 | `learn.hiraganaKatakanaGoRomaji` | Hiragana, katakana, gõ romaji | ひらがな・カタカナ・ローマ字入力 |
+| `learn.kanjiDesc` | Chia bài theo cấp xuất hiện, flashcard, quiz Hán Việt | 初出レベル別の課、フラッシュカード、漢越音クイズ |
 | `learn.luyenViet` | Luyện viết | 書き取り練習 |
 | `learn.moi` | Mới | NEW |
 | `learn.n5DenN1Chia` | N5 đến N1, chia bài, flashcard, quiz | N5〜N1、課ごと・フラッシュカード・クイズ |
 | `learn.n5DenN1Loc` | N5 đến N1, lọc theo nhóm | N5〜N1、グループで絞り込み |
 | `learn.phieuTapVietPdf` | Phiếu tập viết PDF / Word | 練習シート（PDF / Word） |
+| `learn.rowGrammar` | Mẫu ngữ pháp | 文型 |
+| `learn.rowGrammarSub` | N5–N1, lọc theo nhóm | N5〜N1、グループ別 |
+| `learn.rowKana` | Bảng chữ và luyện tập | 五十音表と練習 |
+| `learn.rowKanaSub` | Hiragana, katakana | ひらがな・カタカナ |
+| `learn.rowKanji` | Chữ Hán theo bài | 課ごとの漢字 |
+| `learn.rowWriting` | Tạo phiếu luyện viết | 練習シートを作成 |
+| `learn.rowWritingKanaSub` | Bảng 50 âm | 五十音 |
+| `learn.rowWritingKanjiSub` | 20 chữ đầu tiên | 最初の 20 字 |
+| `learn.rowWritingRadical` | Bộ thủ bài 1 | 部首 第1課 |
+| `learn.rowWritingRadicalSub` | Theo bài hoặc theo số bộ | 課ごと・部首番号で選ぶ |
+| `learn.rowWritingSub` | Chọn chữ từ bài, sổ tay, kana hoặc tự nhập | 課・ノート・かな・自由入力から選ぶ |
 | `learn.thuatNgu` | Thuật ngữ | 専門用語 |
 | `learn.thuoc` | {mastered}/{total} thuộc | {mastered}/{total} 習得 |
 | `learn.tienDo` | Tiến độ {name} | {name} の進み具合 |
+| `learn.tienDoBoThu` | Tiến độ bộ thủ | 部首の進み具合 |
 | `learn.tienDoChuHan` | Tiến độ chữ Hán | 漢字の進み具合 |
 | `learn.tienDoKana` | Tiến độ kana | かなの進み具合 |
 | `learn.tienDoNguPhap` | Tiến độ ngữ pháp | 文法の進み具合 |
 | `learn.tuBai` | {total} từ, {ceil} bài | {total} 語、{ceil} 課 |
-| `learn.tuGhepTuLay` | Từ ghép, từ láy, phó từ | 熟語・擬音語・副詞 |
+| `learn.tuGhepTuLay` | Từ ghép, từ láy, phó từ, cách đếm | 熟語・擬音語・副詞・助数詞 |
 | `learn.tuVungDungHang` | Từ vựng dùng hằng ngày ở công ty Nhật | 日本の会社で毎日使う語彙 |
 | `learn.tuVungJlpt` | Từ vựng JLPT | JLPT 語彙 |
 
@@ -1266,6 +1287,12 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `sourcePicker.danChuBatKy` | Dán chữ bất kỳ: chữ trùng và chữ không có dữ liệu nét sẽ tự bỏ. | 好きな字を貼り付けてください。重複と筆順データのない字は自動で除きます。 |
 | `sourcePicker.hang` | Hàng {label} | {label} |
 | `sourcePicker.nguonChu` | Nguồn chữ | 字の出どころ |
+| `sourcePicker.radicalByLesson` | Theo bài | 課ごと |
+| `sourcePicker.radicalByNo` | Theo số bộ | 部首番号 |
+| `sourcePicker.radicalLessonsHelp` | Chọn một hoặc nhiều bài (giống cách chia bài ở tab Bộ thủ): | 課を 1 つ以上選んでください（部首タブと同じ分け方）： |
+| `sourcePicker.radicalMode` | Cách chọn bộ thủ | 部首の選び方 |
+| `sourcePicker.radicalNosHelp` | Số Khang Hy từ 1 đến 214. Đang chọn {n} bộ. | 康熙部首の番号（1〜214）。{n} 個を選択中。 |
+| `sourcePicker.radicalNosLabel` | Số bộ (vd. 1-20, 30) | 部首番号（例：1-20, 30） |
 | `sourcePicker.tuNhap` | Tự nhập | 自由入力 |
 | `sourcePicker.viDu` | Ví dụ: 日本語を勉強します | 例：日本語を勉強します |
 
@@ -1276,6 +1303,8 @@ Dữ liệu học (nghĩa từ, âm Hán Việt, giải thích ngữ pháp, các
 | `sources.bai` | {level} · Bài {label} | {level}・第{label}課 |
 | `sources.caBang` | cả bảng | 表全体 |
 | `sources.hang` | {length} hàng | {length} 行 |
+| `sources.radicalLessons` | Bộ thủ · Bài {label} | 部首・第{label}課 |
+| `sources.radicalNos` | Bộ thủ · Số {label} | 部首・No.{label} |
 | `sources.soTay` | Sổ tay · {name} | ノート・{name} |
 | `sources.tuChon` | Tự chọn | 自由選択 |
 

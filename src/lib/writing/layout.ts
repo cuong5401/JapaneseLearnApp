@@ -12,8 +12,13 @@ import { formatShortDate, t } from '../../i18n'
 export interface WritingItem {
   /** 1 chữ Hán / kana, hoặc 2 kana (âm ghép きゃ) */
   char: string
-  kind: 'kanji' | 'kana'
+  kind: 'kanji' | 'kana' | 'radical'
+  /** Chữ Hán: âm Hán Việt; bộ thủ: tên bộ (nhân, khẩu…) */
   hanViet?: string
+  /** Bộ thủ: số Khang Hy, dạng biến thể (亻 của 人), ý nghĩa (dữ liệu học, tiếng Việt) */
+  no?: number
+  variants?: string[]
+  meaning?: string
   /** Âm On (katakana) */
   on?: string[]
   /** Âm Kun theo ký hiệu KANJIDIC2 (ひと.つ) */
@@ -84,7 +89,7 @@ const round2 = (v: number) => Math.round(v * 100) / 100
 
 /** Có hàng tiêu đề không (kana luôn có: romaji + chữ bảng kia). */
 export const hasHeader = (o: WritingOptions, items: readonly WritingItem[]) =>
-  o.showHanViet || o.showOn || o.showKun || items.some((i) => i.kind === 'kana')
+  o.showHanViet || o.showOn || o.showKun || items.some((i) => i.kind === 'kana' || i.kind === 'radical')
 
 export function geometry(o: WritingOptions, items: readonly WritingItem[] = []): Geometry {
   const [pageW, pageH] = PAPER_SIZE[o.paper]
@@ -192,6 +197,14 @@ export function headerCells(item: WritingItem, n: number, o: WritingOptions): He
     return [
       { parts: [item.romaji ?? ''], joiner: '', font: 'vi-bold' },
       { parts: [item.counterpart ?? ''], joiner: '', font: 'vi-bold' },
+    ]
+  }
+  if (item.kind === 'radical') {
+    // "Bộ 9 · NHÂN" | dạng biến thể (亻) | ý nghĩa
+    return [
+      { parts: [t('layout.radicalHead', { no: item.no ?? 0, name: (item.hanViet ?? '').toUpperCase() })], joiner: '', font: 'vi-bold' },
+      { parts: item.variants?.length ? item.variants : ['—'], joiner: '、', font: 'vi-bold' },
+      { parts: [item.meaning || '—'], joiner: '', font: 'vi' },
     ]
   }
   const cells: HeaderCell[] = []

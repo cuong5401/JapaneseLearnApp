@@ -195,7 +195,7 @@ function GrammarLevel({ level, counts }: { level: Level; counts?: { kind: string
   const navigate = useNavigate()
   return (
     <div>
-      <PageHeader title={t('common.nguPhap', { level })} back={{ to: '/', label: t('common.trangChu') }} />
+      <PageHeader title={t('common.nguPhap', { level })} />
       <nav aria-label={t('grammar.chonCap')} className="mb-6">
         <Segmented
           label={t('grammar.capNguPhap')}

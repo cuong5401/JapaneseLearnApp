@@ -380,6 +380,7 @@ export function Kanji() {
               backHref={gridHref}
               mode={mode}
               onMode={(m) => setParam({ mode: m === 'list' ? null : m, xem: null })}
+              writingHref={`/writing?src=radical&bai=${lessonIndex + 1}`}
             />
             <div className={TAB_AREA} data-tab-area>
             {mode === 'list' && <RadicalList items={items} onOpen={openRadical} />}
@@ -409,7 +410,7 @@ export function Kanji() {
 
   return (
     <div>
-      <PageHeader title={t('common.chuHan')} back={{ to: '/', label: t('common.trangChu') }}>
+      <PageHeader title={t('common.chuHan')}>
         <button
           type="button"
           onClick={() => searchUi.open({ draw: true })}

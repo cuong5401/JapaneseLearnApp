@@ -72,7 +72,7 @@ export function VocabDeck() {
   const info = VOCAB_DECK_INFO[deck.key]
   return (
     <div>
-      <PageHeader title={deckTitle(deck)} back={{ to: '/', label: t('common.trangChu') }}>
+      <PageHeader title={deckTitle(deck)}>
         <span lang="ja" className="font-jp text-lg text-muted">
           {info.ja}
         </span>

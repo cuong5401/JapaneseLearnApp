@@ -106,7 +106,9 @@ for (const width of WIDTHS) {
           expect(900 - (p.y + p.height)).toBeCloseTo(24, 0)
         }
         await expect(panel(page).getByRole('heading', { name: 'Hỏi AI' })).toBeVisible()
-        await expect(panel(page).locator('[data-mode="lookup"]')).toHaveAttribute('aria-pressed', 'true')
+        // Cuộc mới: thẻ chọn chế độ, Hỗn hợp chọn sẵn; không còn hàng chip chế độ ở header.
+        await expect(panel(page).locator('[data-mode="mixed"]')).toHaveAttribute('aria-checked', 'true')
+        await expect(panel(page).locator('[data-dock-header] [data-mode]')).toHaveCount(0)
 
         await panel(page).getByRole('button', { name: 'Thu gọn' }).click()
         await expectClosed(page)

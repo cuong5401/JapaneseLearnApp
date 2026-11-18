@@ -198,8 +198,10 @@
 ## Luyện viết (phiếu tập viết, `/writing`)
 
 - Vào từ sidebar desktop (mục "Luyện viết", ẩn ở bottom nav và nav tablet) và nút "Tạo phiếu luyện viết"
-  (`WritingSheetLink`) ở trang bài Chữ Hán (`?src=kanji&level=N5&bai=1`), Sổ tay (`?src=notebook&id=`), bảng kana
-  (`?src=kana&script=&rows=`). Nguồn đồng bộ URL (`parseSource` / `sourceParams`); tự nhập (`src=custom`) không đưa chữ lên URL.
+  (`WritingSheetLink`) ở trang bài Chữ Hán (`?src=kanji&level=N5&bai=1`), bài Bộ thủ (`?src=radical&bai=1`), Sổ tay
+  (`?src=notebook&id=`), bảng kana (`?src=kana&script=&rows=`). Nguồn **Bộ thủ**: theo bài (chia như tab Bộ thủ, cùng cỡ bài) hoặc
+  theo số bộ (`?src=radical&so=1-20,30`, `parseRanges` / `formatRanges`); khối bộ thủ (`makeRadicalItem`, kind `radical`) có hàng
+  tiêu đề "Bộ 9 · NHÂN" | dạng biến thể (亻, không có thì "—") | ý nghĩa; ô mẫu / ô mờ dùng nét KanjiVG, thiếu thì Klee One. Nguồn đồng bộ URL (`parseSource` / `sourceParams`); tự nhập (`src=custom`) không đưa chữ lên URL.
 - `src/lib/writing/` (thuần, có test `writing.test.ts`, `fonts.test.ts`):
   `sources.ts` (nguồn → danh sách chữ → `WritingItem`; tự nhập lọc trùng + chữ không có nét KanjiVG; sổ tay lấy chữ Hán
   trong từ đã lưu; chia bài dùng `src/lib/kanjiLessons.ts` chung với trang Chữ Hán), `options.ts` (`jla:v1:writing-options`,
@@ -245,17 +247,29 @@
   · 帳 Sổ tay · 私 Cá nhân (`/me`). Sidebar desktop chia nhóm có tiêu đề nhỏ ("Học tập", "Của bạn") + nút Giao diện ở đáy;
   tablet nav trên 4 mục (logo = Trang chủ); điện thoại bottom nav 5 cột. Hỏi AI **không** nằm trong điều hướng (tab nổi
   `AiDock`; trang `/ai` mở từ Cá nhân). Header điện thoại: tìm kiếm, vẽ chữ, giao diện (không còn nút Cài đặt).
-- URL cũ giữ nguyên (`/kanji`, `/grammar`, `/kana`, `/vocab`, `/word`, `/terms`, `/writing`, `/progress`, `/settings`…):
-  mục cha sáng theo `match` + `navActive` (đang ở /kanji thì "Học" sáng, /settings thì "Cá nhân"), link có `aria-current`.
-- `/learn` (`src/pages/Learn.tsx`): nhóm có tiêu đề nhỏ, thẻ cỡ vừa có tiến độ; Từ vựng JLPT = 1 thẻ 5 dòng cấp, Bộ từ khác,
-  Chữ Hán (+ Bộ thủ), Ngữ pháp, Kana, Cách đếm, Thuật ngữ (3 dòng), Luyện viết. `/me` (`src/pages/Me.tsx`): tóm tắt Tiến độ,
+- **Cây cha – con một chỗ duy nhất**: `src/lib/routeTree.ts` (`parentOf(pathname)`, `sectionOf(pathname)`). Trang gốc = 5 mục
+  điều hướng (`/`, `/learn`, `/review`, `/notebooks`, `/me`). Trang con quay về **cha trực tiếp**: mọi trang con của Học (`/kanji`,
+  `/grammar/…`, `/kana`, `/learn/counters`, `/vocab/…`, `/terms/…`, `/writing`) → "‹ Học"; `/progress`, `/settings`, `/ai` →
+  "‹ Cá nhân"; bài 3 (`/vocab/n5/3`) → "‹ N5 Nhập môn"; mẫu ngữ pháp → "‹ Ngữ pháp N5"; `/terms/it/quiz` → bộ thuật ngữ;
+  `/word/:id` → bộ từ (theo tiền tố id); `/notebooks/:id` → Sổ tay. `PageHeader` tự lấy nút "‹ …" từ cây (không truyền `back`);
+  chỉ truyền `back` khi trang biết cha cụ thể hơn trong cùng nhánh (chi tiết từ → đúng bài, học từ của chữ → đúng chữ).
+  Mục điều hướng sáng = `sectionOf` (đang ở /kanji thì "Học", /ai thì "Cá nhân"), link có `aria-current`. Thêm trang mới:
+  thêm luật vào `RULES`. Test: `tests/ui-structure.spec.ts`.
+- `/learn` (`src/pages/Learn.tsx`), **quy tắc tiêu đề nhóm vs mục con**:
+  - tiêu đề nhóm: chữ đậm (`h2`) + mô tả ngắn 1 dòng màu `--muted`, nằm **ngoài** thẻ; không ô glyph, không hover, không con trỏ tay;
+  - mục con (`Row`, `data-learn-row`): cả dòng là link, ô glyph, tiến độ (nếu có), mũi tên › cuối dòng, hover / active đổi nền,
+    cao ≥ 48px (`min-h-14`); các mục của một nhóm nằm chung một thẻ, ngăn bằng đường kẻ.
+  Nhóm: Từ vựng JLPT (N5…N1), Chữ Hán (chữ theo bài, Bộ thủ), Ngữ pháp, Kana, Bộ từ khác (Từ ghép, Từ láy, Phó từ, **Cách đếm**),
+  Thuật ngữ, Luyện viết (tạo phiếu, Chữ Hán N5 bài 1, Bộ thủ bài 1, Hiragana). Áp dụng quy tắc này cho mọi trang dạng hub mới.
+  `/me` (`src/pages/Me.tsx`): tóm tắt Tiến độ,
   Cài đặt + Hỏi AI, Giao diện (`theme` store chung trong `useTheme`, khớp nút sidebar/header), Cài app, Giới thiệu
   (`AboutSources`, cũng ở /settings). Thống kê dùng chung: `src/hooks/useStudyStats.ts`.
 - **Trang chủ phải gọn: desktop 1280×800 nằm trong 1 màn hình, không cuộn; điện thoại 390×844 tối đa ~2 màn.**
   Hàng 1: "Ôn tập hôm nay" + "Học tiếp" (bài dở dang gần nhất của bộ từ vựng / chữ Hán ôn gần nhất), cùng chiều cao.
-  Hàng 2: chữ Hán ngẫu nhiên thu gọn (2 từ, chạm chữ mở chi tiết). Hàng 3: lối tắt (N5…N1, Chữ Hán, Ngữ pháp, Kana,
-  Cách đếm), điện thoại cuộn ngang scroll-snap, từ md lưới 5 cột + ô "Tất cả →". Khối lớn mới thêm đặt ở `/learn`,
-  không đặt ở trang chủ. Test: `tests/counters.spec.ts` (đo chiều cao trang, cùng chiều cao hàng 1).
+  Hàng 2: chữ Hán ngẫu nhiên + **5 từ ví dụ** (`MAX_WORDS`), mỗi từ 1 dòng: chữ, cách đọc (tối đa 45% dòng), nghĩa cắt 1 dòng
+  "…", chạm mở chi tiết, nút nghe; luôn giữ đủ 5 hàng (hàng trống / skeleton cùng chiều cao) → đổi chữ không đổi chiều cao.
+  **Không có khối lối tắt** (đã bỏ): các bộ học vào từ `/learn`. Khối lớn mới đặt ở `/learn`, không đặt ở trang chủ.
+  Test: `tests/counters.spec.ts` (chiều cao trang, hàng 1 cùng chiều cao), `tests/ui-structure.spec.ts` (5 hàng, chiều cao ổn định).
 
 ## Cách đếm (助数詞, `/learn/counters`)
 
@@ -350,7 +364,16 @@
   trắc nghiệm, nghe.
 - Sổ tay (nhiều sổ, màu; nhấn giữ nút đánh dấu để lưu nhanh). Tìm kiếm toàn cục (phím `/`), vẽ tay tìm kanji.
 - "Hỏi AI": trang `/ai` + khung chat nổi ở mọi trang (`AiDock`, tab lề phải kéo được, Back/Esc thu gọn, chip
-  "Hỏi về …" theo mục đang xem). Chế độ: tra từ, ngữ pháp, hội thoại, sửa câu.
+  "Hỏi về …" theo mục đang xem). **Chế độ cố định theo cuộc trò chuyện** (`Conversation.mode`), hiện thành nhãn nhỏ cạnh tên
+  cuộc (`ConversationTitle`, `ModeBadge`) và trong lịch sử; không còn hàng chip chế độ. Cuộc mới (nút "+" ở header khung nổi,
+  nút "Cuộc trò chuyện mới" ở `/ai`): màn trống hiện 5 thẻ (`ModePicker`): **Hỗn hợp** (`mixed`, chọn sẵn, `DEFAULT_MODE`) · Tra từ ·
+  Giải thích ngữ pháp · Luyện hội thoại · Sửa câu tiếng Nhật; gõ câu hỏi luôn được (dùng thẻ đang chọn). Hỗn hợp = trợ lý tổng quát
+  tự nhận biết tra từ / ngữ pháp / sửa câu / luyện nói (gửi kèm dữ liệu app như Tra từ). Nút "Hỏi AI" ở trang chi tiết, chip "Hỏi về …",
+  ảnh vẽ tay: luôn mở **cuộc mới** với chế độ phù hợp (`useChatSend` `fresh: true`), không qua màn chọn.
+  **Furigana**: prompt chỉ cho phép `漢字{かな}` (ngay trước `{` là chữ Hán, trong ngoặc toàn kana), cấm romaji trong ngoặc nhọn,
+  romaji viết ngoặc tròn. Bộ render (`splitFurigana` trong `src/lib/ai/parse.ts`): chỉ thành `<ruby>` khi đúng mẫu trên; romaji trong
+  ngoặc ("がつ {gatsu}", "あ.う {a.u}") → bỏ ngoặc, chữ nhỏ màu mờ (`note`); kana sau kana trùng chữ trước → bỏ, khác → `note`;
+  nội dung khác (chữ Việt, ký hiệu mẫu) giữ nguyên. Test: `ai.test.ts`.
   Desktop: khung 400×600, chuyển trang vẫn mở. Tab dính mép phải không được đè nội dung: main có lề phải ≥ 40px từ md
   (`md:pr-10`, `lg:px-10`), drawer chi tiết desktop chừa dải 40px không cuộn bên phải (`pr-10`, vùng cuộn bên trong) cho tab.
   Panel cạnh lưới desktop (Chữ Hán, Cách đếm): Esc bỏ mục đang xem (`useEscapeClose`, nhường sheet / khung AI / ô nhập). Điện thoại (`DOCK_PHONE`: < 768px hoặc màn cảm ứng): sheet gần toàn

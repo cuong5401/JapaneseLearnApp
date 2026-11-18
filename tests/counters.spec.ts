@@ -46,22 +46,18 @@ for (const size of SIZES) {
       // Desktop: nằm trọn một màn hình. Điện thoại: tối đa ~2 màn.
       if (phone) expect(h).toBeLessThanOrEqual(size.height * 2)
       else expect(h).toBeLessThanOrEqual(size.height)
-      // Lối tắt: điện thoại cuộn ngang một hàng, desktop lưới (không cuộn ngang).
-      const row = page.locator('[data-shortcuts] ul')
-      const scroll = await row.evaluate((el) => ({ sw: el.scrollWidth, cw: el.clientWidth, snap: getComputedStyle(el).scrollSnapType }))
-      if (phone) {
-        expect(scroll.sw).toBeGreaterThan(scroll.cw)
-        expect(scroll.snap).toContain('x')
-      } else expect(scroll.sw).toBeLessThanOrEqual(scroll.cw)
-      await expect(page.locator('[data-shortcuts] a[href="/learn/counters"]')).toHaveCount(1)
-      await expect(page.locator('[data-shortcuts] a[href="/learn"]').filter({ visible: true })).toHaveCount(1)
+      // Không còn khối lối tắt; chữ Hán ngẫu nhiên giữ đủ 5 hàng từ ví dụ.
+      await expect(page.locator('[data-shortcuts]')).toHaveCount(0)
+      await expect(page.locator('[data-kanji-words] > li')).toHaveCount(5)
     })
 
-    test('trang Học: Từ vựng JLPT là 1 thẻ 5 dòng, có Cách đếm', async ({ page }) => {
+    test('trang Học: Từ vựng JLPT 5 dòng, Cách đếm trong nhóm Bộ từ khác', async ({ page }) => {
       await page.goto('/learn')
       const jlpt = page.getByRole('region', { name: 'Từ vựng JLPT' })
-      await expect(jlpt.locator('[data-deck-row]')).toHaveCount(5)
-      await page.locator('[data-hub="/learn/counters"] a').first().click()
+      await expect(jlpt.locator('[data-learn-row]')).toHaveCount(5)
+      const extra = page.getByRole('region', { name: 'Bộ từ khác' })
+      await expect(extra.locator('[data-learn-row]')).toHaveCount(4)
+      await extra.locator('[data-learn-row="/learn/counters"]').click()
       await expect(page).toHaveURL(/\/learn\/counters$/)
       await expect(page.getByRole('heading', { name: 'Cách đếm', level: 1 })).toBeVisible()
     })

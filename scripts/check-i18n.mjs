@@ -42,9 +42,12 @@ for (const f of files) {
   }
   const report = (p, text) => problems.push(`${f.replace(/\\/g, '/')}:${p.node.loc.start.line}  ${JSON.stringify(text.trim()).slice(0, 90)}`)
   const uiProp = (p) => {
-    const par = p.parentPath.isJSXExpressionContainer() ? p.parentPath.parentPath : p.parentPath
+    // Đi xuyên qua biểu thức điều kiện: aria-label={a ? t('…') : 'Ghim'} vẫn là thuộc tính hiển thị.
+    let cur = p
+    while (cur.parentPath && (cur.parentPath.isConditionalExpression() || cur.parentPath.isLogicalExpression())) cur = cur.parentPath
+    const par = cur.parentPath.isJSXExpressionContainer() ? cur.parentPath.parentPath : cur.parentPath
     if (par.isJSXAttribute()) return par.node.name.name
-    if (par.isObjectProperty() && par.node.value === p.node) return par.node.key.name ?? par.node.key.value
+    if (par.isObjectProperty() && par.node.value === cur.node) return par.node.key.name ?? par.node.key.value
     return null
   }
   traverse(ast, {

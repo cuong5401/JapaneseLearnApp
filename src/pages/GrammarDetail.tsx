@@ -68,7 +68,7 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
 
   return (
     <div className="mx-auto max-w-[760px]">
-      <PageHeader title={t('grammarDetail.mau2', { level, v: g.lesson ? t('grammarDetail.lessonPart', { n: g.lesson }) : '', no: g.no })} back={{ to: base, label: t('common.nguPhap', { level }) }} />
+      <PageHeader title={t('grammarDetail.mau2', { level, v: g.lesson ? t('grammarDetail.lessonPart', { n: g.lesson }) : '', no: g.no })} />
 
       <article className="rounded-2xl border border-line bg-surface p-5 sm:p-7">
         <div className="flex items-start justify-between gap-3">

@@ -177,7 +177,7 @@ export function Settings() {
   const s = useAiSettings()
   return (
     <div className="mx-auto max-w-[760px] space-y-6">
-      <PageHeader title={tr('settings.caiDat')} back={{ to: '/me', label: tr('common.caNhan') }} />
+      <PageHeader title={tr('settings.caiDat')} />
       <LanguageSection />
       <AiSection />
       <section aria-labelledby="level-title" className="rounded-2xl border border-line bg-surface p-5 sm:p-6">

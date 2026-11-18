@@ -18,7 +18,7 @@ async function fakeMazii(page: Page) {
 const card = (page: Page) => page.locator('[data-random-kanji]')
 const currentKanji = async (page: Page) => (await card(page).getAttribute('data-random-kanji')) ?? ''
 
-test('tiêu đề "Chữ Hán ngẫu nhiên", 6 lần vào trang liên tiếp không lặp chữ, luôn có 2 từ (bản thu gọn)', async ({ page }) => {
+test('tiêu đề "Chữ Hán ngẫu nhiên", 6 lần vào trang liên tiếp không lặp chữ, tối đa 5 từ ví dụ, luôn giữ 5 hàng', async ({ page }) => {
   await fakeMazii(page)
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Chữ Hán ngẫu nhiên' })).toBeVisible()
@@ -32,7 +32,9 @@ test('tiêu đề "Chữ Hán ngẫu nhiên", 6 lần vào trang liên tiếp kh
     const words = card(page).locator('[data-kanji-word]')
     await expect(words.first()).toBeVisible()
     await expect(page.getByRole('status', { name: 'Đang tải từ đi kèm' })).toHaveCount(0)
-    expect(await words.count()).toBe(2)
+    // Tối đa 5 từ (ít hơn nếu chữ có ít từ, kể cả sau khi tra thêm); luôn đủ 5 hàng để khối không đổi chiều cao.
+    expect(await words.count()).toBeLessThanOrEqual(5)
+    await expect(card(page).locator('[data-kanji-words] > li')).toHaveCount(5)
   }
   const recent = await page.evaluate(() => JSON.parse(sessionStorage.getItem('jla:random-kanji:recent') ?? '[]') as string[])
   expect(recent).toHaveLength(5)
@@ -68,7 +70,7 @@ test('nút "Chữ khác" đổi chữ; bấm từ mở chi tiết mà không r�
 test('từ tra online mở được chi tiết và lưu sổ tay giữ lại sau phiên', async ({ page }) => {
   await fakeMazii(page)
   await page.goto('/')
-  // Bấm "Chữ khác" tới khi gặp chữ có từ online (chữ ít hơn 2 từ trong dữ liệu).
+  // Bấm "Chữ khác" tới khi gặp chữ có từ online (chữ ít hơn 5 từ trong dữ liệu).
   const online = card(page).locator('[data-kanji-word^="aw-"] button')
   const settle = async () => {
     await expect(card(page)).toHaveCount(1) // hiệu ứng chuyển chữ đã xong

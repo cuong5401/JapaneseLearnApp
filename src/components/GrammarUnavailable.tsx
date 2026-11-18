@@ -8,7 +8,7 @@ import { t } from '../i18n'
 export function GrammarUnavailable() {
   return (
     <div className="mx-auto max-w-[720px]">
-      <PageHeader title={t('common.nguPhap2')} back={{ to: '/', label: t('common.trangChu') }} />
+      <PageHeader title={t('common.nguPhap2')} />
       <section className="flex flex-col items-center rounded-2xl border border-line bg-surface px-6 py-10 text-center">
         <GridCell className="size-20 text-ai">文</GridCell>
         <h2 className="mt-5 text-xl font-bold">{publicGrammarNote()}</h2>

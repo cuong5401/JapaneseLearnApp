@@ -21,21 +21,26 @@ export function findLocalHits(docs: readonly SearchDoc[], q: string): LocalHit[]
 }
 
 export interface SendOptions {
+  /** Chế độ cho cuộc MỚI (cuộc đang mở giữ chế độ của nó) */
   mode: ChatMode
   image?: AiImage
+  /** Luôn tạo cuộc mới (nút "Hỏi AI" ở trang chi tiết, chip "Hỏi về …", ảnh vẽ tay) */
+  fresh?: boolean
 }
 
 /**
- * Gửi câu hỏi cho trang /ai và khung chat nổi: tạo cuộc mới nếu chưa có hoặc đã đổi chế độ,
- * gọi `onConversation(id)` khi tạo cuộc mới. Trả false nếu không gửi được (chưa có key, đang trả lời…).
+ * Gửi câu hỏi cho trang /ai và khung chat nổi. Chế độ CỐ ĐỊNH theo cuộc trò chuyện: đang mở một cuộc thì gửi vào
+ * cuộc đó với chế độ của nó; chưa có cuộc (màn chọn chế độ) hoặc `fresh` thì tạo cuộc mới với `mode` và gọi
+ * `onConversation(id)`. Trả false nếu không gửi được (chưa có key, đang trả lời…).
  */
 export function useChatSend(active: Conversation | null, onConversation: (id: string) => void) {
   const settings = useAiSettings()
   const { docs } = useSearchDocs()
-  return (text: string, { mode, image }: SendOptions): boolean => {
+  return (text: string, { mode: wanted, image, fresh = false }: SendOptions): boolean => {
     const q = text.trim()
     if (!q || aiSession.getSnapshot() || !settings.hasKey) return false
-    let id = active && active.mode === mode ? active.id : null
+    let id = !fresh && active ? active.id : null
+    const mode = id && active ? active.mode : wanted
     if (!id) {
       id = chats.create(mode, titleFrom(q))
       if (!id) {
@@ -44,7 +49,7 @@ export function useChatSend(active: Conversation | null, onConversation: (id: st
       }
       onConversation(id)
     }
-    void aiSession.ask(id, { text: q, mode, image, hits: mode === 'lookup' && !image ? findLocalHits(docs, q) : undefined })
+    void aiSession.ask(id, { text: q, mode, image, hits: (mode === 'lookup' || mode === 'mixed') && !image ? findLocalHits(docs, q) : undefined })
     return true
   }
 }

@@ -5,7 +5,7 @@ import { gemini, geminiBody } from './gemini'
 import { addConversation, MAX_CONVERSATIONS, renameConversation, sendWindow, togglePin, type Conversation, type StoredMessage } from './history'
 import { mock } from './mock'
 import { extractWords, splitFurigana, stripFurigana } from './parse'
-import { systemPrompt } from './prompts'
+import { DEFAULT_MODE, systemPrompt } from './prompts'
 import { readSse } from './sse'
 import { AiError, aiErrorText, type AiProvider, type AiRequest } from './types'
 
@@ -179,6 +179,26 @@ describe('tách khối từ vựng và furigana', () => {
     expect(stripFurigana('勉強{べんきょう}する')).toBe('勉強する')
     expect(extractWords('```kotonoha-words\n[{"word":"勉強{べんきょう}","reading":"べんきょう","meaning":"học"}]\n```').words[0].word).toBe('勉強')
   })
+
+  it('furigana sai chỗ: romaji trong ngoặc → ghi chú nhỏ, không ruby, không in ngoặc', () => {
+    // Lỗi đã gặp: AI viết "がつ {gatsu}", "あ.う {a.u}" và app in nguyên văn.
+    expect(splitFurigana('1月 がつ {gatsu}')).toEqual([{ text: '1月 がつ' }, { text: 'gatsu', note: true }])
+    expect(splitFurigana('あ.う {a.u}')).toEqual([{ text: 'あ.う' }, { text: 'a.u', note: true }])
+    // Romaji ngay sau chữ Hán cũng không thành ruby.
+    expect(splitFurigana('日{nichi}')).toEqual([{ text: '日' }, { text: 'nichi', note: true }])
+    // Kana sau khoảng trắng (không dính chữ Hán): không ruby.
+    expect(splitFurigana('日本 {にほん}')).toEqual([{ text: '日本' }, { text: 'にほん', note: true }])
+    // Kana đứng sau kana, lặp lại chữ trước: bỏ hẳn; khác chữ trước: ghi chú nhỏ.
+    expect(splitFurigana('ひらがな{ひらがな}')).toEqual([{ text: 'ひらがな' }])
+    expect(splitFurigana('ゆっくり{ゆっくり}と')).toEqual([{ text: 'ゆっくりと' }])
+    expect(splitFurigana('もう{ゆく}')).toEqual([{ text: 'もう' }, { text: 'ゆく', note: true }])
+    // Ruby hợp lệ giữa câu vẫn đúng, kể cả sau ghi chú romaji.
+    expect(splitFurigana('がつ {gatsu} と 月{つき}')).toEqual([{ text: 'がつ' }, { text: 'gatsu', note: true }, { text: ' と ' }, { text: '月', ruby: 'つき' }])
+    // Không phải cách đọc (chữ Việt, ký hiệu): giữ nguyên.
+    expect(splitFurigana('Mẫu V{ます形} + たい')).toEqual([{ text: 'Mẫu V{ます形} + たい' }])
+    // Đọc to / tiêu đề: bỏ ghi chú romaji.
+    expect(stripFurigana('1月{いちがつ} がつ {gatsu}')).toBe('1月 がつ')
+  })
 })
 
 describe('lịch sử hội thoại', () => {
@@ -225,9 +245,17 @@ describe('prompt và bảo mật', () => {
   it('system prompt có trình độ, furigana và khối từ vựng', () => {
     const p = systemPrompt('conversation', 'N3')
     expect(p).toContain('N3')
-    expect(p).toContain('漢字{かんじ}')
+    expect(p).toContain('漢字{かな}')
+    expect(p).toContain('romaji')
     expect(p).toContain('kotonoha-words')
     expect(p).toContain('Lỗi trong câu của bạn')
+  })
+
+  it('chế độ Hỗn hợp: trợ lý tổng quát tự nhận biết, mặc định cho cuộc mới', () => {
+    const p = systemPrompt('mixed', 'N2')
+    expect(p).toContain('HỖN HỢP')
+    expect(p).toContain('sửa câu')
+    expect(DEFAULT_MODE).toBe('mixed')
   })
 
   it('API key không vào file xuất tiến độ', () => {

@@ -190,7 +190,7 @@ function LessonBody({ deck, items }: { deck: Deck & { kind: 'vocab' }; items: Vo
 
   return (
     <div className={LESSON_PAGE} data-lesson-page>
-      <PageHeader title={title} back={{ to: base, label: deckTitle(deck) }}>
+      <PageHeader title={title}>
         <span className="text-sm text-muted">
           {weakMode ? tr('lesson.tu', { length: list.length }) : tr('lesson.tuTu', { v: start + 1, v2: start + list.length, length: list.length })}
         </span>

@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { readJSON, writeJSON } from '../storage'
-import { isChatMode, type ChatMode } from './prompts'
+import { DEFAULT_MODE, isChatMode, type ChatMode } from './prompts'
 import { aiSession } from './session'
 import type { AiImage } from './types'
 
@@ -34,7 +34,7 @@ function load(): DockState {
     open: s.open === true,
     tabY: typeof s.tabY === 'number' && Number.isFinite(s.tabY) ? s.tabY : null,
     convId: typeof s.convId === 'string' ? s.convId : null,
-    mode: isChatMode(s.mode) ? s.mode : 'lookup',
+    mode: isChatMode(s.mode) ? s.mode : DEFAULT_MODE,
     unread: false,
     quiet: 0,
     request: null,

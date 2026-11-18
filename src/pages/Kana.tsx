@@ -139,7 +139,7 @@ export function Kana() {
 
   return (
     <div>
-      <PageHeader title={t('kana.luyenKana')} back={{ to: '/', label: t('common.trangChu') }}>
+      <PageHeader title={t('kana.luyenKana')}>
         <p className="text-sm text-muted" data-kana-mastered>
           {tRich('kana.masteredOf', { mastered, total: all.length, script: SCRIPT_LABELS[script] }, { b: (s) => <strong className="text-lg text-ink tabular-nums">{s}</strong> })}
         </p>

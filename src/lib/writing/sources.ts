@@ -1,6 +1,6 @@
 import { toHiragana, toKatakana, toRomaji } from 'wanakana'
 import { KANA, KANA_ROWS, SCRIPT_LABELS, counterpart } from '../../data/kana'
-import type { KanaScript, KanjiEntry, StudyEntry, VocabItem } from '../../types'
+import type { KanaScript, KanjiEntry, RadicalEntry, StudyEntry, VocabItem } from '../../types'
 import { KANJI_LEVEL_SHORT, isKanjiLevel, type KanjiLevelFilter } from '../kanjiLessons'
 import type { KanjiReading } from '../readings'
 import { slug, type WritingItem } from './layout'
@@ -12,6 +12,8 @@ export type WritingSource =
   | { kind: 'notebook'; id: string }
   | { kind: 'kana'; script: KanaScript; rows: string[] }
   | { kind: 'custom'; text: string }
+  /** Bộ thủ: theo bài (chia như tab Bộ thủ) hoặc theo số bộ (`nos` khác rỗng, vd. 1–20, 30) */
+  | { kind: 'radical'; lessons: number[]; nos: number[] }
 
 const ROW_IDS = new Set(KANA_ROWS.map((r) => r.id))
 
@@ -25,8 +27,12 @@ export function parseSource(p: URLSearchParams): WritingSource {
     return { kind: 'kana', script, rows: rows.length ? rows : [`${prefix}basic-a`] }
   }
   if (src === 'custom') return { kind: 'custom', text: p.get('text') ?? '' }
-  const level = p.get('level')
   const lessons = [...new Set((p.get('bai') ?? '1').split(',').map(Number))].filter((n) => Number.isInteger(n) && n >= 1).sort((a, b) => a - b)
+  if (src === 'radical') {
+    const nos = parseRanges(p.get('so') ?? '', 214)
+    return { kind: 'radical', lessons: nos.length ? [] : lessons.length ? lessons : [1], nos }
+  }
+  const level = p.get('level')
   return { kind: 'kanji', level: isKanjiLevel(level) ? level : 'N5', lessons: lessons.length ? lessons : [1] }
 }
 
@@ -35,6 +41,7 @@ export function sourceParams(s: WritingSource): Record<string, string> {
   if (s.kind === 'notebook') return { src: 'notebook', id: s.id }
   if (s.kind === 'kana') return { src: 'kana', script: s.script, rows: s.rows.join(',') }
   if (s.kind === 'custom') return { src: 'custom' }
+  if (s.kind === 'radical') return s.nos.length ? { src: 'radical', so: formatRanges(s.nos) } : { src: 'radical', bai: s.lessons.join(',') }
   return { src: 'kanji', level: s.level, bai: s.lessons.join(',') }
 }
 
@@ -44,6 +51,31 @@ function lessonLabel(lessons: readonly number[]): { label: string; key: string }
   if (lessons.length === 1) return { label: String(lessons[0]), key: String(lessons[0]) }
   if (contiguous) return { label: `${lessons[0]}–${lessons[lessons.length - 1]}`, key: `${lessons[0]}-${lessons[lessons.length - 1]}` }
   return { label: lessons.join(', '), key: lessons.join('_') }
+}
+
+/** "1-20, 30" → [1…20, 30] (bỏ số ngoài 1…max, bỏ trùng, sắp xếp). */
+export function parseRanges(text: string, max: number): number[] {
+  const out = new Set<number>()
+  for (const part of text.split(/[,，、\s]+/)) {
+    const m = part.match(/^(\d+)(?:[-–~〜](\d+))?$/)
+    if (!m) continue
+    const a = Number(m[1])
+    const b = m[2] ? Number(m[2]) : a
+    for (let n = Math.min(a, b); n <= Math.max(a, b) && n <= max; n++) if (n >= 1) out.add(n)
+  }
+  return [...out].sort((x, y) => x - y)
+}
+
+/** [1…20, 30] → "1-20,30" */
+export function formatRanges(nos: readonly number[]): string {
+  const out: string[] = []
+  for (let i = 0; i < nos.length; ) {
+    let j = i
+    while (j + 1 < nos.length && nos[j + 1] === nos[j] + 1) j++
+    out.push(j > i ? `${nos[i]}-${nos[j]}` : String(nos[i]))
+    i = j + 1
+  }
+  return out.join(',')
 }
 
 const rowKey = (id: string) => id.split('-').slice(2).join('-')
@@ -66,6 +98,14 @@ export function sourceTitle(s: WritingSource, extra: { notebookName?: string } =
     const label = all ? t('sources.caBang') : rows.length > 4 ? t('sources.hang', { length: rows.length }) : rows.map((r) => r.label).join(', ')
     const key = all ? '' : rows.length > 4 ? `-${rows.length}-hang` : `-${rows.map((r) => rowKey(r.id)).join('-')}`
     return { title: `${script} · ${label}`, fileKey: `${slug(script)}${key}` }
+  }
+  if (s.kind === 'radical') {
+    if (s.nos.length) {
+      const label = formatRanges(s.nos).replace(/,/g, ', ').replace(/-/g, '–')
+      return { title: t('sources.radicalNos', { label }), fileKey: `bo-thu-so${formatRanges(s.nos).replace(/,/g, '_')}` }
+    }
+    const l = lessonLabel(s.lessons)
+    return { title: t('sources.radicalLessons', { label: l.label }), fileKey: `bo-thu-bai${l.key}` }
   }
   return { title: t('sources.tuChon'), fileKey: 'tu-chon' }
 }
@@ -162,6 +202,11 @@ export function makeItem(ch: string, ctx: ItemContext): WritingItem {
     kun: r?.kun,
     examples: ctx.words ? pickExamples(entry, ctx.words, ctx.examples) : undefined,
   }
+}
+
+/** Khối của một bộ thủ: tiêu đề "Bộ 9 · NHÂN" | biến thể | ý nghĩa; ô mẫu là dạng hiển thị của bộ. */
+export function makeRadicalItem(r: RadicalEntry): WritingItem {
+  return { char: r.radical, kind: 'radical', no: r.no, hanViet: r.name, variants: r.variants, meaning: r.meaning }
 }
 
 /** Chữ (kể cả âm ghép きゃ) có đủ dữ liệu nét KanjiVG không. */
