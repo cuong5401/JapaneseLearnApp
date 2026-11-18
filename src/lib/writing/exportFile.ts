@@ -2,6 +2,7 @@ import { loadStrokeData, type StrokeData } from '../strokes'
 import { loadFontFiles } from './fonts'
 import type { Sheet } from './layout'
 import type { WritingOptions } from './options'
+import { formatNumber, t } from '../../i18n'
 
 /**
  * Xuất phiếu: chỉ nạp thư viện (pdf-lib, docx) khi bấm xuất – dynamic import tách thành chunk riêng.
@@ -16,7 +17,7 @@ export const glyphChars = (sheet: Pick<Sheet, 'items'>) => [...new Set(sheet.ite
 
 async function loadStrokes(chars: readonly string[]): Promise<Map<string, StrokeData | null>> {
   const list = await Promise.all(chars.map(async (c) => [c, await loadStrokeData(c)] as const)).catch(() => {
-    throw new Error('Không tải được dữ liệu nét chữ (đang offline và chữ chưa có trong bộ nhớ đệm?).')
+    throw new Error(t('exportFile.khongTaiDuocDu'))
   })
   return new Map(list)
 }
@@ -73,7 +74,7 @@ export function printPdf(blob: Blob) {
   printFrame?.remove()
   const url = URL.createObjectURL(blob)
   const frame = document.createElement('iframe')
-  frame.title = 'In phiếu luyện viết'
+  frame.title = t('exportFile.inPhieuLuyenViet')
   frame.setAttribute('aria-hidden', 'true')
   frame.style.cssText = 'position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none'
   frame.onload = () => {
@@ -92,5 +93,5 @@ export function printPdf(blob: Blob) {
 export function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`
   if (n < 1024 * 1024) return `${Math.round(n / 1024)} KB`
-  return `${(n / 1024 / 1024).toFixed(1).replace('.', ',')} MB`
+  return `${formatNumber(n / 1024 / 1024, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MB`
 }

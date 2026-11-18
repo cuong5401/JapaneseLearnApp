@@ -3,6 +3,7 @@ import viBoldUrl from '../../assets/fonts/be-vietnam-pro-bold.ttf?url'
 import kleeUrl from '../../assets/fonts/klee-one-semibold.ttf?url'
 import jpUrl from '../../assets/fonts/noto-sans-jp-bold.ttf?url'
 import type { FontFiles } from './pdf'
+import { t } from '../../i18n'
 
 /**
  * Font nhúng vào phiếu (subset sẵn bằng scripts/build-pdf-fonts.mjs, SIL OFL 1.1). Tên file có hash nên service
@@ -17,7 +18,7 @@ let files: Promise<FontFiles> | null = null
 
 export function loadFontFiles(): Promise<FontFiles> {
   const get = (url: string) =>
-    fetch(url).then((r) => (r.ok ? r.arrayBuffer().then((b) => new Uint8Array(b)) : Promise.reject(new Error(`Lỗi ${r.status} khi tải font`))))
+    fetch(url).then((r) => (r.ok ? r.arrayBuffer().then((b) => new Uint8Array(b)) : Promise.reject(new Error(t('fonts.loiKhiTaiFont', { status: r.status })))))
   files ??= Promise.all([get(viUrl), get(viBoldUrl), get(jpUrl), get(kleeUrl)])
     .then(([vi, viBold, jp, klee]) => ({ vi, viBold, jp, klee }))
     .catch((e) => {

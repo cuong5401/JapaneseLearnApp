@@ -1,4 +1,5 @@
 import { motion } from 'motion/react'
+import { t } from '../i18n'
 
 interface Props {
   total: number
@@ -19,7 +20,7 @@ export function ProgressBar({ total, learned, mastered, label }: Props) {
       aria-valuemin={0}
       aria-valuemax={total}
       aria-valuenow={learned}
-      aria-valuetext={`Đã học ${learned}/${total}, đã thuộc ${mastered}`}
+      aria-valuetext={t('progressBar.daHocDaThuoc', { learned, total, mastered })}
       className="relative h-1.5 w-full overflow-hidden rounded-full bg-sunken"
     >
       <motion.div

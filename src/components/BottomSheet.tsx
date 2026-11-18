@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useDragControls } from 'motion/react'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { t } from '../i18n'
 
 interface Props {
   open: boolean
@@ -85,9 +86,7 @@ export function BottomSheet({ open, onClose, label, children, tall = false }: Pr
                 type="button"
                 onClick={onClose}
                 className="-mt-1 min-h-11 rounded-lg px-3 text-sm text-muted hover:text-ink"
-              >
-                Đóng
-              </button>
+              >{t('common.dong')}</button>
             </div>
             <div className="px-4">{children}</div>
           </motion.div>

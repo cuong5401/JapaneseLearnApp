@@ -10,6 +10,7 @@ import { lessonIndexOf } from '../lib/lessons'
 import { useLessonSize } from '../lib/settings'
 import type { Deck } from '../types'
 import { NotFound } from './NotFound'
+import { t } from '../i18n'
 
 export function WordPage() {
   const { id = '' } = useParams()
@@ -28,11 +29,11 @@ export function WordPage() {
 
   const lesson = deck.kind === 'vocab' && position >= 0 ? lessonIndexOf(position, size) + 1 : null
   const back =
-    deck.kind === 'vocab' && lesson ? { to: `${deckPath(deck)}/${lesson}`, label: `${deckTitle(deck)}, Bài ${lesson}` } : { to: deckPath(deck), label: deckTitle(deck) }
+    deck.kind === 'vocab' && lesson ? { to: `${deckPath(deck)}/${lesson}`, label: t('wordPage.bai', { deckTitle: deckTitle(deck), lesson }) } : { to: deckPath(deck), label: deckTitle(deck) }
 
   return (
     <div className="mx-auto max-w-[720px]">
-      <PageHeader title="Chi tiết từ" back={back} />
+      <PageHeader title={t('wordPage.chiTietTu')} back={back} />
       <WordDetail key={id} item={entry.item} onPush={stack.push} />
     </div>
   )

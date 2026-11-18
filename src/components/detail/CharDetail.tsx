@@ -11,6 +11,7 @@ import { kanjiQuestion } from '../../lib/ai/questions'
 import { BookmarkButton } from '../notebook/BookmarkButton'
 import { StrokeSection } from '../strokes/StrokeOrder'
 import { KanjiReadings } from './KanjiReadings'
+import { t as tr } from '../../i18n'
 
 const PATHS = VOCAB_DECKS.map((k) => VOCAB_DECK_INFO[k].path)
 const LIMIT = 50
@@ -39,34 +40,31 @@ export function CharDetail({ ch, onPush }: { ch: string; onPush: (f: Frame) => v
   const pending = loaded < PATHS.length
 
   return (
-    <article aria-label={`Chi tiết chữ ${ch}`} data-detail-char={ch}>
+    <article aria-label={tr('charDetail.chiTietChu', { ch })} data-detail-char={ch}>
       <div className="flex gap-5">
         <GridCell className="size-28 sm:size-32">{ch}</GridCell>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <p className="text-lg font-semibold">Chữ ngoài danh sách</p>
-            <BookmarkButton itemRef={charRef(ch)} label={`chữ ${ch}`} className="-mt-1.5 -mr-2" />
+            <p className="text-lg font-semibold">{tr('charDetail.chuNgoaiDanhSach')}</p>
+            <BookmarkButton itemRef={charRef(ch)} label={tr('charDetail.chu', { ch })} className="-mt-1.5 -mr-2" />
           </div>
-          <p className="mt-1 text-sm text-muted">Chữ này chưa có trong danh sách chữ Hán của Kotonoha nên chưa có âm Hán Việt và chưa vào lịch ôn.</p>
+          <p className="mt-1 text-sm text-muted">{tr('charDetail.chuNayChuaCo')}</p>
           {pending ? (
             <Skeleton className="mt-2 h-5 w-32 rounded-md" />
           ) : (
-            <p className="mt-2 text-sm text-muted">{words.length ? `${words.length} từ chứa chữ này` : 'Không có từ nào chứa chữ này'}</p>
+            <p className="mt-2 text-sm text-muted">{words.length ? tr('charDetail.tuChuaChuNay', { length: words.length }) : tr('charDetail.khongCoTuNao')}</p>
           )}
         </div>
       </div>
       <KanjiReadings ch={ch} />
       <StrokeSection key={ch} char={ch} />
       <AskAiLink question={kanjiQuestion(ch)} className="mt-4 w-full" />
-      <h3 className="mt-6 mb-1 text-sm font-semibold text-muted">
-        Từ chứa chữ {ch}
-        {words.length > LIMIT && ` (${LIMIT}/${words.length} từ đầu tiên)`}
-      </h3>
+      <h3 className="mt-6 mb-1 text-sm font-semibold text-muted">{tr('charDetail.tuChuaChu', { ch, v: words.length > LIMIT && tr('common.firstWords', { n: LIMIT, total: words.length }) })}</h3>
       {files.status === 'error' && <LoadError error={files.error} onRetry={files.retry} />}
       {pending && files.status !== 'error' ? (
         <SkeletonRows count={5} className="min-h-24" />
       ) : words.length === 0 ? (
-        <p className="py-3 text-sm text-muted">Trong các bộ từ hiện có không có từ nào chứa chữ {ch}.</p>
+        <p className="py-3 text-sm text-muted">{tr('charDetail.trongCacBoTu', { ch })}</p>
       ) : (
         <ul className="min-h-24 divide-y divide-line">
           {words.slice(0, LIMIT).map((w) => (

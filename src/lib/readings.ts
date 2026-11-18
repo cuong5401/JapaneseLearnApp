@@ -1,4 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react'
+import { t } from '../i18n'
 
 /**
  * Âm On / Kun, số nét, cấp JLPT cũ từ KANJIDIC2 (EDRDG, CC BY-SA 4.0): public/data/kanji/kanji-readings.json,
@@ -15,7 +16,7 @@ export interface KanjiReading {
   jlpt?: number
 }
 
-export const READINGS_CREDIT = 'Âm On / Kun: KANJIDIC2 (EDRDG), CC BY-SA 4.0'
+export const readingsCredit = () => t('credits.readings')
 
 const URL = `${import.meta.env.BASE_URL ?? '/'}data/kanji/kanji-readings.json`
 
@@ -90,7 +91,7 @@ const listeners = new Set<() => void>()
 export function loadReadings(): Promise<Map<string, KanjiReading>> {
   if (data) return Promise.resolve(data)
   pending ??= fetch(URL)
-    .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`Lỗi ${r.status} khi tải âm đọc`))))
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error(t('readings.loiKhiTaiAm', { status: r.status })))))
     .then((raw) => {
       data = parseReadings(raw)
       failed = false

@@ -1,16 +1,17 @@
 import { useMemo } from 'react'
 import { KANA } from '../data/kana'
-import { PUBLIC_BUILD, PUBLIC_GRAMMAR_NOTE } from '../lib/edition'
+import { PUBLIC_BUILD, publicGrammarNote } from '../lib/edition'
 import { kanaLevel, useKanaStats } from '../lib/kanaProgress'
 import { parseCounterRef } from '../lib/counters'
 import type { DataManifest } from '../types'
 import { useCards, usePrefixStats, type DeckStats } from './useProgress'
+import { t } from '../i18n'
 
 /** Tiến độ ngữ pháp gộp mọi cấp (thẻ gn5-…gn1-), tổng số mẫu lấy từ manifest. */
 export function useGrammarStats(m?: DataManifest): DeckStats & { line: string } {
   const total = m?.files.filter((f) => f.kind === 'grammar').reduce((n, f) => n + f.count, 0)
   const s = usePrefixStats('gn\\d', total ?? 0)
-  const line = PUBLIC_BUILD ? PUBLIC_GRAMMAR_NOTE : total === undefined ? '…' : `${s.learned}/${total} mẫu`
+  const line = PUBLIC_BUILD ? publicGrammarNote() : total === undefined ? '…' : t('useStudyStats.mau', { learned: s.learned, total })
   return { ...s, line }
 }
 
@@ -45,7 +46,7 @@ export function useCounterSummary(m?: DataManifest): { total?: number; counters:
       ids.add(ref.id)
       if (ref.n) cells++
     }
-    const line = ids.size > 0 ? `${ids.size} trợ số từ · ${cells} ô ôn` : total !== undefined ? `${total} trợ số từ` : '…'
+    const line = ids.size > 0 ? t('useStudyStats.troSoTuO', { size: ids.size, cells }) : total !== undefined ? t('useStudyStats.troSoTu', { total }) : '…'
     return { total, counters: ids.size, cells, line }
   }, [cards, total])
 }

@@ -12,6 +12,7 @@ import { useStats } from '../hooks/useProgress'
 import type { VocabDeckKey, VocabItem } from '../types'
 import { PUBLIC_BUILD } from '../lib/edition'
 import { NotFound } from './NotFound'
+import { t } from '../i18n'
 
 function DeckBody({ deckKey, items }: { deckKey: VocabDeckKey; items: VocabItem[] }) {
   const weak = useMemo(() => items.filter((w) => w.weak), [items])
@@ -22,7 +23,7 @@ function DeckBody({ deckKey, items }: { deckKey: VocabDeckKey; items: VocabItem[
   return (
     <LessonGrid
       items={items}
-      unit="từ"
+      unit={t('common.tu')}
       title={deckTitle({ kind: 'vocab', key: deckKey })}
       href={(i) => `/vocab/${deckKey}/${i + 1}`}
       preview={(l) =>
@@ -38,11 +39,11 @@ function DeckBody({ deckKey, items }: { deckKey: VocabDeckKey; items: VocabItem[
             className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl border-2 border-kihada bg-kihada-soft p-5"
           >
             <span className="min-w-0 flex-1">
-              <span className="block font-semibold">Từ chưa thuộc</span>
-              <span className="block text-sm text-muted">{weak.length} từ bạn đã đánh dấu "Chưa thuộc" trong file Excel</span>
+              <span className="block font-semibold">{t('vocabDeck.tuChuaThuoc')}</span>
+              <span className="block text-sm text-muted">{t('vocabDeck.tuBanDaDanh', { length: weak.length })}</span>
             </span>
             <span className="flex w-full items-center gap-3 sm:w-56">
-              <ProgressBar {...weakStats} label="Tiến độ từ chưa thuộc" />
+              <ProgressBar {...weakStats} label={t('vocabDeck.tienDoTuChua')} />
               <span className="shrink-0 text-xs tabular-nums text-muted">
                 {weakStats.learned}/{weakStats.total}
               </span>
@@ -53,13 +54,9 @@ function DeckBody({ deckKey, items }: { deckKey: VocabDeckKey; items: VocabItem[
       links={
         info.level && (
           <span className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-            <Link to={`/kanji?level=${info.level}`} className="inline-flex min-h-11 items-center font-medium text-ai hover:underline">
-              Chữ Hán xuất hiện từ {info.level}
-            </Link>
+            <Link to={`/kanji?level=${info.level}`} className="inline-flex min-h-11 items-center font-medium text-ai hover:underline">{t('vocabDeck.chuHanXuatHien', { level: info.level })}</Link>
             {!PUBLIC_BUILD && (
-              <Link to={`/grammar/${deckKey}`} className="inline-flex min-h-11 items-center font-medium text-ai hover:underline">
-                Ngữ pháp {info.level}
-              </Link>
+              <Link to={`/grammar/${deckKey}`} className="inline-flex min-h-11 items-center font-medium text-ai hover:underline">{t('common.nguPhap', { level: info.level })}</Link>
             )}
           </span>
         )
@@ -75,7 +72,7 @@ export function VocabDeck() {
   const info = VOCAB_DECK_INFO[deck.key]
   return (
     <div>
-      <PageHeader title={deckTitle(deck)} back={{ to: '/', label: 'Trang chủ' }}>
+      <PageHeader title={deckTitle(deck)} back={{ to: '/', label: t('common.trangChu') }}>
         <span lang="ja" className="font-jp text-lg text-muted">
           {info.ja}
         </span>

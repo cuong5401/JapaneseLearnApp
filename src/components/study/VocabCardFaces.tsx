@@ -2,6 +2,7 @@ import { speechText } from '../../lib/speech'
 import type { VocabItem } from '../../types'
 import { SpeakButton } from '../SpeakButton'
 import { WordHead, WordMeta } from '../VocabBits'
+import { t } from '../../i18n'
 
 /** Hai mặt của thẻ từ vựng (mặt trước: chữ; mặt sau: cách đọc, nghĩa, ví dụ). */
 export function CardFaces({ item, flipped }: { item: VocabItem; flipped: boolean }) {
@@ -10,7 +11,7 @@ export function CardFaces({ item, flipped }: { item: VocabItem; flipped: boolean
       <div className={`flip-inner grid h-full ${flipped ? 'is-flipped' : ''}`}>
         <div className="@container flip-face col-start-1 row-start-1 flex flex-col items-center justify-center rounded-2xl border border-line bg-surface p-6">
           <WordHead item={item} showHanViet={false} className="text-[clamp(2rem,13cqw,3.75rem)]" />
-          <p className="mt-8 text-sm text-muted">Chạm để lật thẻ</p>
+          <p className="mt-8 text-sm text-muted">{t('vocabCardFaces.chamDeLatThe')}</p>
         </div>
         <div className="flip-face flip-back col-start-1 row-start-1 flex flex-col overflow-y-auto overscroll-contain rounded-2xl border border-ai bg-surface p-6">
           <div className="flex items-start justify-between gap-4 pr-9">
@@ -27,7 +28,7 @@ export function CardFaces({ item, flipped }: { item: VocabItem; flipped: boolean
                 <p lang="ja" className="min-w-0 flex-1 font-jp text-lg leading-relaxed">
                   {item.example.ja}
                 </p>
-                <SpeakButton text={item.example.ja} label="Nghe câu ví dụ" size="sm" />
+                <SpeakButton text={item.example.ja} label={t('common.ngheCauViDu')} size="sm" />
               </div>
               <p className="mt-1 text-muted">{item.example.vi}</p>
             </div>

@@ -6,6 +6,7 @@ import { GridCell } from '../GridCell'
 import { SpeakButton } from '../SpeakButton'
 import { StrokeSection } from '../strokes/StrokeOrder'
 import { LEVEL_CELL, LEVEL_LABEL } from './levels'
+import { t } from '../../i18n'
 
 function MiniChar({ k, onPick }: { k: KanaChar; onPick: (k: KanaChar) => void }) {
   return (
@@ -28,7 +29,7 @@ export function KanaDetail({ k, stat, onPick }: { k: KanaChar; stat?: KanaStat; 
   const level = kanaLevel(stat)
   const note = KANA_NOTES[k.kana]
   return (
-    <article aria-label={`Chữ ${k.kana}`}>
+    <article aria-label={t('kanaDetail.chu', { kana: k.kana })}>
       <div className="flex items-center gap-5">
         <GridCell className="w-32 shrink-0 text-ai sm:w-36">{k.kana}</GridCell>
         <div className="min-w-0">
@@ -49,12 +50,12 @@ export function KanaDetail({ k, stat, onPick }: { k: KanaChar; stat?: KanaStat; 
         <p className="font-semibold">{LEVEL_LABEL[level]}</p>
         <p className="mt-0.5 text-muted">
           {stat
-            ? `Đúng ngay lần đầu ${stat.right} lần, sai ${stat.wrong} lần, chuỗi đúng ${stat.streak}/${MASTERED_STREAK}.`
-            : `Đúng ngay lần đầu ${MASTERED_STREAK} lần liên tiếp để thuộc chữ này.`}
+            ? t('kanaDetail.dungNgayLanDau2', { right: stat.right, wrong: stat.wrong, streak: stat.streak, MASTERED_STREAK })
+            : t('kanaDetail.dungNgayLanDau', { MASTERED_STREAK })}
         </p>
       </div>
 
-      <h3 className="mt-5 mb-2 text-sm font-semibold text-muted">{other.script === 'katakana' ? 'Katakana' : 'Hiragana'} tương ứng</h3>
+      <h3 className="mt-5 mb-2 text-sm font-semibold text-muted">{t('kanaDetail.tuongUng', { v: other.script === 'katakana' ? 'Katakana' : 'Hiragana' })}</h3>
       <div className="flex gap-2">
         <MiniChar
           k={other}
@@ -67,7 +68,7 @@ export function KanaDetail({ k, stat, onPick }: { k: KanaChar; stat?: KanaStat; 
 
       {similar.length > 0 && (
         <>
-          <h3 className="mt-5 mb-2 text-sm font-semibold text-muted">Dễ nhầm với</h3>
+          <h3 className="mt-5 mb-2 text-sm font-semibold text-muted">{t('kanaDetail.deNhamVoi')}</h3>
           <div className="flex flex-wrap gap-2">
             {similar.map((c) => (
               <MiniChar

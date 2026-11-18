@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import { DOCK_PHONE, useMediaQuery } from '../../hooks/useMediaQuery'
 import { aiDock, historyMark, historyUsr, useAiDock, type DockMark } from '../../lib/ai/dock'
 import { lockScroll } from '../../lib/scrollLock'
+import { t as tr } from '../../i18n'
 
 // Nội dung chat (Markdown, lịch sử…) chỉ tải khi mở khung lần đầu.
 const DockChat = lazy(() => import('./DockChat'))
@@ -371,7 +372,7 @@ export function AiDock() {
             type="button"
             data-ai-tab
             data-quiet={quiet ? 'true' : undefined}
-            aria-label={dock.unread ? 'Mở Hỏi AI (có câu trả lời mới)' : 'Mở Hỏi AI'}
+            aria-label={dock.unread ? tr('aiDock.moHoiAiCo') : tr('aiDock.moHoiAi')}
             aria-expanded={dock.open}
             aria-controls="ai-dock-panel"
             tabIndex={dock.open ? -1 : 0}
@@ -419,7 +420,7 @@ export function AiDock() {
             className="pointer-events-auto overflow-hidden rounded-2xl border border-line bg-paper shadow-[0_10px_40px_rgb(0_0_0/0.22)] outline-none"
           >
             {loaded && (
-              <Suspense fallback={<div className="p-4 text-sm text-muted">Đang tải…</div>}>
+              <Suspense fallback={<div className="p-4 text-sm text-muted">{tr('aiDock.dangTai')}</div>}>
                 <DockChat
                   inputRef={inputRef}
                   headerProps={headerProps}

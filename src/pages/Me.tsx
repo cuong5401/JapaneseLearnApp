@@ -9,6 +9,7 @@ import { isCurrentId } from '../data'
 import { useCards, useDueIds } from '../hooks/useProgress'
 import { THEME_LABEL, useTheme, type ThemeChoice } from '../hooks/useTheme'
 import { isMastered } from '../lib/srs'
+import { t as tr } from '../i18n'
 
 const BOX = 'rounded-2xl border border-line bg-surface p-5'
 const ROW_LINK = '-mx-2 flex min-h-12 items-center gap-3 rounded-lg px-2 hover:bg-sunken'
@@ -26,15 +27,13 @@ function ProgressSummary() {
   const due = useDueIds().length
   const all = Object.values(cards).filter((c) => isCurrentId(c.id))
   const totals = [
-    { label: 'Đã học', value: all.length },
-    { label: 'Đã thuộc', value: all.filter(isMastered).length },
-    { label: 'Cần ôn hôm nay', value: due },
+    { label: tr('common.daHoc'), value: all.length },
+    { label: tr('common.daThuoc'), value: all.filter(isMastered).length },
+    { label: tr('me.canOnHomNay'), value: due },
   ]
   return (
     <section aria-labelledby="me-progress" className={BOX}>
-      <h2 id="me-progress" className="text-lg font-bold">
-        Tiến độ
-      </h2>
+      <h2 id="me-progress" className="text-lg font-bold">{tr('me.tienDo')}</h2>
       <dl className="mt-3 grid grid-cols-3 divide-x divide-line rounded-xl bg-sunken/60">
         {totals.map((t) => (
           <div key={t.label} className="flex flex-col-reverse px-2 py-3 text-center">
@@ -45,9 +44,7 @@ function ProgressSummary() {
           </div>
         ))}
       </dl>
-      <Link to="/progress" className={`${ROW_LINK} mt-2 font-medium`}>
-        Xem tiến độ chi tiết, xuất / nhập tiến độ
-        <Chevron />
+      <Link to="/progress" className={`${ROW_LINK} mt-2 font-medium`}>{tr('me.xemTienDoChi')}<Chevron />
       </Link>
     </section>
   )
@@ -60,20 +57,18 @@ export function Me() {
   const { choice, set } = useTheme()
   return (
     <div className="mx-auto max-w-[880px]">
-      <PageHeader title="Cá nhân" />
+      <PageHeader title={tr('common.caNhan')} />
       <div className="grid gap-4 lg:grid-cols-2">
         <ProgressSummary />
 
         <section aria-labelledby="me-settings" className={BOX}>
-          <h2 id="me-settings" className="text-lg font-bold">
-            Cài đặt
-          </h2>
+          <h2 id="me-settings" className="text-lg font-bold">{tr('me.caiDat')}</h2>
           <ul className="mt-2">
             <li>
               <Link to="/settings" className={ROW_LINK}>
                 <span>
-                  <span className="block font-medium">Cài đặt chung</span>
-                  <span className="block text-sm text-muted">AI (key, model), trình độ, ôn tập FSRS</span>
+                  <span className="block font-medium">{tr('me.caiDatChung')}</span>
+                  <span className="block text-sm text-muted">{tr('me.aiKeyModelTrinh')}</span>
                 </span>
                 <Chevron />
               </Link>
@@ -81,8 +76,8 @@ export function Me() {
             <li>
               <Link to="/ai" className={ROW_LINK}>
                 <span>
-                  <span className="block font-medium">Hỏi AI (trang đầy đủ)</span>
-                  <span className="block text-sm text-muted">Lịch sử chat, tra từ, ngữ pháp, hội thoại, sửa câu</span>
+                  <span className="block font-medium">{tr('me.hoiAiTrangDay')}</span>
+                  <span className="block text-sm text-muted">{tr('me.lichSuChatTra')}</span>
                 </span>
                 <Chevron />
               </Link>
@@ -91,21 +86,17 @@ export function Me() {
         </section>
 
         <section aria-labelledby="me-theme" className={BOX} data-theme-section>
-          <h2 id="me-theme" className="text-lg font-bold">
-            Giao diện
-          </h2>
+          <h2 id="me-theme" className="text-lg font-bold">{tr('me.giaoDien')}</h2>
           <div className="mt-3 flex items-center gap-3">
             <span className="grid size-11 place-items-center rounded-lg bg-sunken text-muted">
               <ThemeIcon choice={choice} />
             </span>
-            <Segmented label="Giao diện" value={choice} onChange={set} options={THEMES.map((t) => ({ value: t, label: THEME_LABEL[t] }))} />
+            <Segmented label={tr('me.giaoDien')} value={choice} onChange={set} options={THEMES.map((t) => ({ value: t, label: THEME_LABEL[t] }))} />
           </div>
         </section>
 
         <section aria-labelledby="me-install" className={BOX}>
-          <h2 id="me-install" className="text-lg font-bold">
-            Cài app
-          </h2>
+          <h2 id="me-install" className="text-lg font-bold">{tr('common.caiApp')}</h2>
           <div className="mt-1">
             <InstallApp />
           </div>

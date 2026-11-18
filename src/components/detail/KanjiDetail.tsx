@@ -13,6 +13,7 @@ import { kanjiQuestion } from '../../lib/ai/questions'
 import { BookmarkButton } from '../notebook/BookmarkButton'
 import { StrokeSection } from '../strokes/StrokeOrder'
 import { KanjiReadings } from './KanjiReadings'
+import { t } from '../../i18n'
 
 type Push = (f: Frame) => void
 
@@ -60,7 +61,7 @@ function RadicalChip({ ch, onPush }: { ch: string; onPush: Push }) {
       onClick={() => onPush({ t: 'r', no })}
       className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-lg border border-line px-2.5 text-sm hover:border-ai"
     >
-      <span className="text-muted">Bộ</span>
+      <span className="text-muted">{t('kanjiDetail.bo')}</span>
       {r ? (
         <>
           <span lang="ja" className="font-jp text-base">
@@ -69,7 +70,7 @@ function RadicalChip({ ch, onPush }: { ch: string; onPush: Push }) {
           <span className="font-medium capitalize">{r.name}</span>
         </>
       ) : (
-        <span className="font-medium">số {no}</span>
+        <span className="font-medium">{t('kanjiDetail.so', { no })}</span>
       )}
     </button>
   )
@@ -79,17 +80,17 @@ function RadicalChip({ ch, onPush }: { ch: string; onPush: Push }) {
 export function KanjiDetail({ item, onPush }: { item: KanjiEntry; onPush: Push }) {
   const learned = Boolean(useCards()[item.id])
   return (
-    <article aria-label={`Chi tiết chữ ${item.kanji}`} data-detail-kanji={item.kanji}>
+    <article aria-label={t('kanjiDetail.chiTietChu', { kanji: item.kanji })} data-detail-kanji={item.kanji}>
       <div className="flex gap-5">
         <GridCell className="size-28 sm:size-32">{item.kanji}</GridCell>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <p className="text-2xl font-bold tracking-wide">{item.hanViet}</p>
-            <BookmarkButton itemRef={item.id} label={`chữ ${item.kanji}`} className="-mt-1.5 -mr-2" />
+            <BookmarkButton itemRef={item.id} label={t('kanjiDetail.chu', { kanji: item.kanji })} className="-mt-1.5 -mr-2" />
           </div>
-          {item.hanVietAlt?.length ? <p className="mt-0.5 text-sm text-muted">Âm khác: {item.hanVietAlt.join(', ')}</p> : null}
+          {item.hanVietAlt?.length ? <p className="mt-0.5 text-sm text-muted">{t('common.amKhac', { join: item.hanVietAlt.join(', ') })}</p> : null}
           <p className="mt-2 text-sm text-muted">{levelNote(item)}</p>
-          <p className="text-sm text-muted">{item.wordCount} từ chứa chữ này</p>
+          <p className="text-sm text-muted">{t('common.tuChuaChuNay', { wordCount: item.wordCount })}</p>
           <RadicalChip ch={item.kanji} onPush={onPush} />
         </div>
       </div>
@@ -99,21 +100,16 @@ export function KanjiDetail({ item, onPush }: { item: KanjiEntry; onPush: Push }
         <ButtonLink
           to={`/kanji/${item.id}/learn`}
           className="inline-flex min-h-11 items-center justify-center rounded-lg bg-ai px-3 text-center font-semibold text-on-ai hover:opacity-90"
-        >
-          Học các từ này
-        </ButtonLink>
+        >{t('kanjiDetail.hocCacTuNay')}</ButtonLink>
         <Button
           onClick={() => (learned ? progress.forget(item.id) : progress.markLearned(item.id))}
           className={`min-h-11 rounded-lg px-3 font-semibold ${learned ? 'border border-matsu bg-matsu-soft text-matsu' : 'border border-line hover:bg-sunken'}`}
         >
-          {learned ? 'Đã học chữ này' : 'Đánh dấu đã học'}
+          {learned ? t('kanjiDetail.daHocChuNay') : t('common.danhDauDaHoc')}
         </Button>
         <AskAiLink question={kanjiQuestion(item.kanji, item.hanViet)} className="col-span-2" />
       </div>
-      <h3 className="mt-6 mb-1 text-sm font-semibold text-muted">
-        Từ chứa chữ {item.kanji}
-        {item.wordCount > item.words.length && ` (${item.words.length}/${item.wordCount} từ đầu tiên)`}
-      </h3>
+      <h3 className="mt-6 mb-1 text-sm font-semibold text-muted">{t('kanjiDetail.tuChuaChu', { kanji: item.kanji, v: item.wordCount > item.words.length && t('common.firstWords', { n: item.words.length, total: item.wordCount }) })}</h3>
       <KanjiWords item={item} onPush={onPush} />
     </article>
   )

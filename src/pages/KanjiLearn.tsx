@@ -6,6 +6,7 @@ import { FlashcardSession } from '../components/study/FlashcardSession'
 import { useEntries } from '../hooks/useData'
 import type { VocabItem } from '../types'
 import { NotFound } from './NotFound'
+import { t } from '../i18n'
 
 /** Flashcard cho các từ chứa một chữ Hán (nút "Học các từ này" ở trang Kanji). */
 export function KanjiLearn() {
@@ -19,17 +20,15 @@ export function KanjiLearn() {
   if (kanji.status !== 'ready') return <PageSkeleton header rows={4} />
   if (!entry || entry.kind !== 'kanji') return <NotFound />
 
-  const back = { to: `/kanji?k=${encodeURIComponent(entry.item.kanji)}`, label: `Về chữ ${entry.item.kanji}` }
+  const back = { to: `/kanji?k=${encodeURIComponent(entry.item.kanji)}`, label: t('kanjiLearn.veChu', { kanji: entry.item.kanji }) }
   const items = wordIds
     .map((id) => words.entries.get(id))
     .flatMap((e) => (e?.kind === 'word' ? [e.item as VocabItem] : []))
 
   return (
     <div className={STUDY_PAGE}>
-      <PageHeader title={`Từ có chữ ${entry.item.kanji}`} back={back}>
-        <span className="text-sm text-muted">
-          {entry.item.hanViet}, {wordIds.length} từ
-        </span>
+      <PageHeader title={t('kanjiLearn.tuCoChu', { kanji: entry.item.kanji })} back={back}>
+        <span className="text-sm text-muted">{t('kanjiLearn.tu', { hanViet: entry.item.hanViet, length: wordIds.length })}</span>
       </PageHeader>
       {words.status === 'error' ? (
         <LoadError error={words.error} onRetry={words.retry} />

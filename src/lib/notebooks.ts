@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { readJSON, writeJSON } from './storage'
+import { t } from '../i18n'
 
 /**
  * Sổ tay: người học lưu mục khó (từ, chữ Hán, bộ thủ, mẫu ngữ pháp…) vào một hoặc nhiều sổ.
@@ -49,21 +50,37 @@ export const NOTEBOOK_COLORS = ['kihada', 'beni', 'ai', 'matsu', 'fuji', 'sakura
 export type NotebookColor = (typeof NOTEBOOK_COLORS)[number]
 
 export const COLOR_LABEL: Record<NotebookColor, string> = {
-  kihada: 'Vàng hoàng bá',
-  beni: 'Đỏ son',
-  ai: 'Chàm',
-  matsu: 'Xanh tùng',
-  fuji: 'Tím hoa tử đằng',
-  sakura: 'Hồng anh đào',
-  sora: 'Xanh trời',
-  sumi: 'Mực',
+  get kihada() {
+    return t('notebooks.vangHoangBa')
+  },
+  get beni() {
+    return t('notebooks.doSon')
+  },
+  get ai() {
+    return t('notebooks.cham')
+  },
+  get matsu() {
+    return t('notebooks.xanhTung')
+  },
+  get fuji() {
+    return t('notebooks.timHoaTuDang')
+  },
+  get sakura() {
+    return t('notebooks.hongAnhDao')
+  },
+  get sora() {
+    return t('notebooks.xanhTroi')
+  },
+  get sumi() {
+    return t('notebooks.muc2')
+  },
 }
 
 export const DEFAULT_BOOK_ID = 'default'
 
 export function initialState(now = 0): NotebookState {
   return {
-    books: [{ id: DEFAULT_BOOK_ID, name: 'Từ khó', color: 'kihada', createdAt: now, updatedAt: now }],
+    books: [{ id: DEFAULT_BOOK_ID, name: t('notebooks.tuKho'), color: 'kihada', createdAt: now, updatedAt: now }],
     items: { [DEFAULT_BOOK_ID]: [] },
   }
 }
@@ -72,7 +89,7 @@ const touch = (s: NotebookState, id: string, now: number): Notebook[] =>
   s.books.map((b) => (b.id === id ? { ...b, updatedAt: now } : b))
 
 export function createBook(s: NotebookState, name: string, color: NotebookColor, id: string, now: number): NotebookState {
-  const clean = name.trim().slice(0, 60) || 'Sổ tay mới'
+  const clean = name.trim().slice(0, 60) || t('notebooks.soTayMoi')
   return {
     ...s,
     books: [...s.books, { id, name: clean, color, createdAt: now, updatedAt: now }],
@@ -180,7 +197,7 @@ export function sanitizeState(v: unknown): NotebookState | null {
     if (!b || typeof b.id !== 'string' || typeof b.name !== 'string' || books.some((x) => x.id === b.id)) continue
     books.push({
       id: b.id,
-      name: b.name.slice(0, 60) || 'Sổ tay',
+      name: b.name.slice(0, 60) || t('common.soTay'),
       color: isColor(b.color) ? b.color : 'ai',
       createdAt: isNum(b.createdAt) ? b.createdAt : 0,
       updatedAt: isNum(b.updatedAt) ? b.updatedAt : 0,
@@ -243,13 +260,18 @@ export function mergeNotebooks(current: NotebookState, incoming: NotebookState) 
 
 /* ───────────── Store ───────────── */
 
-let state: NotebookState = sanitizeState(readJSON<unknown>('notebooks', null)) ?? initialState(Date.now())
+/*
+ * Đọc lười (lần đầu dùng): sổ mặc định lấy tên theo ngôn ngữ giao diện, nên phải tạo SAU khi từ điển đã nạp
+ * (module này nạp trước khi main.tsx chờ initLocale()).
+ */
+let loaded: NotebookState | null = null
+const cur = (): NotebookState => (loaded ??= sanitizeState(readJSON<unknown>('notebooks', null)) ?? initialState(Date.now()))
 const listeners = new Set<() => void>()
 
 function commit(next: NotebookState) {
-  if (next === state) return
-  state = next
-  writeJSON('notebooks', state)
+  if (next === loaded) return
+  loaded = next
+  writeJSON('notebooks', next)
   listeners.forEach((l) => l())
 }
 
@@ -262,29 +284,29 @@ export const notebooks = {
       listeners.delete(l)
     }
   },
-  getSnapshot: () => state,
+  getSnapshot: () => cur(),
   create(name: string, color: NotebookColor): string {
     const id = newId()
-    commit(createBook(state, name, color, id, Date.now()))
+    commit(createBook(cur(), name, color, id, Date.now()))
     return id
   },
-  rename: (id: string, name: string) => commit(renameBook(state, id, name, Date.now())),
-  recolor: (id: string, color: NotebookColor) => commit(recolorBook(state, id, color, Date.now())),
-  remove: (id: string) => commit(deleteBook(state, id)),
-  move: (id: string, delta: -1 | 1) => commit(moveBook(state, id, delta)),
-  add: (bookId: string, ref: string) => commit(addItem(state, bookId, ref, Date.now())),
-  removeItem: (bookId: string, ref: string) => commit(removeItem(state, bookId, ref, Date.now())),
-  toggle: (bookId: string, ref: string) => commit(toggleItem(state, bookId, ref, Date.now())),
+  rename: (id: string, name: string) => commit(renameBook(cur(), id, name, Date.now())),
+  recolor: (id: string, color: NotebookColor) => commit(recolorBook(cur(), id, color, Date.now())),
+  remove: (id: string) => commit(deleteBook(cur(), id)),
+  move: (id: string, delta: -1 | 1) => commit(moveBook(cur(), id, delta)),
+  add: (bookId: string, ref: string) => commit(addItem(cur(), bookId, ref, Date.now())),
+  removeItem: (bookId: string, ref: string) => commit(removeItem(cur(), bookId, ref, Date.now())),
+  toggle: (bookId: string, ref: string) => commit(toggleItem(cur(), bookId, ref, Date.now())),
   /** Lưu nhanh vào sổ dùng gần nhất; trả về sổ đã lưu. */
   quickSave(ref: string): Notebook {
-    const target = quickSaveTarget(state)
-    commit(addItem(state, target.id, ref, Date.now()))
+    const target = quickSaveTarget(cur())
+    commit(addItem(cur(), target.id, ref, Date.now()))
     return target
   },
   /** Lưu câu ví dụ kèm từ vào sổ dùng gần nhất; trả sổ đã lưu. */
   saveExample(ref: string, ex: SavedExample): Notebook {
-    const target = quickSaveTarget(state)
-    commit(addExample(state, target.id, ref, ex, Date.now()))
+    const target = quickSaveTarget(cur())
+    commit(addExample(cur(), target.id, ref, ex, Date.now()))
     return target
   },
   replace: (next: NotebookState) => commit(next),

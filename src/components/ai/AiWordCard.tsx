@@ -5,6 +5,7 @@ import type { AiWord } from '../../lib/ai/parse'
 import { normalizeKana } from '../../lib/search'
 import { SpeakButton } from '../SpeakButton'
 import { BookmarkButton } from '../notebook/BookmarkButton'
+import { t } from '../../i18n'
 
 /**
  * Thẻ từ AI gợi ý: nghe và lưu vào sổ tay. Từ đã có trong dữ liệu Kotonoha dùng id gốc;
@@ -36,12 +37,12 @@ export function AiWordCard({ w }: { w: AiWord }) {
           {w.hanViet && <span className="text-xs font-semibold tracking-wide text-ai">{w.hanViet}</span>}
         </p>
         <p className="mt-0.5 text-sm">{w.meaning}</p>
-        {localId && <p className="mt-1 text-xs text-matsu">Có trong dữ liệu Kotonoha</p>}
+        {localId && <p className="mt-1 text-xs text-matsu">{t('aiWordCard.coTrongDuLieu')}</p>}
       </div>
-      <SpeakButton text={w.reading || w.word} size="sm" label={`Nghe ${w.word}`} />
+      <SpeakButton text={w.reading || w.word} size="sm" label={t('common.listenTo', { text: w.word })} />
       {/* Lưu từ vào kho trước khi BookmarkButton xử lý (bắt ở pha capture). */}
       <span onPointerDownCapture={ensureSaved} onKeyDownCapture={ensureSaved} onContextMenuCapture={ensureSaved}>
-        <BookmarkButton itemRef={ref} label={`từ ${w.word}`} size="sm" />
+        <BookmarkButton itemRef={ref} label={t('aiWordCard.tu', { word: w.word })} size="sm" />
       </span>
     </li>
   )

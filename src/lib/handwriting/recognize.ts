@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 /**
  * Nhận dạng chữ Hán viết tay bằng KanjiCanvas (src/vendor/kanjicanvas, MIT).
  *
@@ -33,7 +34,7 @@ export function loadRecognizer(): Promise<KanjiCanvasApi> {
       await import('../../vendor/kanjicanvas/kanji-canvas.js')
       await import('../../vendor/kanjicanvas/ref-patterns.js')
       const kc = g.KanjiCanvas as KanjiCanvasApi | undefined
-      if (!kc?.refPatterns?.length) throw new Error('Không nạp được dữ liệu nhận dạng chữ viết tay')
+      if (!kc?.refPatterns?.length) throw new Error(t('recognize.khongNapDuocDu'))
       return kc
     })()
     api.catch(() => {

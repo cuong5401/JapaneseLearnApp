@@ -20,6 +20,7 @@ import {
   VerticalAlignTable,
   WidthType,
 } from 'docx'
+import { t } from '../../i18n'
 import { fadeCount, type WritingOptions } from './options'
 import {
   GRAY,
@@ -235,7 +236,7 @@ export async function buildDocx(sheet: Sheet, o: WritingOptions, render: RenderP
                 spacing: NO_SPACE,
                 children: [
                   new TextRun({
-                    children: ['Kotonoha · Trang ', PageNumber.CURRENT, '/', PageNumber.TOTAL_PAGES],
+                    children: [t('writing.footerPrefix'), PageNumber.CURRENT, '/', PageNumber.TOTAL_PAGES, t('writing.footerSuffix')],
                     size: PAGE_TEXT.footerSize * 2,
                     color: meta,
                     font: FONT,

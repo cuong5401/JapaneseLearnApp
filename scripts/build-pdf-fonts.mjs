@@ -33,7 +33,15 @@ const dataChars = [...new Set([...kanji, ...radicals])].filter((c) => [...c].len
 const ASCII = range(0x20, 0x7e)
 const LATIN_VI =
   ASCII + 'ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯư' + range(0x1ea0, 0x1ef9) + '–—‘’“”…·'
-const JP = ASCII + range(0x3000, 0x303f) + range(0x3041, 0x3096) + range(0x309b, 0x30ff) + range(0xff01, 0xff5e) + '・…' + dataChars.join('')
+// Chữ giao diện 日本語 in lên phiếu (tiêu đề, chân trang, tên nguồn): lấy từ src/i18n/ja.ts theo tiền tố khóa.
+const PRINTED_KEYS = /^"(layout|sources|kanjiLessons)\.|^"common\.(tatCa|soTay|hiragana|katakana)"/
+const uiJa = readFileSync(resolve(ROOT, 'src/i18n/ja.ts'), 'utf8')
+  .split(/\r?\n/)
+  .map((l) => l.trim())
+  .filter((l) => PRINTED_KEYS.test(l))
+  .map((l) => l.slice(l.indexOf(': ') + 2))
+  .join('')
+const JP = ASCII + uiJa + range(0x3000, 0x303f) + range(0x3041, 0x3096) + range(0x309b, 0x30ff) + range(0xff01, 0xff5e) + '・…' + dataChars.join('')
 const NO_STROKES = dataChars.filter((c) => !strokeChars.has(c)).join('')
 
 const FONTS = [

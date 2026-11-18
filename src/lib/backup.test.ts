@@ -94,4 +94,12 @@ describe('backup: id bộ thủ', () => {
     const r = parseBackup(text)
     expect(r.ok && Object.keys(r.backup.cards)).toEqual(['rd-036'])
   })
+
+  it('ngôn ngữ giao diện có trong file xuất; giá trị lạ bị bỏ khi nhập', () => {
+    const text = JSON.stringify(createBackup({}, 20, {}, new Date(), undefined, undefined, undefined, { locale: 'ja' }))
+    const r = parseBackup(text)
+    expect(r.ok && r.backup.locale).toBe('ja')
+    const bad = parseBackup(text.replace('"locale":"ja"', '"locale":"fr"'))
+    expect(bad.ok && bad.backup.locale).toBeUndefined()
+  })
 })

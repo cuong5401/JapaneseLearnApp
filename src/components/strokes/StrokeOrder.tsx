@@ -2,6 +2,7 @@ import { useReducedMotion } from 'motion/react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type Ref, type RefObject } from 'react'
 import { STROKE_VIEWBOX, firstPoint, labelPositions, retryStrokes, strokeEnd, useStrokes, type Stroke } from '../../lib/strokes'
 import { Skeleton } from '../LoadState'
+import { t as tr } from '../../i18n'
 
 /** Tốc độ vẽ cố định (đơn vị viewBox / ms) và thời gian nghỉ giữa hai nét. */
 const SPEED = 0.09
@@ -145,8 +146,8 @@ function Player({ strokes, char, size, autoPlay }: { strokes: Stroke[]; char: st
     <button
       type="button"
       onClick={replay}
-      aria-label={`Vẽ lại thứ tự nét chữ ${char}`}
-      title={`Thứ tự nét chữ ${char}: ${total} nét. Chạm để vẽ lại`}
+      aria-label={tr('strokeOrder.veLaiThuTu', { char })}
+      title={tr('strokeOrder.thuTuNetChu2', { char, total })}
       data-stroke-order={char}
       data-playing={playing ? 'true' : 'false'}
       data-step={step}
@@ -238,14 +239,11 @@ export function StrokeOrder({ char, size = 'md', autoPlay = true }: { char: stri
     <div data-stroke-order={char} data-stroke-missing>
       <div className={`grid place-items-center rounded-[3px] border-2 border-dashed border-cell-line p-3 text-center text-sm text-muted ${SIZES[size]}`}>
         {state.status === 'error' ? (
-          <span>
-            Không tải được thứ tự nét.{' '}
-            <button type="button" onClick={() => retryStrokes(char)} className="font-medium text-ai underline">
-              Thử lại
-            </button>
+          <span>{tr('strokeOrder.khongTaiDuocThu')}{' '}
+            <button type="button" onClick={() => retryStrokes(char)} className="font-medium text-ai underline">{tr('common.thuLai')}</button>
           </span>
         ) : (
-          'Chưa có dữ liệu thứ tự nét'
+          tr('strokeOrder.chuaCoDuLieu')
         )}
       </div>
     </div>
@@ -255,15 +253,15 @@ export function StrokeOrder({ char, size = 'md', autoPlay = true }: { char: stri
 /** Khối "Thứ tự nét" có tiêu đề, dùng trong panel chi tiết (chữ Hán, bộ thủ, kana). */
 export function StrokeSection({ char, autoPlay = true }: { char: string; autoPlay?: boolean }) {
   return (
-    <section className="mt-5" aria-label={`Thứ tự nét chữ ${char}`}>
-      <h3 className="mb-2 text-sm font-semibold text-muted">Thứ tự nét</h3>
+    <section className="mt-5" aria-label={tr('strokeOrder.thuTuNetChu', { char })}>
+      <h3 className="mb-2 text-sm font-semibold text-muted">{tr('strokeOrder.thuTuNet')}</h3>
       <StrokeOrder char={char} autoPlay={autoPlay} />
     </section>
   )
 }
 
 /** Nút nhỏ "Xem cách viết" mở hoạt ảnh tại chỗ (mặt sau flashcard): không lật / kéo thẻ. */
-export function StrokeOrderToggle({ char, label = 'Xem cách viết' }: { char: string; label?: string }) {
+export function StrokeOrderToggle({ char, label = tr('strokeOrder.xemCachViet') }: { char: string; label?: string }) {
   const [open, setOpen] = useState(false)
   const stop = (e: { stopPropagation: () => void }) => e.stopPropagation()
   return (
@@ -277,7 +275,7 @@ export function StrokeOrderToggle({ char, label = 'Xem cách viết' }: { char: 
         <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
           <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z" />
         </svg>
-        {open ? 'Ẩn cách viết' : label}
+        {open ? tr('strokeOrder.anCachViet') : label}
       </button>
       {open && (
         <div className="mt-3">

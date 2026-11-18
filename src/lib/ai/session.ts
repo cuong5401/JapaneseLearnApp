@@ -1,3 +1,4 @@
+import { aiContent } from './content'
 import { chats, sendWindow, type LocalHit, type StoredMessage } from './history'
 import { systemPrompt, type ChatMode } from './prompts'
 import { loadProvider } from './providers'
@@ -16,8 +17,9 @@ export type LiveAnswer = { convId: string; text: string } | null
 
 /** Dữ liệu sẵn có gửi kèm câu hỏi (chỉ trong yêu cầu, không lưu vào lịch sử). */
 function contextText(hits: readonly LocalHit[]): string {
-  const lines = hits.map((h) => `- ${h.kind === 'kanji' ? 'Chữ Hán' : 'Từ'} ${h.title}${h.reading ? ` (${h.reading})` : ''}: ${h.meaning}`)
-  return `Dữ liệu sẵn có trong app (đã đúng, chỉ cần bổ sung):\n${lines.join('\n')}`
+  const c = aiContent()
+  const lines = hits.map((h) => `- ${h.kind === 'kanji' ? c.contextKind.kanji : c.contextKind.word} ${h.title}${h.reading ? ` (${h.reading})` : ''}: ${h.meaning}`)
+  return c.context(lines)
 }
 
 /*
@@ -42,7 +44,7 @@ async function run(convId: string, mode: ChatMode) {
   const messages = sendWindow(conv.messages)
   const last = messages[messages.length - 1]
   const x = extra?.convId === convId ? extra : null
-  if (last && x?.hits?.length) last.text = `${contextText(x.hits)}\n\nCâu hỏi: ${last.text}`
+  if (last && x?.hits?.length) last.text = `${contextText(x.hits)}\n\n${aiContent().question(last.text)}`
   if (last && x?.image) last.image = x.image
 
   const controller = new AbortController()

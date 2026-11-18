@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react'
 import type { Point, Stroke } from '../../lib/handwriting/recognize'
+import { t } from '../../i18n'
 
 interface Props {
   strokes: readonly Stroke[]
@@ -130,7 +131,7 @@ export function DrawPad({ strokes, onStroke, onSize }: Props) {
       <canvas
         ref={canvasRef}
         data-drawpad
-        aria-label="Khung vẽ chữ Hán: vẽ từng nét bằng chuột, ngón tay hoặc bút"
+        aria-label={t('drawPad.khungVeChuHan')}
         role="img"
         className="absolute inset-0 size-full cursor-crosshair"
         style={{ touchAction: 'none' }}

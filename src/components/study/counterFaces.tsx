@@ -4,6 +4,7 @@ import { GridCell } from '../GridCell'
 import { SpeakButton } from '../SpeakButton'
 import { Flip } from './Flip'
 import type { FacesRenderer } from './faces'
+import { t } from '../../i18n'
 
 /** "3 + 本" (số + trợ số từ): số ở ô vuông, trợ số từ ở ô giấy tập viết. */
 export function NumberPlusCounter({ n, counter, size = 'lg' }: { n: CounterFormKey; counter: string; size?: 'lg' | 'md' }) {
@@ -29,7 +30,7 @@ export function NumberPlusCounter({ n, counter, size = 'lg' }: { n: CounterFormK
 /** Mặt sau của một ô: cách đọc, nút nghe, lý do biến âm. */
 function PairBack({ item, n }: { item: CounterItem; n: CounterFormKey }) {
   const cell = isFullCounter(item) ? cellsOf(item).find((c) => c.key === n) : undefined
-  if (!cell) return <p className="text-muted">Không có ô này trong bảng.</p>
+  if (!cell) return <p className="text-muted">{t('counterFaces.khongCoONay')}</p>
   return (
     <div className="flex min-h-full flex-col items-center justify-center gap-3 text-center" data-pair-back={`${item.id}-${n}`}>
       <p lang="ja" className="font-jp text-lg text-muted">
@@ -42,12 +43,11 @@ function PairBack({ item, n }: { item: CounterItem; n: CounterFormKey }) {
         </span>
         {/* Nút nghe không lật / không kéo thẻ */}
         <span onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
-          <SpeakButton text={cell.readings[0]} label={`Nghe ${numberLabel(n)}${item.counter}`} />
+          <SpeakButton text={cell.readings[0]} label={t('common.listenTo', { text: `${numberLabel(n)}${item.counter}` })} />
         </span>
       </p>
       {cell.readings.length > 1 && (
-        <p className="text-sm text-muted">
-          Cũng đọc:{' '}
+        <p className="text-sm text-muted">{t('counterFaces.cungDoc')}{' '}
           <span lang="ja" className="font-jp text-base text-ink">
             {cell.readings.slice(1).join('、')}
           </span>
@@ -90,7 +90,7 @@ export function CounterBack({ item, n }: { item: CounterItem; n?: CounterFormKey
           {item.reading}
         </span>
         <span onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
-          <SpeakButton text={item.reading.split('／')[0]} size="sm" label={`Nghe ${item.counter}`} />
+          <SpeakButton text={item.reading.split('／')[0]} size="sm" label={t('common.listenTo', { text: item.counter })} />
         </span>
       </p>
       <p className="max-w-sm">{item.usage}</p>

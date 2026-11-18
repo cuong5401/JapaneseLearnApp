@@ -22,6 +22,7 @@ import { readJSON, writeJSON } from '../../lib/storage'
 import type { SrsCard, VocabItem } from '../../types'
 import { useDockQuiet } from '../../lib/ai/dock'
 import { useLeaveGuard, useStudySession } from '../../hooks/useStudySession'
+import { t } from '../../i18n'
 
 export interface SessionLink {
   to: string
@@ -142,7 +143,7 @@ function StackCard<T extends { id: string }>({ item, faces, label, depth, flippe
           <button
             type="button"
             role="button"
-            aria-label={flipped ? `${label(item)}, mặt sau. Chạm để lật lại` : `${label(item)}. Chạm để lật thẻ`}
+            aria-label={flipped ? t('flashcardSession.matSauChamDe', { label: label(item) }) : t('flashcardSession.chamDeLatThe', { label: label(item) })}
             data-flip-card
             className="absolute inset-0 cursor-[inherit] rounded-2xl"
           />
@@ -165,18 +166,14 @@ function StackCard<T extends { id: string }>({ item, faces, label, depth, flippe
             style={{ opacity: unknownOpacity }}
             className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-beni bg-beni-soft/75"
           >
-            <span className="absolute top-6 right-5 rotate-[10deg] rounded-md border-[3px] border-beni bg-surface/70 px-3 py-1 text-xl font-bold text-beni">
-              Chưa nhớ
-            </span>
+            <span className="absolute top-6 right-5 rotate-[10deg] rounded-md border-[3px] border-beni bg-surface/70 px-3 py-1 text-xl font-bold text-beni">{t('flashcardSession.chuaNho')}</span>
           </motion.div>
           <motion.div
             aria-hidden
             style={{ opacity: knownOpacity }}
             className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-matsu bg-matsu-soft/75"
           >
-            <span className="absolute top-6 left-5 -rotate-[10deg] rounded-md border-[3px] border-matsu bg-surface/70 px-3 py-1 text-xl font-bold text-matsu">
-              Đã nhớ
-            </span>
+            <span className="absolute top-6 left-5 -rotate-[10deg] rounded-md border-[3px] border-matsu bg-surface/70 px-3 py-1 text-xl font-bold text-matsu">{t('flashcardSession.daNho')}</span>
           </motion.div>
         </>
       )}
@@ -204,38 +201,32 @@ function Summary({
   return (
     <div className="rounded-2xl border border-line bg-surface p-6 text-center sm:p-8">
       {unknown === 0 && known > 0 && <Celebration />}
-      <h2 className="text-xl font-bold">Xong một lượt</h2>
+      <h2 className="text-xl font-bold">{t('flashcardSession.xongMotLuot')}</h2>
       <dl className="mt-6 grid grid-cols-2 gap-3">
         <div className="flex flex-col-reverse rounded-xl bg-matsu-soft p-4">
-          <dt className="text-sm text-matsu">Đã nhớ</dt>
+          <dt className="text-sm text-matsu">{t('flashcardSession.daNho')}</dt>
           <dd className="text-4xl font-bold text-matsu">
             <AnimatedNumber value={known} />
           </dd>
         </div>
         <div className="flex flex-col-reverse rounded-xl bg-beni-soft p-4">
-          <dt className="text-sm text-beni">Chưa nhớ</dt>
+          <dt className="text-sm text-beni">{t('flashcardSession.chuaNho')}</dt>
           <dd className="text-4xl font-bold text-beni">
             <AnimatedNumber value={unknown} />
           </dd>
         </div>
       </dl>
-      <p className="mt-4 text-sm text-muted">Mọi thẻ đã vào lịch ôn. Thẻ chưa nhớ sẽ quay lại sớm hơn.</p>
+      <p className="mt-4 text-sm text-muted">{t('flashcardSession.moiTheDaVao')}</p>
       <div className="mt-6 grid gap-2 sm:grid-cols-2">
         <Button
           onClick={onRetryUnknown}
           disabled={unknown === 0}
           className="min-h-12 rounded-lg bg-ai font-semibold text-on-ai hover:opacity-90 disabled:opacity-40"
-        >
-          Học lại thẻ chưa nhớ
-        </Button>
-        <Button onClick={onRestart} className="min-h-12 rounded-lg border border-line font-medium hover:bg-sunken">
-          Học lại cả bộ
-        </Button>
+        >{t('flashcardSession.hocLaiTheChua')}</Button>
+        <Button onClick={onRestart} className="min-h-12 rounded-lg border border-line font-medium hover:bg-sunken">{t('flashcardSession.hocLaiCaBo')}</Button>
       </div>
       <div className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm">
-        <button type="button" onClick={onUndo} className="min-h-11 text-muted hover:text-ink">
-          Hoàn tác thẻ cuối
-        </button>
+        <button type="button" onClick={onUndo} className="min-h-11 text-muted hover:text-ink">{t('flashcardSession.hoanTacTheCuoi')}</button>
         <ButtonLink to={back.to} className="inline-flex min-h-11 items-center font-medium text-ai hover:underline">
           {back.label}
         </ButtonLink>
@@ -253,10 +244,18 @@ function Summary({
 }
 
 const SHORTCUTS = [
-  { keys: ['Space'], label: 'Lật thẻ' },
-  { keys: ['←'], label: 'Chưa nhớ' },
-  { keys: ['→'], label: 'Đã nhớ' },
-  { keys: ['Z'], label: 'Hoàn tác' },
+  { keys: ['Space'], get label() {
+    return t('flashcardSession.latThe')
+  } },
+  { keys: ['←'], get label() {
+    return t('flashcardSession.chuaNho')
+  } },
+  { keys: ['→'], get label() {
+    return t('flashcardSession.daNho')
+  } },
+  { keys: ['Z'], get label() {
+    return t('flashcardSession.hoanTac')
+  } },
 ]
 
 /**
@@ -366,7 +365,7 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
     } else memory.restart()
   }
 
-  const leaveGuard = useLeaveGuard(!done && pos >= 3 && !memory.offer, { answered: pos, total: queue.length, unit: 'thẻ' })
+  const leaveGuard = useLeaveGuard(!done && pos >= 3 && !memory.offer, { answered: pos, total: queue.length, unit: t('flashcardSession.the2') })
 
   useEffect(() => {
     if (memory.offer) return
@@ -394,16 +393,16 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
   const aside = (
     <SessionPanel
       stats={[
-        { label: 'Thẻ hiện tại', value: Math.min(pos + 1, queue.length), total: queue.length },
-        { label: 'Đã nhớ', value: known, tone: 'good' },
-        { label: 'Chưa nhớ', value: unknown, tone: 'bad' },
+        { label: t('flashcardSession.theHienTai'), value: Math.min(pos + 1, queue.length), total: queue.length },
+        { label: t('flashcardSession.daNho'), value: known, tone: 'good' },
+        { label: t('flashcardSession.chuaNho'), value: unknown, tone: 'bad' },
       ]}
       shortcuts={SHORTCUTS}
     />
   )
 
   if (memory.offer)
-    return <ResumePrompt answered={memory.offer.answered} total={memory.offer.total} unit="thẻ" onResume={resume} onRestart={memory.restart} />
+    return <ResumePrompt answered={memory.offer.answered} total={memory.offer.total} unit={t('flashcardSession.the2')} onResume={resume} onRestart={memory.restart} />
 
   return (
     <StudyLayout aside={aside}>
@@ -421,18 +420,15 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
         ) : (
           <>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm text-muted">
-              <span className="tabular-nums lg:hidden">
-                Thẻ {pos + 1}/{queue.length}
-                <span className="ml-3 text-matsu">Nhớ {known}</span>
-                <span className="ml-3 text-beni">Chưa nhớ {unknown}</span>
+              <span className="tabular-nums lg:hidden">{t('flashcardSession.the')}{pos + 1}/{queue.length}
+                <span className="ml-3 text-matsu">{t('flashcardSession.nho', { known })}</span>
+                <span className="ml-3 text-beni">{t('flashcardSession.chuaNho2', { unknown })}</span>
               </span>
               <button
                 type="button"
                 onClick={() => startSession(shuffle(source))}
                 className="ml-auto min-h-11 rounded-lg px-2 text-sm text-muted hover:bg-sunken hover:text-ink"
-              >
-                Trộn thẻ
-              </button>
+              >{t('flashcardSession.tronThe')}</button>
             </div>
 
             <div className="relative h-[clamp(21rem,60vh,28rem)] select-none">
@@ -455,7 +451,7 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
             </div>
 
             <p className="mt-1 h-5 text-center text-xs text-muted">
-              {!hintSeen && 'Vuốt trái nếu chưa nhớ, vuốt phải nếu đã nhớ'}
+              {!hintSeen && t('flashcardSession.vuotTraiNeuChua')}
             </p>
 
             <div className="mt-3 grid grid-cols-2 gap-2">
@@ -466,25 +462,19 @@ export function FlashcardSession<T extends { id: string } = VocabItem>({
               >
                 <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
                   <path d="m15 18-6-6 6-6" />
-                </svg>
-                Chưa nhớ
-              </Button>
+                </svg>{t('flashcardSession.chuaNho')}</Button>
               <Button
                 onMouseDown={keepFocus}
                 onClick={() => topRef.current?.flyOut(1)}
                 className="flex min-h-12 items-center justify-center gap-2 rounded-lg bg-ai font-semibold text-on-ai hover:opacity-90"
-              >
-                Đã nhớ
-                <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+              >{t('flashcardSession.daNho')}<svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
                   <path d="m9 18 6-6-6-6" />
                 </svg>
               </Button>
             </div>
             <div className="mt-2 flex h-11 justify-center">
               {history.length > 0 && (
-                <button type="button" onClick={undo} className="min-h-11 px-3 text-sm text-muted hover:text-ink">
-                  Hoàn tác thẻ vừa chấm
-                </button>
+                <button type="button" onClick={undo} className="min-h-11 px-3 text-sm text-muted hover:text-ink">{t('flashcardSession.hoanTacTheVua')}</button>
               )}
             </div>
           </>

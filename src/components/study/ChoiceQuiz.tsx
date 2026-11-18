@@ -10,6 +10,7 @@ import { progress } from '../../lib/progress'
 import { quizGrade } from '../../lib/srs'
 import { useLeaveGuard, useStudySession } from '../../hooks/useStudySession'
 import { ResumePrompt } from './ResumePrompt'
+import { t } from '../../i18n'
 
 const SHAKE = { x: [0, -8, 8, -8, 8, -8, 8, 0] }
 
@@ -148,22 +149,19 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
     return <ResumePrompt answered={memory.offer.answered} total={memory.offer.total} onResume={resume} onRestart={memory.restart} />
 
   if (questions.length === 0 || questions.some((x) => x.options.length < 2))
-    return <p className="rounded-2xl border border-line bg-surface p-6 text-center text-muted">Chưa đủ mục khác nhau để làm quiz. Cần ít nhất 2 đáp án khác nhau.</p>
+    return <p className="rounded-2xl border border-line bg-surface p-6 text-center text-muted">{t('choiceQuiz.chuaDuMucKhac')}</p>
 
   if (finished) {
     const perfect = right === questions.length
     return (
       <div className="mx-auto max-w-[560px] rounded-2xl border border-line bg-surface p-6 text-center" data-quiz-result>
         {perfect && <Celebration />}
-        <h2 className="text-lg font-semibold text-muted">Kết quả</h2>
+        <h2 className="text-lg font-semibold text-muted">{t('common.ketQua')}</h2>
         <p className="mt-1 text-6xl font-bold">
           <AnimatedNumber value={right} className={perfect ? 'text-matsu' : ''} />
           <span className="text-2xl text-muted">/{questions.length}</span>
         </p>
-        <p className="mt-2 text-muted">
-          Mục trả lời sai đã vào lịch ôn sớm hơn.
-          {hintedCount > 0 && ` ${hintedCount} câu có dùng gợi ý (chấm "Khó").`}
-        </p>
+        <p className="mt-2 text-muted">{t('choiceQuiz.mucTraLoiSai', { v: hintedCount > 0 && t('common.hintedPart', { n: hintedCount }) })}</p>
         <Button
           onClick={() => {
             memory.clear()
@@ -173,9 +171,7 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
             setHintedCount(0)
           }}
           className="mt-6 min-h-12 rounded-lg bg-ai px-6 font-semibold text-on-ai hover:opacity-90"
-        >
-          Làm lượt mới
-        </Button>
+        >{t('common.lamLuotMoi')}</Button>
       </div>
     )
   }
@@ -187,22 +183,20 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
         <SessionPanel
           title={cfg.title}
           stats={[
-            { label: 'Câu hiện tại', value: index + 1, total: questions.length },
-            { label: 'Đúng', value: right, tone: 'good' },
-            { label: 'Sai', value: index + (answered ? 1 : 0) - right, tone: 'bad' },
+            { label: t('common.cauHienTai'), value: index + 1, total: questions.length },
+            { label: t('common.dung'), value: right, tone: 'good' },
+            { label: t('common.wrong'), value: index + (answered ? 1 : 0) - right, tone: 'bad' },
           ]}
           shortcuts={[
-            { keys: ['1–4'], label: cfg.shortcut ?? 'Chọn đáp án' },
-            { keys: ['H'], label: 'Gợi ý (bỏ 2 đáp án sai)' },
-            { keys: ['Enter'], label: 'Câu tiếp theo' },
+            { keys: ['1–4'], label: cfg.shortcut ?? t('common.chonDapAn') },
+            { keys: ['H'], label: t('choiceQuiz.goiYBo2') },
+            { keys: ['Enter'], label: t('common.cauTiepTheo') },
           ]}
         />
       }
     >
       {leaveGuard}
-      <p className="mb-4 text-sm text-muted lg:hidden">
-        Câu {index + 1}/{questions.length}
-      </p>
+      <p className="mb-4 text-sm text-muted lg:hidden">{t('common.cau', { v: index + 1, length: questions.length })}</p>
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={index}
@@ -260,17 +254,17 @@ export function ChoiceQuiz<T extends { id: string }>({ items, pool = items, leng
             data-quiz-hint
             className="min-h-11 rounded-lg border border-line px-4 text-sm font-medium text-muted hover:border-ai hover:text-ink disabled:opacity-50"
           >
-            {hinted ? 'Đã dùng gợi ý (đúng sẽ tính "Khó")' : 'Gợi ý'}
+            {hinted ? t('choiceQuiz.daDungGoiY') : t('choiceQuiz.goiY')}
           </button>
         )}
         {answered && (
           <>
             <p className={`font-semibold ${picked === correct ? 'text-matsu' : 'text-beni'}`}>
-              {picked === correct ? 'Chính xác' : `Đáp án: ${correct}`}
+              {picked === correct ? t('common.chinhXac') : t('choiceQuiz.dapAn', { correct })}
               {cfg.note && <span className="ml-2 font-normal text-muted">{cfg.note(q.item)}</span>}
             </p>
             <Button onClick={next} autoFocus className="ml-auto min-h-11 rounded-lg bg-ai px-5 font-semibold text-on-ai hover:opacity-90">
-              {index + 1 === questions.length ? 'Xem kết quả' : 'Câu tiếp theo'}
+              {index + 1 === questions.length ? t('common.xemKetQua') : t('common.cauTiepTheo')}
             </Button>
           </>
         )}

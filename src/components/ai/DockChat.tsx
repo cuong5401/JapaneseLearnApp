@@ -9,6 +9,7 @@ import { MODES } from '../../lib/ai/prompts'
 import { useAiSettings } from '../../lib/ai/settings'
 import { lockedScrollY } from '../../lib/scrollLock'
 import { ChatThread, Composer, ModeChips } from './ChatParts'
+import { t as tr } from '../../i18n'
 
 interface Props {
   onCollapse: () => void
@@ -95,14 +96,12 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef, head
           <h2 id="ai-dock-title" className="flex items-center gap-2 font-bold">
             <span lang="ja" aria-hidden className="grid size-7 place-items-center rounded-[3px] bg-ai font-jp text-sm text-on-ai">
               問
-            </span>
-            Hỏi AI
-          </h2>
+            </span>{tr('common.hoiAi')}</h2>
           <button
             type="button"
             onClick={() => onExpand(active?.id ?? null)}
-            aria-label="Mở rộng toàn màn hình"
-            title="Mở rộng toàn màn hình"
+            aria-label={tr('dockChat.moRongToanMan')}
+            title={tr('dockChat.moRongToanMan')}
             data-dock-expand
             className="ml-auto grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
           >
@@ -111,8 +110,8 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef, head
           <button
             type="button"
             onClick={onCollapse}
-            aria-label="Thu gọn"
-            title="Thu gọn (Esc)"
+            aria-label={tr('dockChat.thuGon')}
+            title={tr('dockChat.thuGonEsc')}
             data-dock-collapse
             className="grid size-11 place-items-center rounded-lg text-2xl leading-none text-muted hover:bg-sunken hover:text-ink"
           >
@@ -126,13 +125,9 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef, head
 
       {!settings.hasKey ? (
         <div data-ai-setup className="flex-1 overflow-y-auto overscroll-contain p-4">
-          <p className="font-semibold">Chưa có API key</p>
-          <p className="mt-1 text-sm text-muted">
-            Kotonoha gọi thẳng AI (Gemini có hạn mức miễn phí, hoặc Claude) bằng key của bạn. Key chỉ lưu trên máy này. Mở Cài đặt → mục AI để dán key.
-          </p>
-          <Link to="/settings#ai" onClick={onLeave} className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-ai px-5 font-semibold text-on-ai hover:opacity-90">
-            Mở Cài đặt
-          </Link>
+          <p className="font-semibold">{tr('dockChat.chuaCoApiKey')}</p>
+          <p className="mt-1 text-sm text-muted">{tr('dockChat.kotonohaGoiThangAi')}</p>
+          <Link to="/settings#ai" onClick={onLeave} className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-ai px-5 font-semibold text-on-ai hover:opacity-90">{tr('dockChat.moCaiDat')}</Link>
         </div>
       ) : (
         <>
@@ -171,7 +166,7 @@ export default function DockChat({ onCollapse, onExpand, onLeave, inputRef, head
                     }}
                     className="mb-1.5 inline-flex min-h-11 max-w-full items-center gap-1.5 rounded-full border border-ai/40 bg-ai-soft px-3 text-sm font-medium text-ai hover:border-ai"
                   >
-                    <span className="shrink-0">Hỏi về</span>
+                    <span className="shrink-0">{tr('dockChat.hoiVe')}</span>
                     <span lang="ja" className="truncate font-jp">
                       {context.label}
                     </span>

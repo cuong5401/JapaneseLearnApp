@@ -7,6 +7,7 @@ import { speak, speechSupported } from '../../lib/speech'
 import { showToast } from '../../lib/toast'
 import type { VocabItem } from '../../types'
 import { Skeleton } from '../LoadState'
+import { t } from '../../i18n'
 
 /** Chiều cao một câu (2 dòng chữ + dòng nút): skeleton và câu thật bằng nhau → không layout shift. */
 const ROW = 'min-h-[7rem]'
@@ -39,7 +40,7 @@ function Sentence({ it, terms, wordId, canTranslate, onTranslate }: { it: Exampl
   const [failed, setFailed] = useState(false)
   const save = () => {
     const book = notebooks.saveExample(wordId, { ja: it.ja, tr: it.vi ?? it.en ?? '', src: it.src, ...(it.tid ? { tid: it.tid } : {}) })
-    showToast(`Đã lưu câu vào ${book.name}`)
+    showToast(t('wordExamples.daLuuCauVao', { name: book.name }))
   }
   const translate = async () => {
     setBusy(true)
@@ -69,7 +70,7 @@ function Sentence({ it, terms, wordId, canTranslate, onTranslate }: { it: Exampl
         {it.vi ? (
           <p className="mt-0.5 text-sm text-muted" data-example-vi>
             {it.vi}
-            {it.viByAi && <span className="ml-1.5 text-xs">(AI dịch)</span>}
+            {it.viByAi && <span className="ml-1.5 text-xs">{t('wordExamples.aiDich')}</span>}
           </p>
         ) : it.en ? (
           <p className="mt-0.5 text-sm text-muted" data-example-en>
@@ -77,22 +78,21 @@ function Sentence({ it, terms, wordId, canTranslate, onTranslate }: { it: Exampl
             {it.en}
             {canTranslate && (
               <button type="button" onClick={translate} disabled={busy} className="ml-2 font-medium text-ai hover:underline disabled:opacity-50">
-                {busy ? 'Đang dịch…' : failed ? 'Dịch lại' : 'Dịch sang tiếng Việt'}
+                {busy ? t('wordExamples.dangDich') : failed ? t('wordExamples.dichLai') : t('wordExamples.dichSangTiengViet')}
               </button>
             )}
           </p>
         ) : null}
         <p className="mt-1 text-xs text-muted">
           {it.src === 'ai' ? (
-            <span className="rounded bg-kihada-soft px-1.5 py-0.5 font-semibold text-ink" data-example-ai>
-              AI tạo
-            </span>
+            <span className="rounded bg-kihada-soft px-1.5 py-0.5 font-semibold text-ink" data-example-ai>{t('wordExamples.aiTao')}</span>
           ) : (
             <a
               href={sentenceUrl(it.tid!)}
               target="_blank"
               rel="noreferrer noopener"
-              title={`Tatoeba, CC BY 2.0 FR${it.owner ? `, ${it.owner}` : ''}${it.audioBy ? `; âm thanh: ${it.audioBy}` : ''}`}
+              title={`Tatoeba, CC BY 2.0 FR${ // i18n-ignore
+it.owner ? `, ${it.owner}` : ''}${it.audioBy ? t('wordExamples.amThanh', { audioBy: it.audioBy }) : ''}`}
               className="py-4 hover:text-ai hover:underline"
               data-example-source
             >
@@ -102,12 +102,12 @@ function Sentence({ it, terms, wordId, canTranslate, onTranslate }: { it: Exampl
         </p>
       </div>
       {(it.audioId || speechSupported) && (
-        <IconButton label={`Nghe câu: ${it.ja}`} title={it.audioId ? 'Nghe (giọng thật, Tatoeba)' : 'Nghe'} onClick={() => play(it)}>
+        <IconButton label={t('wordExamples.ngheCau', { ja: it.ja })} title={it.audioId ? t('wordExamples.ngheGiongThatTatoeba') : 'Nghe'} onClick={() => play(it)}>
           <path d="M11 5 6 9H3v6h3l5 4V5Z" />
           <path d="M15.5 8.5a5 5 0 0 1 0 7" />
         </IconButton>
       )}
-      <IconButton label="Lưu câu vào sổ tay" onClick={save}>
+      <IconButton label={t('wordExamples.luuCauVaoSo')} onClick={save}>
         <path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4.5L5 21V4.5a1 1 0 0 1 1-1Z" />
       </IconButton>
     </li>
@@ -127,12 +127,10 @@ export function WordExamples({ item }: { item: VocabItem }) {
   return (
     <section className="mt-5 border-t border-line pt-4" aria-labelledby={`ex-${item.id}`} data-examples data-examples-status={state.status}>
       <div className="flex min-h-11 items-center justify-between gap-3">
-        <h3 id={`ex-${item.id}`} className="font-semibold">
-          Ví dụ
-        </h3>
+        <h3 id={`ex-${item.id}`} className="font-semibold">{t('common.viDu')}</h3>
         {canMore && (
           <button type="button" onClick={() => void more()} disabled={state.status === 'ready' && state.more} className="min-h-11 rounded-lg px-2.5 text-sm font-medium text-ai hover:bg-ai-soft disabled:opacity-50">
-            {state.status === 'ready' && state.more ? 'Đang tải…' : 'Ví dụ khác'}
+            {state.status === 'ready' && state.more ? t('wordExamples.dangTai') : t('wordExamples.viDuKhac')}
           </button>
         )}
       </div>
@@ -148,9 +146,7 @@ export function WordExamples({ item }: { item: VocabItem }) {
           ))}
         {state.status === 'empty' && (
           <li className="grid min-h-[calc(21rem+2px)] place-items-center px-4 text-center text-sm text-muted">
-            <span>
-              Chưa tìm thấy ví dụ.
-              <span className="mt-1 block text-xs">Mở lại khi có mạng, hoặc thêm khóa AI trong Cài đặt để AI tạo câu.</span>
+            <span>{t('wordExamples.chuaTimThayVi')}<span className="mt-1 block text-xs">{t('wordExamples.moLaiKhiCo')}</span>
             </span>
           </li>
         )}

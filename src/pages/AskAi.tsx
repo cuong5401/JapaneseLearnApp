@@ -13,6 +13,7 @@ import { isChatMode, MODES, type ChatMode } from '../lib/ai/prompts'
 import { providerInfo } from '../lib/ai/providers'
 import { useAiSettings } from '../lib/ai/settings'
 import type { AiImage } from '../lib/ai/types'
+import { t as tr } from '../i18n'
 
 /** Trang "Hỏi AI" toàn màn hình (khung chat nổi mở rộng ra đây). */
 export function AskAi() {
@@ -90,18 +91,16 @@ export function AskAi() {
 
   return (
     <div className="lg:grid lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-8">
-      <aside className="hidden lg:block" aria-label="Lịch sử trò chuyện">
+      <aside className="hidden lg:block" aria-label={tr('askAi.lichSuTroChuyen')}>
         <div className="sticky top-8 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain pr-1">
-          <h2 className="mb-3 px-2 text-sm font-semibold text-muted">Lịch sử</h2>
+          <h2 className="mb-3 px-2 text-sm font-semibold text-muted">{tr('askAi.lichSu2')}</h2>
           {history}
         </div>
       </aside>
 
       <div className="flex min-w-0 flex-col">
-        <PageHeader title="Hỏi AI">
-          <button type="button" onClick={() => setHistoryOpen(true)} className="min-h-11 rounded-lg border border-line px-3 text-sm font-medium hover:bg-sunken lg:hidden">
-            Lịch sử ({list.length})
-          </button>
+        <PageHeader title={tr('common.hoiAi')}>
+          <button type="button" onClick={() => setHistoryOpen(true)} className="min-h-11 rounded-lg border border-line px-3 text-sm font-medium hover:bg-sunken lg:hidden">{tr('askAi.lichSu', { length: list.length })}</button>
         </PageHeader>
 
         <div className="-mt-2 mb-4">
@@ -118,7 +117,7 @@ export function AskAi() {
               live={chat.live}
               busy={chat.busy}
               onRetry={(c) => void chat.retry(c.id, c.mode)}
-              footnote={`Đang dùng ${providerName} · trình độ ${settings.level}. Đổi trong Cài đặt.`}
+              footnote={tr('askAi.dangDungTrinhDo', { providerName, level: settings.level })}
             />
             <div ref={endRef} className="h-2" />
 
@@ -135,7 +134,7 @@ export function AskAi() {
         )}
       </div>
 
-      <BottomSheet open={historyOpen} onClose={() => setHistoryOpen(false)} label="Lịch sử trò chuyện">
+      <BottomSheet open={historyOpen} onClose={() => setHistoryOpen(false)} label={tr('askAi.lichSuTroChuyen')}>
         {history}
       </BottomSheet>
     </div>

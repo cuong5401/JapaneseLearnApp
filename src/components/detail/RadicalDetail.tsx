@@ -9,6 +9,7 @@ import { Skeleton } from '../LoadState'
 import { Button } from '../Pressable'
 import { BookmarkButton } from '../notebook/BookmarkButton'
 import { StrokeSection } from '../strokes/StrokeOrder'
+import { t } from '../../i18n'
 
 /** Chi tiết bộ thủ: tên, nghĩa và các chữ Hán (trong dữ liệu của bạn) thuộc bộ này. */
 export function RadicalDetail({ item, onPush }: { item: RadicalItem; onPush: (f: Frame) => void }) {
@@ -17,23 +18,20 @@ export function RadicalDetail({ item, onPush }: { item: RadicalItem; onPush: (f:
   const chars = kanjiOfRadical(item.no)
   const byChar = new Map((index.data ?? []).map((k) => [k.kanji, k]))
   return (
-    <article aria-label={`Chi tiết bộ ${item.radical}`} data-detail-radical={item.no}>
+    <article aria-label={t('radicalDetail.chiTietBo', { radical: item.radical })} data-detail-radical={item.no}>
       <div className="flex gap-5">
         <GridCell className="size-28 sm:size-32">{item.radical}</GridCell>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="text-sm text-muted">
-                Bộ số {item.no} · {item.strokes} nét
-              </p>
+              <p className="text-sm text-muted">{t('radicalDetail.boSoNet', { no: item.no, strokes: item.strokes })}</p>
               <p className="text-2xl font-bold capitalize">{item.name}</p>
             </div>
-            <BookmarkButton itemRef={item.id} label={`bộ ${item.name}`} className="-mr-2" />
+            <BookmarkButton itemRef={item.id} label={t('radicalDetail.bo', { name: item.name })} className="-mr-2" />
           </div>
           <p className="mt-1 text-muted first-letter:uppercase">{item.meaning}</p>
           {item.variants?.length ? (
-            <p className="mt-1 text-sm text-muted">
-              Dạng khác:{' '}
+            <p className="mt-1 text-sm text-muted">{t('radicalDetail.dangKhac')}{' '}
               <span lang="ja" className="font-jp text-base text-ink">
                 {item.variants.join('、')}
               </span>
@@ -46,11 +44,10 @@ export function RadicalDetail({ item, onPush }: { item: RadicalItem; onPush: (f:
         onClick={() => (learned ? progress.forget(item.id) : progress.markLearned(item.id))}
         className={`mt-5 min-h-11 w-full rounded-lg px-3 font-semibold ${learned ? 'border border-matsu bg-matsu-soft text-matsu' : 'border border-line hover:bg-sunken'}`}
       >
-        {learned ? 'Đã học bộ này' : 'Đánh dấu đã học'}
+        {learned ? t('radicalDetail.daHocBoNay') : t('common.danhDauDaHoc')}
       </Button>
       <h3 className="mt-6 mb-2 text-sm font-semibold text-muted">
-        {chars.length} chữ Hán thuộc bộ này
-        {chars.length === 0 && <span className="font-normal"> (chưa có trong dữ liệu)</span>}
+        {chars.length}{t('radicalDetail.chuHanThuocBo')}{chars.length === 0 && <span className="font-normal">{t('radicalDetail.chuaCoTrongDu')}</span>}
       </h3>
       {chars.length > 0 && (
         <ul className="grid min-h-48 grid-cols-[repeat(auto-fill,minmax(72px,1fr))] content-start gap-2" data-radical-chars>
@@ -59,7 +56,7 @@ export function RadicalDetail({ item, onPush }: { item: RadicalItem; onPush: (f:
               <button
                 type="button"
                 onClick={() => onPush({ t: 'k', ch })}
-                aria-label={`Chữ ${ch}${byChar.get(ch) ? `, ${byChar.get(ch)!.hanViet}` : ''}`}
+                aria-label={t('radicalDetail.chu', { ch, v: byChar.get(ch) ? `, ${byChar.get(ch)!.hanViet}` : '' })}
                 className="flex w-full flex-col items-center gap-1 rounded-lg border border-line bg-surface p-1.5 hover:border-ai"
               >
                 <GridCell className="w-full max-w-14">{ch}</GridCell>
@@ -74,7 +71,7 @@ export function RadicalDetail({ item, onPush }: { item: RadicalItem; onPush: (f:
           ))}
         </ul>
       )}
-      <p className="mt-4 text-xs text-muted">Bộ chính của chữ theo Unicode Unihan.</p>
+      <p className="mt-4 text-xs text-muted">{t('radicalDetail.boChinhCuaChu')}</p>
     </article>
   )
 }

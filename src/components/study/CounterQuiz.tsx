@@ -29,6 +29,7 @@ import { quizGrade } from '../../lib/srs'
 import type { CounterEntry } from '../../types'
 import { useLeaveGuard, useStudySession } from '../../hooks/useStudySession'
 import { ResumePrompt } from './ResumePrompt'
+import { t } from '../../i18n'
 
 const LENGTH = 10
 const SHAKE = { x: [0, -8, 8, -8, 8, -8, 8, 0] }
@@ -36,10 +37,18 @@ const SHAKE = { x: [0, -8, 8, -8, 8, -8, 8, 0] }
 export type CounterQuizKind = 'mix' | 'reading' | 'choose' | 'type'
 
 export const QUIZ_KINDS: { value: CounterQuizKind; label: string }[] = [
-  { value: 'mix', label: 'Trộn' },
-  { value: 'reading', label: 'Chọn cách đọc' },
-  { value: 'choose', label: 'Chọn trợ số từ' },
-  { value: 'type', label: 'Gõ cách đọc' },
+  { value: 'mix', get label() {
+    return t('counterQuiz.tron')
+  } },
+  { value: 'reading', get label() {
+    return t('counterQuiz.chonCachDoc')
+  } },
+  { value: 'choose', get label() {
+    return t('counterQuiz.chonTroSoTu2')
+  } },
+  { value: 'type', get label() {
+    return t('counterQuiz.goCachDoc')
+  } },
 ]
 
 type Question =
@@ -84,7 +93,7 @@ function Prompt({ q }: { q: Question }) {
   if (q.t === 'choose')
     return (
       <>
-        <p className="text-sm text-muted">Chọn trợ số từ phù hợp</p>
+        <p className="text-sm text-muted">{t('counterQuiz.chonTroSoTu')}</p>
         <p lang="ja" className="mt-4 font-jp text-[clamp(1.375rem,7cqw,2rem)] leading-snug font-semibold break-words" data-blank-sentence>
           {q.sentence.before}
           <span className="mx-1 inline-block min-w-[2.2em] border-b-2 border-ai align-baseline text-ai">＿＿</span>
@@ -95,7 +104,7 @@ function Prompt({ q }: { q: Question }) {
     )
   return (
     <>
-      <p className="text-sm text-muted">{q.t === 'type' ? 'Gõ cách đọc (romaji hoặc kana)' : 'Đọc thế nào?'}</p>
+      <p className="text-sm text-muted">{q.t === 'type' ? t('counterQuiz.goCachDocRomaji') : t('counterQuiz.docTheNao')}</p>
       <div className="mt-4 flex justify-center">
         <NumberPlusCounter n={q.pair.key} counter={q.pair.counter.counter} size="md" />
       </div>
@@ -110,14 +119,14 @@ function Feedback({ q, correct }: { q: Question; correct: boolean }) {
     return (
       <div className="min-w-0 flex-1">
         <p className={`font-semibold ${correct ? 'text-matsu' : 'text-beni'}`}>
-          {correct ? 'Chính xác' : 'Chưa đúng'}:{' '}
+          {correct ? t('common.chinhXac') : t('counterQuiz.chuaDung')}:{' '}
           <span lang="ja" className="font-jp">
             {q.counter.counter} ({q.counter.reading})
           </span>
         </p>
         <p lang="ja" className="flex items-center gap-2 font-jp text-sm text-muted">
           {q.sentence.example.kana}
-          <SpeakButton text={q.sentence.example.kana} size="sm" label="Nghe câu" />
+          <SpeakButton text={q.sentence.example.kana} size="sm" label={t('counterQuiz.ngheCau')} />
         </p>
       </div>
     )
@@ -125,7 +134,7 @@ function Feedback({ q, correct }: { q: Question; correct: boolean }) {
   return (
     <div className="min-w-0 flex-1">
       <p className={`flex flex-wrap items-center gap-x-2 font-semibold ${correct ? 'text-matsu' : 'text-beni'}`}>
-        {correct ? 'Chính xác' : 'Chưa đúng'}:
+        {correct ? t('common.chinhXac') : t('counterQuiz.chuaDung')}:
         <span lang="ja" className="font-jp text-ink">
           {numberLabel(q.pair.key)}
           {q.pair.counter.counter} {q.pair.readings.join('／')}
@@ -224,7 +233,7 @@ export function CounterQuiz({ counters, pool }: { counters: CounterEntry[]; pool
 
   const kindPicker = (
     <div className="mb-4">
-      <Segmented size="sm" label="Dạng câu hỏi" value={kind} onChange={(k) => restart(k)} options={QUIZ_KINDS} />
+      <Segmented size="sm" label={t('counterQuiz.dangCauHoi')} value={kind} onChange={(k) => restart(k)} options={QUIZ_KINDS} />
     </div>
   )
 
@@ -232,7 +241,7 @@ export function CounterQuiz({ counters, pool }: { counters: CounterEntry[]; pool
     return (
       <>
         {kindPicker}
-        <p className="rounded-2xl border border-line bg-surface p-6 text-center text-muted">Chưa có câu ví dụ để làm dạng câu này. Chọn dạng khác.</p>
+        <p className="rounded-2xl border border-line bg-surface p-6 text-center text-muted">{t('counterQuiz.chuaCoCauVi')}</p>
       </>
     )
 
@@ -243,15 +252,13 @@ export function CounterQuiz({ counters, pool }: { counters: CounterEntry[]; pool
         {kindPicker}
         <div className="mx-auto max-w-[560px] rounded-2xl border border-line bg-surface p-6 text-center" data-quiz-result>
           {perfect && <Celebration />}
-          <h2 className="text-lg font-semibold text-muted">Kết quả</h2>
+          <h2 className="text-lg font-semibold text-muted">{t('common.ketQua')}</h2>
           <p className="mt-1 text-6xl font-bold">
             <AnimatedNumber value={right} className={perfect ? 'text-matsu' : ''} />
             <span className="text-2xl text-muted">/{questions.length}</span>
           </p>
-          <p className="mt-2 text-muted">Cặp số + trợ số từ trả lời sai và ô bất quy tắc đã vào lịch ôn.</p>
-          <Button onClick={() => restart()} className="mt-6 min-h-12 rounded-lg bg-ai px-6 font-semibold text-on-ai hover:opacity-90">
-            Làm lượt mới
-          </Button>
+          <p className="mt-2 text-muted">{t('counterQuiz.capSoTroSo')}</p>
+          <Button onClick={() => restart()} className="mt-6 min-h-12 rounded-lg bg-ai px-6 font-semibold text-on-ai hover:opacity-90">{t('common.lamLuotMoi')}</Button>
         </div>
       </>
     )
@@ -272,22 +279,20 @@ export function CounterQuiz({ counters, pool }: { counters: CounterEntry[]; pool
       <StudyLayout
         aside={
           <SessionPanel
-            title="Quiz cách đếm"
+            title={t('counterQuiz.quizCachDem')}
             stats={[
-              { label: 'Câu hiện tại', value: index + 1, total: questions.length },
-              { label: 'Đúng', value: right, tone: 'good' },
-              { label: 'Sai', value: results.length - right, tone: 'bad' },
+              { label: t('common.cauHienTai'), value: index + 1, total: questions.length },
+              { label: t('common.dung'), value: right, tone: 'good' },
+              { label: t('common.wrong'), value: results.length - right, tone: 'bad' },
             ]}
             shortcuts={[
-              { keys: ['1–4'], label: 'Chọn đáp án' },
-              { keys: ['Enter'], label: 'Kiểm tra / câu tiếp theo' },
+              { keys: ['1–4'], label: t('common.chonDapAn') },
+              { keys: ['Enter'], label: t('counterQuiz.kiemTraCauTiep') },
             ]}
           />
         }
       >
-        <p className="mb-4 text-sm text-muted lg:hidden">
-          Câu {index + 1}/{questions.length}
-        </p>
+        <p className="mb-4 text-sm text-muted lg:hidden">{t('common.cau', { v: index + 1, length: questions.length })}</p>
         <AnimatePresence mode="wait" initial={false} onExitComplete={() => inputRef.current?.focus()}>
           <motion.div
             key={index}
@@ -303,9 +308,7 @@ export function CounterQuiz({ counters, pool }: { counters: CounterEntry[]; pool
             </div>
             {q.t === 'type' ? (
               <form onSubmit={onType}>
-                <label htmlFor="counter-answer" className="sr-only">
-                  Cách đọc
-                </label>
+                <label htmlFor="counter-answer" className="sr-only">{t('common.cachDoc')}</label>
                 <motion.div animate={answered && !lastCorrect ? SHAKE : { x: 0 }} transition={{ duration: 0.3 }}>
                   <input
                     id="counter-answer"
@@ -319,7 +322,7 @@ export function CounterQuiz({ counters, pool }: { counters: CounterEntry[]; pool
                     autoCorrect="off"
                     spellCheck={false}
                     enterKeyHint="go"
-                    placeholder="romaji hoặc kana"
+                    placeholder={t('counterQuiz.romajiHoacKana')}
                     className={`mt-4 h-14 w-full rounded-xl border-2 bg-surface px-4 text-center text-xl outline-none focus:border-ai ${
                       !answered ? 'border-line' : lastCorrect ? 'border-matsu' : 'border-beni'
                     }`}
@@ -329,7 +332,7 @@ export function CounterQuiz({ counters, pool }: { counters: CounterEntry[]; pool
                   {typed && !answered ? toHiragana(typed) : ''}
                 </p>
                 <Button type="submit" className="mt-2 min-h-12 w-full rounded-lg bg-ai font-semibold text-on-ai hover:opacity-90">
-                  {answered ? (isLast ? 'Xem kết quả' : 'Câu tiếp theo') : 'Kiểm tra'}
+                  {answered ? (isLast ? t('common.xemKetQua') : t('common.cauTiepTheo')) : t('common.kiemTra')}
                 </Button>
               </form>
             ) : (
@@ -378,7 +381,7 @@ export function CounterQuiz({ counters, pool }: { counters: CounterEntry[]; pool
               <Feedback q={q} correct={lastCorrect} />
               {q.t !== 'type' && (
                 <Button onClick={next} autoFocus className="ml-auto min-h-11 rounded-lg bg-ai px-5 font-semibold text-on-ai hover:opacity-90">
-                  {isLast ? 'Xem kết quả' : 'Câu tiếp theo'}
+                  {isLast ? t('common.xemKetQua') : t('common.cauTiepTheo')}
                 </Button>
               )}
             </>

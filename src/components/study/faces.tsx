@@ -8,6 +8,7 @@ import { SpeakButton } from '../SpeakButton'
 import { Flip } from './Flip'
 import { CardFaces } from './VocabCardFaces'
 import { counterEntryFaces } from './counterFaces'
+import { t } from '../../i18n'
 
 /** Mặt thẻ: nhận mục và trạng thái lật, trả về cả hai mặt (dùng lớp .flip/.flip-inner). */
 export type FacesRenderer<T> = (item: T, flipped: boolean) => ReactNode
@@ -38,8 +39,8 @@ export function kanjiFaces(words: Map<string, StudyEntry>): FacesRenderer<KanjiE
               <GridCell className="w-20 shrink-0">{k.kanji}</GridCell>
               <div className="min-w-0">
                 <p className="text-3xl font-bold tracking-wide">{k.hanViet}</p>
-                {k.hanVietAlt?.length ? <p className="text-sm text-muted">Âm khác: {k.hanVietAlt.join(', ')}</p> : null}
-                <p className="text-sm text-muted">{k.wordCount} từ chứa chữ này</p>
+                {k.hanVietAlt?.length ? <p className="text-sm text-muted">{t('common.amKhac', { join: k.hanVietAlt.join(', ') })}</p> : null}
+                <p className="text-sm text-muted">{t('common.tuChuaChuNay', { wordCount: k.wordCount })}</p>
               </div>
             </div>
             <KanjiReadingsCompact ch={k.kanji} truncate className="mt-3" />
@@ -80,14 +81,14 @@ export function radicalFaces(kanjiByChar: Map<string, KanjiEntry>): FacesRendere
             <div className="flex items-center gap-4 pr-9">
               <GridCell className="w-20 shrink-0">{r.radical}</GridCell>
               <div className="min-w-0">
-                <p className="text-sm text-muted">Bộ số {r.no}</p>
+                <p className="text-sm text-muted">{t('faces.boSo', { no: r.no })}</p>
                 <p className="text-3xl font-bold capitalize">{r.name}</p>
                 <p className="text-muted first-letter:uppercase">{r.meaning}</p>
               </div>
             </div>
             {chars.length > 0 && (
               <div className="mt-4 border-t border-line pt-3">
-                <p className="mb-2 text-sm text-muted">Chữ Hán thuộc bộ này</p>
+                <p className="mb-2 text-sm text-muted">{t('faces.chuHanThuocBo')}</p>
                 <ul className="grid grid-cols-4 gap-2">
                   {chars.map((ch) => (
                     <li key={ch} className="flex flex-col items-center gap-0.5">
@@ -114,7 +115,7 @@ function charFaces(ch: string, flipped: boolean) {
       back={
         <div className="pr-9 text-center">
           <GridCell className="mx-auto w-24">{ch}</GridCell>
-          <p className="mt-3 text-muted">Chữ này chưa có trong danh sách chữ Hán của Kotonoha. Mở chi tiết để xem các từ chứa chữ.</p>
+          <p className="mt-3 text-muted">{t('faces.chuNayChuaCo')}</p>
         </div>
       }
     />
@@ -130,7 +131,7 @@ export interface EntryCard {
 export function entryLabel(e: StudyEntry): string {
   if (e.kind === 'word') return e.item.word
   if (e.kind === 'kanji') return e.item.kanji
-  if (e.kind === 'radical') return `bộ ${e.item.radical}`
+  if (e.kind === 'radical') return t('faces.bo', { radical: e.item.radical })
   if (e.kind === 'char') return e.item.char
   if (e.kind === 'counter') return e.n ? `${e.n === 'nan' ? '何' : e.n}${e.item.counter}` : e.item.counter
   return e.item.title
@@ -162,7 +163,7 @@ export function entryFaces(words: Map<string, StudyEntry>, kanjiByChar: Map<stri
             <p lang="ja" className="font-jp text-xl font-bold">
               {g.title}
             </p>
-            <p className="mt-3 text-xl font-semibold">{g.meaning ?? 'Mẫu này chưa tách được ý nghĩa, mở trang chi tiết để xem.'}</p>
+            <p className="mt-3 text-xl font-semibold">{g.meaning ?? t('faces.mauNayChuaTach')}</p>
             {g.connection && <p className="mt-2 text-sm text-muted">{g.connection}</p>}
             {ex && (
               <div className="mt-4 border-t border-line pt-3">
@@ -170,7 +171,7 @@ export function entryFaces(words: Map<string, StudyEntry>, kanjiByChar: Map<stri
                   <p lang="ja" className="min-w-0 flex-1 font-jp text-lg">
                     {ex.ja}
                   </p>
-                  <SpeakButton text={ex.ja.replace(/[（(][぀-ヿー\s・]+[）)]/g, '')} size="sm" label="Nghe câu ví dụ" />
+                  <SpeakButton text={ex.ja.replace(/[（(][぀-ヿー\s・]+[）)]/g, '')} size="sm" label={t('common.ngheCauViDu')} />
                 </div>
                 {ex.vi && <p className="text-muted">{ex.vi}</p>}
               </div>
@@ -214,11 +215,11 @@ export function kanaFaces(examples: Map<string, VocabItem>): FacesRenderer<KanaC
             </div>
             {/* Nút nghe không lật / không kéo thẻ */}
             <span onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
-              <SpeakButton text={k.kana} label={`Nghe ${k.kana}`} />
+              <SpeakButton text={k.kana} label={t('common.listenTo', { text: k.kana })} />
             </span>
             {ex && (
               <p className="max-w-full border-t border-line pt-3 text-sm">
-                <span className="text-muted">Ví dụ: </span>
+                <span className="text-muted">{t('faces.viDu')}</span>
                 <span lang="ja" className="font-jp text-lg font-medium">
                   {ex.word}
                 </span>

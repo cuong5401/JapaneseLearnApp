@@ -7,6 +7,7 @@ import { LESSON_SIZES, type LessonSize } from './lessons'
 import { cardsToFsrs, migrateCards, migrateNotebooks } from './migrations'
 import { sanitizeLog, type PackedLog } from './reviewLog'
 import { sanitizeSrsSettings, type SrsSettings } from './srsSettings'
+import { isLocale, t, type Locale } from '../i18n'
 
 /**
  * Xuất / nhập tiến độ ra file .json để chuyển giữa các máy (máy tính ↔ điện thoại).
@@ -36,6 +37,8 @@ export interface Backup {
   aiWords?: Record<string, AiWordItem>
   /** 'kangxi': id bộ thủ rd-NNN theo số Khang Hy. File cũ không có field này -> đổi id khi nhập. */
   radicalIds?: 'kangxi'
+  /** Ngôn ngữ giao diện (vi / ja) */
+  locale?: Locale
 }
 
 export function createBackup(
@@ -46,7 +49,7 @@ export function createBackup(
   notebooks?: NotebookState,
   grammarChecked?: CheckedMap,
   aiWords?: Record<string, AiWordItem>,
-  extra: { reviewLog?: PackedLog; srsSettings?: SrsSettings } = {},
+  extra: { reviewLog?: PackedLog; srsSettings?: SrsSettings; locale?: Locale } = {},
 ): Backup {
   return {
     app: 'kotonoha',
@@ -61,6 +64,7 @@ export function createBackup(
     radicalIds: 'kangxi',
     reviewLog: extra.reviewLog,
     srsSettings: extra.srsSettings,
+    locale: extra.locale,
   }
 }
 
@@ -106,15 +110,15 @@ export function parseBackup(text: string): ParseResult {
   try {
     raw = JSON.parse(text)
   } catch {
-    return { ok: false, error: 'File không phải JSON hợp lệ.' }
+    return { ok: false, error: t('backup.fileKhongPhaiJson') }
   }
   if (!raw || typeof raw !== 'object' || (raw as Backup).app !== 'kotonoha') {
-    return { ok: false, error: 'Đây không phải file tiến độ của Kotonoha.' }
+    return { ok: false, error: t('backup.dayKhongPhaiFile') }
   }
   const b = raw as Omit<Partial<Backup>, 'version'> & { version?: number }
-  if (b.version !== 1 && b.version !== 2) return { ok: false, error: `Không đọc được file tiến độ phiên bản ${String(b.version)}.` }
+  if (b.version !== 1 && b.version !== 2) return { ok: false, error: t('backup.khongDocDuocFile', { String: String(b.version) }) }
   if (!b.cards || typeof b.cards !== 'object' || Array.isArray(b.cards)) {
-    return { ok: false, error: 'File tiến độ không có danh sách thẻ.' }
+    return { ok: false, error: t('backup.fileTienDoKhong') }
   }
 
   let cards: Record<string, SrsCard> = {}
@@ -156,6 +160,7 @@ export function parseBackup(text: string): ParseResult {
       radicalIds: 'kangxi',
       grammarChecked: sanitizeChecked(b.grammarChecked) ?? undefined,
       aiWords: sanitizeAiWords(b.aiWords) ?? undefined,
+      locale: isLocale(b.locale) ? b.locale : undefined,
     },
   }
 }

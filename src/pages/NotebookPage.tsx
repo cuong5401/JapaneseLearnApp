@@ -24,32 +24,51 @@ import { acceptedReadings, isFullCounter, readingsOf } from '../lib/counters'
 import type { CounterFormKey, CounterItem, KanjiEntry, StudyEntry } from '../types'
 import { WritingSheetLink } from '../components/writing/WritingSheetLink'
 import { NotFound } from './NotFound'
+import { t } from '../i18n'
 
 type Kind = StudyEntry['kind']
 type Filter = 'all' | Kind
 type Mode = 'list' | 'flashcards' | 'quiz'
 
-const KIND_LABEL: Record<Kind, string> = { word: 'Từ vựng', kanji: 'Kanji', radical: 'Bộ thủ', grammar: 'Ngữ pháp', counter: 'Cách đếm', char: 'Chữ khác' }
+const KIND_LABEL: Record<Kind, string> = { get word() {
+    return t('common.tuVung')
+  }, kanji: 'Kanji', get radical() {
+    return t('common.boThu')
+  }, get grammar() {
+    return t('common.nguPhap2')
+  }, get counter() {
+    return t('common.cachDem')
+  }, get char() {
+    return t('notebookPage.chuKhac')
+  } }
 const KIND_ORDER: Kind[] = ['word', 'kanji', 'radical', 'grammar', 'counter', 'char']
 const MODES: { value: Mode; label: string }[] = [
-  { value: 'list', label: 'Danh sách' },
-  { value: 'flashcards', label: 'Flashcard' },
-  { value: 'quiz', label: 'Quiz' },
+  { value: 'list', get label() {
+    return t('common.danhSach')
+  } },
+  { value: 'flashcards', get label() {
+    return t('common.flashcard')
+  } },
+  { value: 'quiz', get label() {
+    return t('common.quiz')
+  } },
 ]
 
 /** Câu hỏi quiz theo loại: từ → nghĩa, kanji → âm Hán Việt, bộ thủ → tên, ngữ pháp → ý nghĩa. */
 const QUIZ: ChoiceQuizConfig<EntryCard> = {
-  title: 'Quiz sổ tay',
+  get title() {
+    return t('notebookPage.quizSoTay')
+  },
   prompt: ({ entry }) =>
     entry.kind === 'word'
-      ? 'Từ này nghĩa là gì?'
+      ? t('notebookPage.tuNayNghiaLa')
       : entry.kind === 'kanji'
-        ? 'Âm Hán Việt của chữ này?'
+        ? t('notebookPage.amHanVietCua')
         : entry.kind === 'radical'
-          ? 'Bộ này tên là gì?'
+          ? t('notebookPage.boNayTenLa')
           : entry.kind === 'counter'
-            ? 'Đọc thế nào?'
-            : 'Mẫu này nghĩa là gì?',
+            ? t('notebookPage.docTheNao')
+            : t('notebookPage.mauNayNghiaLa'),
   question: ({ entry }) =>
     entry.kind === 'counter' ? (
       <CounterFront item={entry.item} n={entry.n} />
@@ -118,10 +137,10 @@ function EntryRow({ card, onOpen, onRemove, examples }: { card: EntryCard; onOpe
         : entry.kind === 'kanji'
           ? entry.item.hanViet
           : entry.kind === 'radical'
-            ? `Bộ ${entry.item.name}: ${entry.item.meaning}`
+            ? t('notebookPage.bo', { name: entry.item.name, meaning: entry.item.meaning })
             : entry.kind === 'char'
-              ? 'Chưa có trong danh sách chữ Hán'
-              : (entry.item.meaning ?? 'Mở để xem giải thích')
+              ? t('notebookPage.chuaCoTrongDanh')
+              : (entry.item.meaning ?? t('notebookPage.moDeXemGiai'))
   const content = (
     <>
       {glyph ? (
@@ -139,7 +158,7 @@ function EntryRow({ card, onOpen, onRemove, examples }: { card: EntryCard; onOpe
         )}
         <span className="line-clamp-2 block text-sm">{sub}</span>
       </span>
-      {learned && <span className="size-2.5 shrink-0 rounded-full bg-matsu" title="Đã học" />}
+      {learned && <span className="size-2.5 shrink-0 rounded-full bg-matsu" title={t('common.daHoc')} />}
     </>
   )
   return (
@@ -156,8 +175,8 @@ function EntryRow({ card, onOpen, onRemove, examples }: { card: EntryCard; onOpe
       <button
         type="button"
         onClick={onRemove}
-        aria-label={`Gỡ ${entryLabel(entry)} khỏi sổ`}
-        title="Gỡ khỏi sổ"
+        aria-label={t('notebookPage.goKhoiSo2', { entryLabel: entryLabel(entry) })}
+        title={t('notebookPage.goKhoiSo')}
         className="grid size-11 shrink-0 place-items-center rounded-lg text-muted hover:bg-beni-soft hover:text-beni"
       >
         <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
@@ -174,7 +193,7 @@ function EntryRow({ card, onOpen, onRemove, examples }: { card: EntryCard; onOpe
               </span>
               <span className="block text-muted">
                 {ex.tr}
-                {ex.src === 'ai' && <span className="ml-1.5 text-xs">(AI tạo)</span>}
+                {ex.src === 'ai' && <span className="ml-1.5 text-xs">{t('notebookPage.aiTao')}</span>}
               </span>
             </li>
           ))}
@@ -238,12 +257,12 @@ export function NotebookPage() {
         <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
           <path d="m15 18-6-6 6-6" />
         </svg>
-        {lessonIndex === null ? 'Sổ tay' : book.name}
+        {lessonIndex === null ? t('common.soTay') : book.name}
       </Link>
       <div className="flex flex-wrap items-center gap-3">
         <BookColor color={book.color} className="size-5" />
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{lessonIndex === null ? book.name : `Bài ${lessonIndex + 1}`}</h1>
-        <span className="text-sm text-muted">{lessonIndex === null ? `${refs.length} mục` : book.name}</span>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{lessonIndex === null ? book.name : t('common.bai', { v: lessonIndex + 1 })}</h1>
+        <span className="text-sm text-muted">{lessonIndex === null ? t('notebookPage.muc2', { length: refs.length }) : book.name}</span>
         {lessonIndex === null && refs.length > 0 && <WritingSheetLink to={`/writing?src=notebook&id=${encodeURIComponent(book.id)}`} className="sm:ml-auto" />}
       </div>
     </div>
@@ -265,16 +284,16 @@ export function NotebookPage() {
   if (lessonIndex !== null) {
     const lesson = lessons[lessonIndex]
     if (!lesson) return <NotFound />
-    const back: SessionLink = { to: base, label: `Về ${book.name}` }
+    const back: SessionLink = { to: base, label: t('notebookPage.ve', { name: book.name }) }
     const next: SessionLink | undefined =
-      lessonIndex + 1 < lessons.length ? { to: `${base}?bai=${lessonIndex + 2}${mode !== 'list' ? `&mode=${mode}` : ''}`, label: `Bài tiếp theo: Bài ${lessonIndex + 2}` } : undefined
+      lessonIndex + 1 < lessons.length ? { to: `${base}?bai=${lessonIndex + 2}${mode !== 'list' ? `&mode=${mode}` : ''}`, label: t('common.baiTiepTheoBai', { v: lessonIndex + 2 }) } : undefined
     const quizItems = lesson.filter((c) => QUIZ.answer(c))
     const quizPool = cards.filter((c) => QUIZ.answer(c))
     return (
       <div className={LESSON_PAGE} data-lesson-page>
         {header}
         <div className="mb-6">
-          <Segmented label="Chế độ học" value={mode} onChange={(m) => setParams(m === 'list' ? { bai: String(lessonIndex + 1) } : { bai: String(lessonIndex + 1), mode: m }, { replace: true })} options={MODES} />
+          <Segmented label={t('common.cheDoHoc')} value={mode} onChange={(m) => setParams(m === 'list' ? { bai: String(lessonIndex + 1) } : { bai: String(lessonIndex + 1), mode: m }, { replace: true })} options={MODES} />
         </div>
         <div className={TAB_AREA} data-tab-area>
         {mode === 'list' && (
@@ -305,7 +324,7 @@ export function NotebookPage() {
   const addAllToSrs = () => {
     // Chữ ngoài kanji.json không có dữ liệu để ôn. Thẻ Mới chờ ở trang Ôn tập theo giới hạn thẻ mới mỗi ngày.
     const added = progress.addNew(cards.filter((c) => c.entry.kind !== 'char').map((c) => c.id))
-    showToast(added ? `Đã thêm ${added} thẻ mới vào trang Ôn tập` : 'Mọi mục đã có trong lịch ôn')
+    showToast(added ? t('notebookPage.daThemTheMoi', { added }) : t('notebookPage.moiMucDaCo'))
   }
 
   return (
@@ -313,47 +332,45 @@ export function NotebookPage() {
       {header}
       {refs.length === 0 ? (
         <div className="rounded-2xl border border-line bg-surface p-8 text-center">
-          <p className="font-semibold">Sổ chưa có mục nào</p>
-          <p className="mt-1 text-sm text-muted">Bấm biểu tượng đánh dấu trên từ, chữ Hán, bộ thủ hoặc mẫu ngữ pháp để lưu vào sổ này.</p>
+          <p className="font-semibold">{t('notebookPage.soChuaCoMuc')}</p>
+          <p className="mt-1 text-sm text-muted">{t('notebookPage.bamBieuTuongDanh')}</p>
         </div>
       ) : (
         <>
           <LessonGrid
             items={cards}
-            unit="mục"
+            unit={t('notebookPage.muc')}
             title={book.name}
             href={(i) => `${base}?bai=${i + 1}`}
             preview={(l) => l.slice(0, 4).map((c) => entryLabel(c.entry)).join('、')}
             links={
-              <Button onClick={addAllToSrs} className="min-h-11 rounded-lg border border-ai px-4 text-sm font-semibold text-ai hover:bg-ai-soft">
-                Thêm cả sổ vào lịch ôn
-              </Button>
+              <Button onClick={addAllToSrs} className="min-h-11 rounded-lg border border-ai px-4 text-sm font-semibold text-ai hover:bg-ai-soft">{t('notebookPage.themCaSoVao')}</Button>
             }
           />
 
           <section className="mt-10">
-            <h2 className="text-xl font-bold tracking-tight">Các mục trong sổ</h2>
+            <h2 className="text-xl font-bold tracking-tight">{t('notebookPage.cacMucTrongSo')}</h2>
             <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
               <label className="block flex-1">
-                <span className="sr-only">Tìm trong sổ</span>
+                <span className="sr-only">{t('notebookPage.timTrongSo')}</span>
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Tìm trong sổ: chữ, cách đọc, nghĩa"
+                  placeholder={t('notebookPage.timTrongSoChu')}
                   className="h-11 w-full rounded-xl border-2 border-line bg-surface px-4 outline-none focus:border-ai"
                 />
               </label>
               {counts.length > 1 && (
                 <Segmented
                   size="sm"
-                  label="Lọc theo loại"
+                  label={t('notebookPage.locTheoLoai')}
                   value={filter}
                   onChange={setFilter}
-                  options={[{ value: 'all' as Filter, label: 'Tất cả' }, ...counts.map(({ k, n }) => ({ value: k as Filter, label: `${KIND_LABEL[k]} (${n})` }))]}
+                  options={[{ value: 'all' as Filter, label: t('common.tatCa') }, ...counts.map(({ k, n }) => ({ value: k as Filter, label: `${KIND_LABEL[k]} (${n})` }))]}
                 />
               )}
             </div>
-            {groups.length === 0 && <p className="mt-6 text-muted">Không có mục nào khớp.</p>}
+            {groups.length === 0 && <p className="mt-6 text-muted">{t('notebookPage.khongCoMucNao')}</p>}
             {groups.map((g) => (
               <div key={g.k} className="mt-6">
                 <h3 className="mb-2 text-sm font-semibold text-muted">
@@ -368,11 +385,9 @@ export function NotebookPage() {
             ))}
             {missing.length > 0 && (
               <div className="mt-6 rounded-xl border border-kihada bg-kihada-soft p-4 text-sm">
-                <p className="font-semibold">{missing.length} mục không còn trong dữ liệu</p>
-                <p className="mt-0.5 text-muted">Dữ liệu đã thay đổi nên không tìm thấy các mục này.</p>
-                <button type="button" onClick={() => missing.forEach(remove)} className="mt-2 min-h-11 rounded-lg border border-ink/20 px-3 font-medium hover:bg-surface">
-                  Gỡ các mục này khỏi sổ
-                </button>
+                <p className="font-semibold">{t('notebookPage.mucKhongConTrong', { length: missing.length })}</p>
+                <p className="mt-0.5 text-muted">{t('notebookPage.duLieuDaThay')}</p>
+                <button type="button" onClick={() => missing.forEach(remove)} className="mt-2 min-h-11 rounded-lg border border-ink/20 px-3 font-medium hover:bg-surface">{t('notebookPage.goCacMucNay')}</button>
               </div>
             )}
           </section>

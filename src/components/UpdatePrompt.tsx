@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect } from 'react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
+import { t as tr } from '../i18n'
 
 const HOUR = 60 * 60 * 1000
 
@@ -52,20 +53,18 @@ export function UpdatePrompt() {
             <span lang="ja" aria-hidden className="grid size-8 shrink-0 place-items-center rounded-[3px] bg-ai font-jp text-base text-on-ai">
               {needRefresh ? '新' : '言'}
             </span>
-            <span className="min-w-0 flex-1 text-sm font-medium">{needRefresh ? 'Có bản cập nhật' : 'Đã sẵn sàng học offline'}</span>
+            <span className="min-w-0 flex-1 text-sm font-medium">{needRefresh ? tr('updatePrompt.coBanCapNhat') : tr('updatePrompt.daSanSangHoc')}</span>
             {needRefresh && (
               <button
                 type="button"
                 onClick={() => updateServiceWorker(true)}
                 className="min-h-11 shrink-0 rounded-lg bg-ai px-3.5 text-sm font-semibold text-on-ai hover:opacity-90"
-              >
-                Tải lại
-              </button>
+              >{tr('updatePrompt.taiLai')}</button>
             )}
             <button
               type="button"
               onClick={close}
-              aria-label="Đóng thông báo"
+              aria-label={tr('updatePrompt.dongThongBao')}
               className="grid size-11 shrink-0 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
             >
               <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>

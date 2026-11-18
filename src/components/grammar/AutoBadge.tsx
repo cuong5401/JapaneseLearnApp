@@ -1,5 +1,6 @@
 import { useGrammarChecked } from '../../lib/grammarChecked'
 import type { GrammarEntry } from '../../types'
+import { t } from '../../i18n'
 
 /** Nhãn cho mẫu Kotonoha tự soạn: "chưa kiểm tra" (vàng) cho đến khi bạn bấm "Đã kiểm tra". */
 export function AutoBadge({ g, className = '' }: { g: GrammarEntry; className?: string }) {
@@ -12,7 +13,7 @@ export function AutoBadge({ g, className = '' }: { g: GrammarEntry; className?: 
         checked ? 'bg-sunken text-muted' : 'bg-kihada-soft text-ink'
       } ${className}`}
     >
-      {checked ? 'Kotonoha soạn' : 'Kotonoha soạn · chưa kiểm tra'}
+      {checked ? t('autoBadge.kotonohaSoan') : t('autoBadge.kotonohaSoanChuaKiem')}
     </span>
   )
 }

@@ -24,14 +24,21 @@ import { flashcardGrade } from '../lib/srs'
 import { readJSON, writeJSON } from '../lib/storage'
 import type { CounterData, CounterEntry, CounterItem, CounterRule, SrsCard } from '../types'
 import { LEVELS, type Level } from '../types'
+import { t } from '../i18n'
 
 type Mode = 'list' | 'flashcards' | 'quiz'
 type LevelFilter = 'all' | Level
 
 const MODES: { value: Mode; label: string }[] = [
-  { value: 'list', label: 'Danh sách' },
-  { value: 'flashcards', label: 'Flashcard' },
-  { value: 'quiz', label: 'Quiz' },
+  { value: 'list', get label() {
+    return t('common.danhSach')
+  } },
+  { value: 'flashcards', get label() {
+    return t('common.flashcard')
+  } },
+  { value: 'quiz', get label() {
+    return t('common.quiz')
+  } },
 ]
 
 /** Số thẻ mỗi phiên flashcard. */
@@ -58,9 +65,7 @@ function Rules({ rules }: { rules: CounterRule[] }) {
           則
         </span>
         <span className="min-w-0 flex-1">
-          <span id="counter-rules" className="block font-semibold">
-            Quy tắc đếm
-          </span>
+          <span id="counter-rules" className="block font-semibold">{t('counters.quyTacDem')}</span>
           {!open && <span className="block truncate text-sm text-muted">{rules.map((r) => r.title).join(' · ')}</span>}
         </span>
         <svg viewBox="0 0 24 24" className={`size-5 text-muted transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -119,7 +124,7 @@ function CounterCard({ c, active, onOpen }: { c: CounterItem; active: boolean; o
         </span>
         <span className="block truncate text-sm text-muted">{c.usage}</span>
       </span>
-      {tracked > 0 && <span className="absolute top-2 right-2 size-2.5 rounded-full bg-matsu" title={`${tracked} ô trong lịch ôn`} aria-hidden />}
+      {tracked > 0 && <span className="absolute top-2 right-2 size-2.5 rounded-full bg-matsu" title={t('counters.oTrongLichOn', { tracked })} aria-hidden />}
       {isSaved(books, counterRef(c.id)) && (
         <span className="absolute top-1.5 left-1.5 text-kihada" aria-hidden>
           <BookmarkIcon filled className="size-3.5" />
@@ -182,7 +187,7 @@ function EmptyPanel() {
   return (
     <div className="flex min-h-64 flex-col items-center justify-center gap-3 text-center text-muted" data-empty-panel>
       <GridCell className="size-20 opacity-40">本</GridCell>
-      <p>Chọn một trợ số từ để xem bảng đếm</p>
+      <p>{t('counters.chonMotTroSo')}</p>
     </div>
   )
 }
@@ -227,7 +232,9 @@ function CounterFlashcards({ counters, back }: { counters: CounterEntry[]; back:
 
 /* ───────────── Trang ───────────── */
 
-const LEVEL_OPTIONS: { value: LevelFilter; label: string }[] = [{ value: 'all', label: 'Tất cả' }, ...LEVELS.map((l) => ({ value: l as LevelFilter, label: l }))]
+const LEVEL_OPTIONS: { value: LevelFilter; label: string }[] = [{ value: 'all', get label() {
+    return t('common.tatCa')
+  } }, ...LEVELS.map((l) => ({ value: l as LevelFilter, label: l }))]
 
 function filterLevel<T extends CounterItem>(items: readonly T[], level: LevelFilter): T[] {
   return level === 'all' ? [...items] : items.filter((c) => c.level === level)
@@ -289,47 +296,44 @@ export function Counters() {
       <>
         <Rules rules={d.rules} />
         <label className="mb-5 block max-w-md">
-          <span className="sr-only">Tìm trợ số từ</span>
+          <span className="sr-only">{t('counters.timTroSoTu')}</span>
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Tìm: 本, ほん, lát, con, đôi…"
+            placeholder={t('counters.timLatConDoi')}
             className="h-11 w-full rounded-xl border-2 border-line bg-surface px-4 outline-none focus:border-ai pointer-coarse:text-base"
             data-counter-search
           />
         </label>
-        {main.length === 0 && more.length === 0 && <p className="text-muted">Không có trợ số từ nào khớp.</p>}
+        {main.length === 0 && more.length === 0 && <p className="text-muted">{t('counters.khongCoTroSo')}</p>}
         {main.length > 0 && <CounterGroups items={main} active={active} onOpen={open} />}
         {more.length > 0 && (
           <section className="mt-10" aria-labelledby="counter-more">
-            <h2 id="counter-more" className="text-lg font-bold">
-              Trợ số từ khác <span className="text-sm font-normal text-muted">({more.length})</span>
+            <h2 id="counter-more" className="text-lg font-bold">{t('counters.troSoTuKhac')}<span className="text-sm font-normal text-muted">({more.length})</span>
             </h2>
-            <p className="mt-0.5 mb-3 text-sm text-muted">Nâng cao, chỉ ghi cách đọc cần nhớ.</p>
+            <p className="mt-0.5 mb-3 text-sm text-muted">{t('counters.nangCaoChiGhi')}</p>
             <MoreList items={more} active={active} onOpen={open} />
           </section>
         )}
       </>
     )
   } else {
-    const back: SessionLink = { to: '/learn/counters', label: 'Về danh sách' }
+    const back: SessionLink = { to: '/learn/counters', label: t('counters.veDanhSach') }
     body = (
       <div className={TAB_AREA} data-tab-area>
         {onlyItem && (
           <p className="mb-4 flex flex-wrap items-center gap-2 text-sm">
-            <span className="text-muted">Đang luyện:</span>
+            <span className="text-muted">{t('counters.dangLuyen')}</span>
             <span lang="ja" className="rounded-lg bg-ai-soft px-2.5 py-1 font-jp font-semibold text-ai">
               {onlyItem.counter} {onlyItem.reading}
             </span>
-            <button type="button" onClick={() => setParam({ ct: null })} className="min-h-11 rounded-lg px-2 font-medium text-ai hover:bg-ai-soft">
-              Luyện tất cả
-            </button>
+            <button type="button" onClick={() => setParam({ ct: null })} className="min-h-11 rounded-lg px-2 font-medium text-ai hover:bg-ai-soft">{t('counters.luyenTatCa')}</button>
           </p>
         )}
         <div className={STUDY_PAGE}>
           {practice.length === 0 ? (
-            <p className="rounded-2xl border border-line bg-surface p-6 text-center text-muted">Cấp này chưa có trợ số từ có bảng đầy đủ. Chọn cấp khác.</p>
+            <p className="rounded-2xl border border-line bg-surface p-6 text-center text-muted">{t('counters.capNayChuaCo')}</p>
           ) : mode === 'flashcards' ? (
             <CounterFlashcards key={`${level}-${only ?? ''}`} counters={practice} back={back} />
           ) : (
@@ -346,14 +350,14 @@ export function Counters() {
 
   return (
     <div>
-      <PageHeader title="Cách đếm" back={{ to: '/learn', label: 'Học' }}>
+      <PageHeader title={t('common.cachDem')} back={{ to: '/learn', label: t('common.hoc') }}>
         <span lang="ja" className="font-jp text-lg text-muted">
           助数詞
         </span>
       </PageHeader>
       <div className="mb-5 flex flex-col gap-3">
-        <Segmented label="Chế độ học" value={mode} onChange={(m) => setParam({ mode: m === 'list' ? null : m, xem: null })} options={MODES} />
-        <Segmented size="sm" label="Lọc theo cấp" value={level} onChange={(l) => setParam({ cap: l === 'all' ? null : l, ct: null })} options={levelOptions} />
+        <Segmented label={t('common.cheDoHoc')} value={mode} onChange={(m) => setParam({ mode: m === 'list' ? null : m, xem: null })} options={MODES} />
+        <Segmented size="sm" label={t('counters.locTheoCap')} value={level} onChange={(l) => setParam({ cap: l === 'all' ? null : l, ct: null })} options={levelOptions} />
       </div>
 
       <div className={showPanel ? 'grid grid-cols-[minmax(0,1fr)_360px] items-start gap-8' : ''} data-counters-layout>
@@ -361,7 +365,7 @@ export function Counters() {
         {showPanel && (
           <aside
             className="sticky top-10 max-h-[calc(100dvh-5rem)] w-[360px] min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain rounded-2xl border border-line bg-surface p-5 break-words [scrollbar-gutter:stable]"
-            aria-label="Chi tiết trợ số từ"
+            aria-label={t('counters.chiTietTroSo')}
             data-detail-panel
           >
             {stack.frames.length ? <DetailStackView frames={stack.frames} onPush={stack.push} onBack={stack.back} /> : <EmptyPanel />}
@@ -370,17 +374,13 @@ export function Counters() {
       </div>
 
       {!showPanel && (
-        <BottomSheet open={stack.frames.length > 0} onClose={() => stack.close()} label="Chi tiết trợ số từ" tall>
+        <BottomSheet open={stack.frames.length > 0} onClose={() => stack.close()} label={t('counters.chiTietTroSo')} tall>
           <DetailStackView frames={stack.frames} onPush={stack.push} onBack={stack.back} />
         </BottomSheet>
       )}
       {mode !== 'list' && (
         <p className="mt-8 text-center text-sm text-muted">
-          <Link to="/review" className="font-medium text-ai hover:underline">
-            Ôn tập
-          </Link>{' '}
-          gồm các cặp số + trợ số từ hay sai và ô bất quy tắc.
-        </p>
+          <Link to="/review" className="font-medium text-ai hover:underline">{t('common.onTap')}</Link>{' '}{t('counters.gomCacCapSo')}</p>
       )}
     </div>
   )

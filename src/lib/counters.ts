@@ -2,6 +2,7 @@ import type { CounterData, CounterEntry, CounterExample, CounterFormKey, Counter
 import { shuffle } from './answer'
 import { hasJapanese, normalizeKana, normalizeVi } from './search'
 import { isDue } from './srs'
+import { t as tr } from '../i18n'
 
 /**
  * Cách đếm (助数詞): dữ liệu public/data/counters.json (tự soạn ở data-source/counters.json).
@@ -143,17 +144,17 @@ const MISTAKE: Record<CounterFormKey, string[]> = {
  */
 function describeNumber(key: CounterFormKey, p: string, irregular = false): string | null | undefined {
   const std = NUMBER_READING[key]
-  if (irregular && NATIVE[key]?.includes(p)) return `Số đếm kiểu Nhật: ${p}`
+  if (irregular && NATIVE[key]?.includes(p)) return tr('counters.soDemKieuNhat', { p })
   if (p === std[0]) return null
-  if (std.includes(p)) return `${numberLabel(key)} đọc ${p} (không phải ${std[0]})`
-  if (SOKUON[key]?.includes(p)) return `${std[0]} → ${p} (âm ngắt)`
-  if (NATIVE[key]?.includes(p)) return `Số đếm kiểu Nhật: ${p}`
+  if (std.includes(p)) return tr('counters.docKhongPhai', { numberLabel: numberLabel(key), p, v: std[0] })
+  if (SOKUON[key]?.includes(p)) return tr('counters.amNgat', { v: std[0], p })
+  if (NATIVE[key]?.includes(p)) return tr('counters.soDemKieuNhat', { p })
   return undefined
 }
 
 /** Lý do cách đọc của một ô: "ほ → ぼ sau 3", "いち → いっ (âm ngắt); ほ → ぽ sau 1"… */
 export function reasonFor(c: Pick<CounterEntry, 'reading'>, key: CounterFormKey, reading: string, irregular = false): string {
-  if (key === 'nan' && reading.startsWith('いく')) return `Hỏi số lượng dùng ${reading}`
+  if (key === 'nan' && reading.startsWith('いく')) return tr('counters.hoiSoLuongDung', { reading })
   for (const base of readingsOf(c.reading)) {
     for (const v of counterVariants(base)) {
       if (!reading.endsWith(v) || reading.length <= v.length) continue
@@ -161,10 +162,10 @@ export function reasonFor(c: Pick<CounterEntry, 'reading'>, key: CounterFormKey,
       if (num === undefined) continue
       const parts = [num, v !== base ? `${base[0]} → ${v[0]} sau ${numberLabel(key)}` : null].filter(Boolean)
       if (parts.length) return parts.join('; ')
-      return irregular ? 'Cách đọc đặc biệt, xem phần lưu ý' : `Đọc bình thường: số + ${base}`
+      return irregular ? tr('counters.cachDocDacBiet') : tr('counters.docBinhThuongSo', { base })
     }
   }
-  return 'Cách đọc riêng, cần học thuộc'
+  return tr('counters.cachDocRiengCan')
 }
 
 /* ───────────── Quiz (a): chọn cách đọc đúng ───────────── */

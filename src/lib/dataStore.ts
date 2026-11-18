@@ -1,5 +1,6 @@
 import type { DataManifest } from '../types'
 import { PUBLIC_BUILD, isGrammarId } from './edition'
+import { t } from '../i18n'
 
 /**
  * Kho dữ liệu học tải từ public/data.
@@ -36,7 +37,7 @@ function setState(key: string, state: ResourceState) {
 
 async function fetchJSON<T>(url: string): Promise<T> {
   const res = await fetcher(url)
-  if (!res.ok) throw new Error(`Máy chủ trả lỗi ${res.status} khi tải ${url}`)
+  if (!res.ok) throw new Error(t('dataStore.mayChuTraLoi', { status: res.status, url }))
   return (await res.json()) as T
 }
 
@@ -61,7 +62,7 @@ export function loadManifest(): Promise<DataManifest> {
 export async function loadFile<T>(path: string): Promise<T> {
   const manifest = await loadManifest()
   const file = manifest.files.find((f) => f.path === path)
-  if (!file) throw new Error(`Không tìm thấy ${path} trong manifest`)
+  if (!file) throw new Error(t('dataStore.khongTimThayTrong', { path }))
   return once(`${path}@${file.hash}`, () => fetchJSON<T>(`${BASE}${path}?v=${file.hash}`))
 }
 

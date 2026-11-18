@@ -11,13 +11,14 @@ import { Stagger, StaggerItem } from '../components/Stagger'
 import { DECK_ID_PREFIX, EXTRA_DECKS, LEVEL_DECKS, TERM_INFO, VOCAB_DECK_INFO, deckTitle, getTerms, isCurrentId } from '../data'
 import { useManifest } from '../hooks/useData'
 import { useCards, useDueIds, usePrefixStats } from '../hooks/useProgress'
-import { PUBLIC_BUILD, PUBLIC_GRAMMAR_NOTE } from '../lib/edition'
+import { PUBLIC_BUILD, publicGrammarNote } from '../lib/edition'
 import { kanaLevel, kanaProgress, useKanaStats } from '../lib/kanaProgress'
 import { progress } from '../lib/progress'
 import { kanaOf } from '../data/kana'
 import type { KanaScript } from '../types'
 import { MASTERED_INTERVAL, isMastered } from '../lib/srs'
 import { LEVELS, TERM_CATEGORIES, type DataManifest } from '../types'
+import { t as tr } from '../i18n'
 
 function Row({ to, title, prefix, total, idPattern }: { to: string; title: string; prefix: string; total: number; idPattern?: string }) {
   const s = usePrefixStats(prefix, total, idPattern)
@@ -34,9 +35,7 @@ function Row({ to, title, prefix, total, idPattern }: { to: string; title: strin
       <div className="mt-2">
         <ProgressBar {...s} label={title} />
       </div>
-      <p className="mt-1.5 text-sm text-muted">
-        {s.mastered} đã thuộc{s.due > 0 && `, ${s.due} cần ôn`}
-      </p>
+      <p className="mt-1.5 text-sm text-muted">{tr('progress.daThuoc', { mastered: s.mastered, v: s.due > 0 && tr('progress.duePart', { n: s.due }) })}</p>
     </StaggerItem>
   )
 }
@@ -63,9 +62,7 @@ function KanaRow({ script, label, ja }: { script: KanaScript; label: string; ja:
       <div className="mt-2">
         <ProgressBar total={chars.length} learned={learned} mastered={mastered} label={label} />
       </div>
-      <p className="mt-1.5 text-sm text-muted">
-        {mastered} đã thuộc, {learned - mastered} đang học
-      </p>
+      <p className="mt-1.5 text-sm text-muted">{tr('progress.daThuocDangHoc', { mastered, v: learned - mastered })}</p>
     </StaggerItem>
   )
 }
@@ -96,14 +93,14 @@ export function Progress() {
   const grammarLevels = PUBLIC_BUILD ? [] : LEVELS.filter((l) => count(m, `grammar/${l.toLowerCase()}.json`) > 0)
 
   const totals = [
-    { label: 'Đã học', value: all.length },
-    { label: 'Đã thuộc', value: mastered },
-    { label: 'Cần ôn hôm nay', value: due },
+    { label: tr('common.daHoc'), value: all.length },
+    { label: tr('common.daThuoc'), value: mastered },
+    { label: tr('progress.canOnHomNay'), value: due },
   ]
 
   return (
     <div>
-      <PageHeader title="Tiến độ" back={{ to: '/me', label: 'Cá nhân' }} />
+      <PageHeader title={tr('progress.tienDo')} back={{ to: '/me', label: tr('common.caNhan') }} />
 
       <dl className="grid grid-cols-3 divide-x divide-line rounded-xl border border-line bg-surface">
         {totals.map((t) => (
@@ -118,11 +115,9 @@ export function Progress() {
 
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
         <span className="flex items-center gap-1.5">
-          <span className="h-1.5 w-4 rounded-full bg-cell-line" aria-hidden /> Đã học
-        </span>
+          <span className="h-1.5 w-4 rounded-full bg-cell-line" aria-hidden />{tr('progress.daHoc')}</span>
         <span className="flex items-center gap-1.5">
-          <span className="h-1.5 w-4 rounded-full bg-ai" aria-hidden /> Đã thuộc (khoảng cách ôn từ {MASTERED_INTERVAL} ngày)
-        </span>
+          <span className="h-1.5 w-4 rounded-full bg-ai" aria-hidden />{tr('progress.daThuocKhoangCach')}{MASTERED_INTERVAL}{tr('progress.ngay')}</span>
       </div>
 
       <SrsStats />
@@ -134,37 +129,37 @@ export function Progress() {
         </div>
       ) : (
         <div className="mt-8 grid gap-x-12 gap-y-10 lg:grid-cols-2">
-          <Section title="Từ vựng theo cấp">
+          <Section title={tr('progress.tuVungTheoCap')}>
             {LEVEL_DECKS.map((k) => (
               <Row key={k} to={`/vocab/${k}`} title={deckTitle({ kind: 'vocab', key: k })} prefix={DECK_ID_PREFIX[k]} total={count(m, VOCAB_DECK_INFO[k].path)} />
             ))}
           </Section>
           <div className="space-y-10">
-            <Section title="Kana">
-              <KanaRow script="hiragana" label="Hiragana" ja="あ" />
-              <KanaRow script="katakana" label="Katakana" ja="ア" />
+            <Section title={tr('common.kana')}>
+              <KanaRow script="hiragana" label={tr('common.hiragana')} ja="あ" />
+              <KanaRow script="katakana" label={tr('common.katakana')} ja="ア" />
             </Section>
-            <Section title="Bộ từ khác">
+            <Section title={tr('progress.boTuKhac')}>
               {EXTRA_DECKS.map((k) => (
                 <Row key={k} to={`/vocab/${k}`} title={VOCAB_DECK_INFO[k].name} prefix={DECK_ID_PREFIX[k]} total={count(m, VOCAB_DECK_INFO[k].path)} />
               ))}
-              <Row to="/kanji" title="Chữ Hán" prefix="kj" total={count(m, 'kanji/kanji.json')} />
-              <Row to="/kanji?tab=radicals" title="Bộ thủ" prefix="rd" total={count(m, 'kanji/radicals.json')} idPattern="\d{3}" />
+              <Row to="/kanji" title={tr('common.chuHan')} prefix="kj" total={count(m, 'kanji/kanji.json')} />
+              <Row to="/kanji?tab=radicals" title={tr('common.boThu')} prefix="rd" total={count(m, 'kanji/radicals.json')} idPattern="\d{3}" />
             </Section>
             {grammarLevels.length > 0 && (
-              <Section title="Ngữ pháp">
+              <Section title={tr('common.nguPhap2')}>
                 {grammarLevels.map((l) => (
-                  <Row key={l} to={`/grammar/${l.toLowerCase()}`} title={`Ngữ pháp ${l}`} prefix={`g${l.toLowerCase()}`} total={count(m, `grammar/${l.toLowerCase()}.json`)} />
+                  <Row key={l} to={`/grammar/${l.toLowerCase()}`} title={tr('progress.nguPhap', { l })} prefix={`g${l.toLowerCase()}`} total={count(m, `grammar/${l.toLowerCase()}.json`)} />
                 ))}
               </Section>
             )}
             {PUBLIC_BUILD && (
               <section>
-                <h2 className="text-lg font-bold">Ngữ pháp</h2>
-                <p className="mt-2 text-sm text-muted">{PUBLIC_GRAMMAR_NOTE}.</p>
+                <h2 className="text-lg font-bold">{tr('common.nguPhap2')}</h2>
+                <p className="mt-2 text-sm text-muted">{publicGrammarNote()}.</p>
               </section>
             )}
-            <Section title="Thuật ngữ chuyên ngành">
+            <Section title={tr('progress.thuatNguChuyenNganh')}>
               {TERM_CATEGORIES.map((c) => (
                 <Row key={c} to={`/terms/${c}`} title={TERM_INFO[c].name} prefix={TERM_INFO[c].prefix} total={getTerms(c).length} idPattern="\d{3}" />
               ))}
@@ -175,13 +170,13 @@ export function Progress() {
 
       <div className="mt-12 grid gap-4 lg:grid-cols-2">
         <section className="rounded-xl border border-line bg-surface p-4">
-          <h2 className="font-semibold">Chuyển tiến độ giữa các máy</h2>
+          <h2 className="font-semibold">{tr('progress.chuyenTienDoGiua')}</h2>
           <div className="mt-1">
             <BackupPanel />
           </div>
         </section>
         <section className="rounded-xl border border-line bg-surface p-4">
-          <h2 className="font-semibold">Cài app</h2>
+          <h2 className="font-semibold">{tr('common.caiApp')}</h2>
           <div className="mt-1">
             <InstallApp />
           </div>
@@ -189,8 +184,8 @@ export function Progress() {
       </div>
 
       <section className="mt-4 rounded-xl border border-line p-4">
-        <h2 className="font-semibold">Xóa tiến độ</h2>
-        <p className="mt-1 text-sm text-muted">Tiến độ đang lưu trên trình duyệt này. Xóa đi sẽ không khôi phục được.</p>
+        <h2 className="font-semibold">{tr('progress.xoaTienDo')}</h2>
+        <p className="mt-1 text-sm text-muted">{tr('progress.tienDoDangLuu')}</p>
         {confirming ? (
           <div className="mt-3 flex flex-wrap gap-2">
             <button
@@ -201,12 +196,8 @@ export function Progress() {
                 setConfirming(false)
               }}
               className="min-h-11 rounded-lg bg-beni px-4 font-semibold text-on-ai"
-            >
-              Xóa toàn bộ {Object.keys(cards).length} thẻ
-            </button>
-            <button type="button" onClick={() => setConfirming(false)} className="min-h-11 rounded-lg border border-line px-4">
-              Giữ lại
-            </button>
+            >{tr('progress.xoaToanBoThe', { length: Object.keys(cards).length })}</button>
+            <button type="button" onClick={() => setConfirming(false)} className="min-h-11 rounded-lg border border-line px-4">{tr('common.giuLai')}</button>
           </div>
         ) : (
           <button
@@ -214,9 +205,7 @@ export function Progress() {
             onClick={() => setConfirming(true)}
             disabled={Object.keys(cards).length === 0}
             className="mt-3 min-h-11 rounded-lg border border-beni px-4 font-medium text-beni disabled:opacity-40"
-          >
-            Xóa tiến độ
-          </button>
+          >{tr('progress.xoaTienDo')}</button>
         )}
       </section>
     </div>

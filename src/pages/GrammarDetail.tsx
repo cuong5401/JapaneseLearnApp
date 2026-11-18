@@ -19,6 +19,8 @@ import { progress } from '../lib/progress'
 import { hasJapanese } from '../lib/search'
 import type { GrammarEntry, Level } from '../types'
 import { NotFound } from './NotFound'
+import { t } from '../i18n'
+import { groupLabel } from '../lib/grammarGroups'
 
 /** Bỏ furigana trong ngoặc ("後ろ（うしろ）") để giọng đọc không đọc lặp. */
 const forSpeech = (ja: string) => ja.replace(/[（(][぀-ヿー\s・]+[）)]/g, '')
@@ -66,25 +68,25 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
 
   return (
     <div className="mx-auto max-w-[760px]">
-      <PageHeader title={`${level}${g.lesson ? `, Bài ${g.lesson}` : ''}, mẫu ${g.no}`} back={{ to: base, label: `Ngữ pháp ${level}` }} />
+      <PageHeader title={t('grammarDetail.mau2', { level, v: g.lesson ? t('grammarDetail.lessonPart', { n: g.lesson }) : '', no: g.no })} back={{ to: base, label: t('common.nguPhap', { level }) }} />
 
       <article className="rounded-2xl border border-line bg-surface p-5 sm:p-7">
         <div className="flex items-start justify-between gap-3">
           <h2 lang="ja" className="min-w-0 font-jp text-[clamp(1.5rem,5vw,2.25rem)] leading-snug font-bold break-words">
             {g.title}
           </h2>
-          <BookmarkButton itemRef={g.id} label={`mẫu ${g.title}`} className="-mt-1 -mr-2" />
+          <BookmarkButton itemRef={g.id} label={t('grammarDetail.mau', { title: g.title })} className="-mt-1 -mr-2" />
         </div>
         {(g.group || g.auto) && (
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            {g.group && <span className="rounded-full bg-ai-soft px-2 py-0.5 text-xs font-medium text-ai">{g.group}</span>}
+            {g.group && <span className="rounded-full bg-ai-soft px-2 py-0.5 text-xs font-medium text-ai">{groupLabel(g.group)}</span>}
             <AutoBadge g={g} />
           </div>
         )}
         {g.meaning && <p className="mt-3 text-lg">{g.meaning}</p>}
         {g.connection && (
           <div className="mt-4 rounded-xl bg-sunken px-4 py-3">
-            <p className="text-xs font-semibold text-muted">Cách nối</p>
+            <p className="text-xs font-semibold text-muted">{t('grammarDetail.cachNoi')}</p>
             <p lang="ja" className="mt-0.5 font-jp">
               {g.connection}
             </p>
@@ -96,24 +98,24 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
             onClick={() => (learned ? progress.forget(g.id) : progress.markLearned(g.id))}
             className={`min-h-11 rounded-lg px-5 font-semibold ${learned ? 'border border-matsu bg-matsu-soft text-matsu' : 'bg-ai text-on-ai hover:opacity-90'}`}
           >
-            {learned ? 'Đã hiểu, bỏ đánh dấu' : 'Đã hiểu'}
+            {learned ? t('grammarDetail.daHieuBoDanh') : t('grammarDetail.daHieu')}
           </Button>
-          <span className="text-sm text-muted">{learned ? 'Mẫu này đang trong lịch ôn tập.' : 'Đánh dấu để đưa mẫu này vào lịch ôn tập.'}</span>
+          <span className="text-sm text-muted">{learned ? t('grammarDetail.mauNayDangTrong') : t('grammarDetail.danhDauDeDua')}</span>
           <AskAiLink question={grammarQuestion(g)} className="ml-auto" />
         </div>
         {g.auto && (
           <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl bg-sunken px-4 py-3">
             <p className="min-w-0 flex-1 basis-60 text-sm text-muted">
               {checked
-                ? 'Bạn đã kiểm tra mẫu này.'
-                : 'Mẫu này do Kotonoha tự soạn (giải thích và câu ví dụ), chưa có người kiểm tra. Đọc kỹ rồi bấm "Đã kiểm tra" nếu thấy đúng.'}
+                ? t('grammarDetail.banDaKiemTra')
+                : t('grammarDetail.mauNayDoKotonoha')}
             </p>
             <Button
               onClick={() => grammarChecked.toggle(g.id)}
               aria-pressed={checked}
               className={`min-h-11 rounded-lg px-4 font-semibold ${checked ? 'border border-line bg-surface text-muted hover:text-ink' : 'border-2 border-matsu text-matsu hover:bg-matsu-soft'}`}
             >
-              {checked ? 'Bỏ đánh dấu kiểm tra' : 'Đã kiểm tra'}
+              {checked ? t('grammarDetail.boDanhDauKiem') : t('grammarDetail.daKiemTra')}
             </Button>
           </div>
         )}
@@ -121,7 +123,7 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
 
       {g.examples && g.examples.length > 0 && (
         <section className="mt-8">
-          <h3 className="mb-3 font-semibold">Ví dụ</h3>
+          <h3 className="mb-3 font-semibold">{t('common.viDu')}</h3>
           <ol className="space-y-3">
             {g.examples.map((ex, n) => (
               <li key={n} className="flex items-start gap-3 rounded-xl border border-line bg-surface p-4">
@@ -130,9 +132,9 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
                   <span lang="ja" className="block font-jp text-lg leading-relaxed break-words">
                     {ex.ja}
                   </span>
-                  {ex.vi ? <span className="mt-1 block text-muted">{ex.vi}</span> : <span className="mt-1 block text-xs text-muted">Chưa tách được câu dịch, xem phần giải thích đầy đủ.</span>}
+                  {ex.vi ? <span className="mt-1 block text-muted">{ex.vi}</span> : <span className="mt-1 block text-xs text-muted">{t('grammarDetail.chuaTachDuocCau')}</span>}
                 </span>
-                <SpeakButton text={forSpeech(ex.ja)} label="Nghe câu ví dụ" size="sm" />
+                <SpeakButton text={forSpeech(ex.ja)} label={t('common.ngheCauViDu')} size="sm" />
               </li>
             ))}
           </ol>
@@ -141,9 +143,7 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
 
       {g.notes && g.notes.length > 0 && (
         <section className="mt-8" aria-labelledby="grammar-notes">
-          <h3 id="grammar-notes" className="mb-3 font-semibold">
-            Lưu ý
-          </h3>
+          <h3 id="grammar-notes" className="mb-3 font-semibold">{t('grammarDetail.luuY')}</h3>
           <ul className="space-y-2 rounded-xl border border-line bg-surface p-4">
             {g.notes.map((n, i) => (
               <li key={i} className="flex gap-2 leading-relaxed">
@@ -157,9 +157,7 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
 
       {related.length > 0 && (
         <section className="mt-8" aria-labelledby="grammar-related">
-          <h3 id="grammar-related" className="mb-3 font-semibold">
-            Xem thêm
-          </h3>
+          <h3 id="grammar-related" className="mb-3 font-semibold">{t('grammarDetail.xemThem')}</h3>
           <ul className="grid gap-2 sm:grid-cols-2">
             {related.map((r) => (
               <li key={r.id}>
@@ -183,7 +181,7 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
           onClick={() => setOpen((o) => !o)}
           className="flex min-h-11 w-full items-center justify-between rounded-xl border border-line bg-surface px-4 font-semibold hover:bg-sunken"
         >
-          {open ? 'Ẩn giải thích đầy đủ' : 'Xem toàn bộ giải thích'}
+          {open ? t('grammarDetail.anGiaiThichDay') : t('grammarDetail.xemToanBoGiai')}
           <svg viewBox="0 0 24 24" className={`size-5 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
             <path d="m6 9 6 6 6-6" />
           </svg>
@@ -199,9 +197,7 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
             >
               <div className="mt-3 rounded-xl border border-line bg-surface p-5">
                 {parsedPoorly && (
-                  <p className="mb-4 rounded-lg bg-kihada-soft px-3 py-2 text-sm">
-                    Mục này chưa tách được đủ ý nghĩa và ví dụ từ file gốc nên hiển thị nguyên văn.
-                  </p>
+                  <p className="mb-4 rounded-lg bg-kihada-soft px-3 py-2 text-sm">{t('grammarDetail.mucNayChuaTach')}</p>
                 )}
                 <Body lines={g.body} />
               </div>
@@ -211,10 +207,10 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
       </section>
       )}
 
-      <nav aria-label="Mẫu trước và sau" className="mt-8 grid grid-cols-2 gap-3">
+      <nav aria-label={t('grammarDetail.mauTruocVaSau')} className="mt-8 grid grid-cols-2 gap-3">
         {prev ? (
           <Link to={`${base}/${prev.id}`} className="min-w-0 rounded-xl border border-line bg-surface p-3 hover:border-ai">
-            <span className="block text-xs text-muted">Mẫu trước</span>
+            <span className="block text-xs text-muted">{t('grammarDetail.mauTruoc')}</span>
             <span lang="ja" className="block truncate font-jp font-medium">
               {prev.title}
             </span>
@@ -224,7 +220,7 @@ function Detail({ g, list, level }: { g: GrammarEntry; list: GrammarEntry[]; lev
         )}
         {next && (
           <Link to={`${base}/${next.id}`} className="min-w-0 rounded-xl border border-line bg-surface p-3 text-right hover:border-ai">
-            <span className="block text-xs text-muted">Mẫu tiếp theo</span>
+            <span className="block text-xs text-muted">{t('grammarDetail.mauTiepTheo')}</span>
             <span lang="ja" className="block truncate font-jp font-medium">
               {next.title}
             </span>

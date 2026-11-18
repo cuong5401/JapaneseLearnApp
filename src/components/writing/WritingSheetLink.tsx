@@ -1,4 +1,5 @@
 import { ButtonLink } from '../Pressable'
+import { t } from '../../i18n'
 
 /** Icon tờ giấy có dòng kẻ ô. */
 export function SheetIcon({ className = 'size-4' }: { className?: string }) {
@@ -18,8 +19,6 @@ export function WritingSheetLink({ to, className = '' }: { to: string; className
       data-writing-link
       className={`inline-flex min-h-11 items-center gap-2 rounded-lg border border-line bg-surface px-4 text-sm font-semibold hover:border-ai ${className}`}
     >
-      <SheetIcon />
-      Tạo phiếu luyện viết
-    </ButtonLink>
+      <SheetIcon />{t('writingSheetLink.taoPhieuLuyenViet')}</ButtonLink>
   )
 }

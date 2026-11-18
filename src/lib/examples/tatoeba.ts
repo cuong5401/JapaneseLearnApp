@@ -1,3 +1,4 @@
+import { t as tr } from '../../i18n'
 /**
  * Câu ví dụ từ Tatoeba (https://tatoeba.org, API v1 công khai, chỉ đọc, không cần key, CORS `*`).
  * Câu: CC BY 2.0 FR (ghi nguồn bằng link tới câu gốc). Audio: giấy phép riêng từng file (ghi tác giả).
@@ -124,7 +125,7 @@ export function parseSentences(json: unknown): { items: Candidate[]; next: strin
 /** Gộp tín hiệu hủy của panel với timeout 6 giây. */
 function withTimeout(signal: AbortSignal | undefined, ms: number) {
   const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(new DOMException('Hết thời gian chờ Tatoeba', 'TimeoutError')), ms)
+  const timer = setTimeout(() => ctrl.abort(new DOMException(tr('tatoeba.hetThoiGianCho'), 'TimeoutError')), ms)
   const onAbort = () => ctrl.abort(signal?.reason)
   if (signal?.aborted) ctrl.abort(signal.reason)
   else signal?.addEventListener('abort', onAbort, { once: true })

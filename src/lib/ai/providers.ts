@@ -1,4 +1,5 @@
 import type { AiProvider, ProviderId } from './types'
+import { t } from '../../i18n'
 
 /** Thông tin nhà cung cấp cho trang Cài đặt (nhẹ, không kéo theo SDK). */
 export interface ModelOption {
@@ -23,10 +24,16 @@ export const PROVIDERS: ProviderInfo[] = [
     name: 'Gemini (Google)',
     defaultModel: 'gemini-3.8-flash',
     models: [
-      { id: 'gemini-3.8-flash', label: 'Gemini 3.8 Flash (mặc định)', vision: true },
-      { id: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite (nhanh, rẻ)', vision: true },
+      { id: 'gemini-3.8-flash', get label() {
+    return t('providers.gemini38Flash')
+  }, vision: true },
+      { id: 'gemini-3.5-flash-lite', get label() {
+    return t('providers.gemini35Flash')
+  }, vision: true },
     ],
-    keyHint: 'Tạo key miễn phí ở Google AI Studio → Get API key.',
+    get keyHint() {
+    return t('providers.taoKeyMienPhi')
+  },
     keyUrl: 'https://aistudio.google.com/apikey',
   },
   {
@@ -34,11 +41,15 @@ export const PROVIDERS: ProviderInfo[] = [
     name: 'Claude (Anthropic)',
     defaultModel: 'claude-haiku-5-5',
     models: [
-      { id: 'claude-haiku-5-5', label: 'Claude Haiku 5.5 (mặc định, nhanh)', vision: true },
-      { id: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5', vision: true },
-      { id: 'claude-opus-5-5', label: 'Claude Opus 5.5', vision: true },
+      { id: 'claude-haiku-5-5', get label() {
+    return t('providers.claudeHaiku55')
+  }, vision: true },
+      { id: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5', vision: true }, // i18n-ignore (tên model)
+      { id: 'claude-opus-5-5', label: 'Claude Opus 5.5', vision: true }, // i18n-ignore (tên model)
     ],
-    keyHint: 'Tạo key ở Anthropic Console → API Keys (cần nạp credit).',
+    get keyHint() {
+    return t('providers.taoKeyOAnthropic')
+  },
     keyUrl: 'https://console.anthropic.com/settings/keys',
   },
 ]
@@ -56,5 +67,5 @@ export async function loadProvider(id: ProviderId): Promise<AiProvider> {
   if (id === 'gemini') return (await import('./gemini')).gemini
   if (id === 'claude') return (await import('./claude')).claude
   if (import.meta.env.DEV) return (await import('./mock')).mock
-  throw new Error('Nhà cung cấp không hợp lệ')
+  throw new Error(t('providers.nhaCungCapKhong'))
 }

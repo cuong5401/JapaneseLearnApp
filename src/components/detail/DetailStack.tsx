@@ -8,11 +8,12 @@ import { CounterDetail } from './CounterDetail'
 import { KanjiDetail } from './KanjiDetail'
 import { RadicalDetail } from './RadicalDetail'
 import { WordDetail } from './WordDetail'
+import { t } from '../../i18n'
 
 type Push = (f: Frame) => void
 
 function Missing({ what }: { what: string }) {
-  return <p className="rounded-xl border border-line bg-surface p-5 text-center text-muted">Không tìm thấy {what} trong dữ liệu.</p>
+  return <p className="rounded-xl border border-line bg-surface p-5 text-center text-muted">{t('detailStack.khongTimThayTrong', { what })}</p>
 }
 
 function KanjiFrame({ ch, onPush }: { ch: string; onPush: Push }) {
@@ -29,7 +30,7 @@ function WordFrame({ id, onPush }: { id: string; onPush: Push }) {
   if (status === 'error') return <LoadError error={error} onRetry={retry} />
   if (status !== 'ready') return <DetailSkeleton />
   const e = entries.get(id)
-  return e?.kind === 'word' ? <WordDetail item={e.item} onPush={onPush} inPanel /> : <Missing what="từ này" />
+  return e?.kind === 'word' ? <WordDetail item={e.item} onPush={onPush} inPanel /> : <Missing what={t('detailStack.tuNay')} />
 }
 
 function RadicalFrame({ no, onPush }: { no: number; onPush: Push }) {
@@ -37,7 +38,7 @@ function RadicalFrame({ no, onPush }: { no: number; onPush: Push }) {
   if (radicals.status === 'error') return <LoadError error={radicals.error} onRetry={radicals.retry} />
   if (!radicals.data) return <DetailSkeleton />
   const item = radicals.data.find((r) => r.no === no)
-  return item ? <RadicalDetail item={item} onPush={onPush} /> : <Missing what={`bộ số ${no}`} />
+  return item ? <RadicalDetail item={item} onPush={onPush} /> : <Missing what={t('detailStack.boSo', { no })} />
 }
 
 function CounterFrame({ id }: { id: string }) {
@@ -45,7 +46,7 @@ function CounterFrame({ id }: { id: string }) {
   if (counters.status === 'error') return <LoadError error={counters.error} onRetry={counters.retry} />
   if (!counters.data) return <DetailSkeleton />
   const item = counterIndex(counters.data).get(id)
-  return item ? <CounterDetail item={item} /> : <Missing what="trợ số từ này" />
+  return item ? <CounterDetail item={item} /> : <Missing what={t('detailStack.troSoTuNay')} />
 }
 
 export function FrameContent({ frame, onPush }: { frame: Frame; onPush: Push }) {
@@ -63,16 +64,16 @@ function FrameLabel({ frame }: { frame: Frame }) {
   if (frame.t === 'c') return <CounterLabel id={frame.id} />
   if (frame.t === 'r') {
     const r = radicals.data?.find((x) => x.no === frame.no)
-    return r ? <span lang="ja" className="font-jp">{r.radical}</span> : <>Bộ {frame.no}</>
+    return r ? <span lang="ja" className="font-jp">{r.radical}</span> : <>{t('detailStack.bo', { no: frame.no })}</>
   }
   const e = words.entries.get(frame.id)
-  return e?.kind === 'word' ? <span lang="ja" className="font-jp">{e.item.word}</span> : <>Quay lại</>
+  return e?.kind === 'word' ? <span lang="ja" className="font-jp">{e.item.word}</span> : <>{t('detailStack.quayLai2')}</>
 }
 
 function CounterLabel({ id }: { id: string }) {
   const counters = useCounters()
   const item = counters.data ? counterIndex(counters.data).get(id) : undefined
-  return item ? <span lang="ja" className="font-jp">{item.counter}</span> : <>Quay lại</>
+  return item ? <span lang="ja" className="font-jp">{item.counter}</span> : <>{t('detailStack.quayLai2')}</>
 }
 
 /**
@@ -95,7 +96,7 @@ export function DetailStackView({ frames, onPush, onBack }: { frames: Frame[]; o
           <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
             <path d="m15 18-6-6 6-6" />
           </svg>
-          <span className="sr-only">Quay lại </span>
+          <span className="sr-only">{t('detailStack.quayLai')}</span>
           <FrameLabel frame={prev} />
         </button>
       )}

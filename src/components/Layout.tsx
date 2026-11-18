@@ -14,6 +14,7 @@ import { Toaster } from './Toaster'
 import { SaveSheetHost } from './notebook/SaveSheet'
 import { GlobalDetail } from './detail/GlobalDetail'
 import { AiDock } from './ai/AiDock'
+import { t } from '../i18n'
 
 // Hộp tìm kiếm và chỉ mục của nó chỉ tải khi mở lần đầu.
 const SearchDialog = lazy(() => import('./SearchDialog'))
@@ -86,7 +87,7 @@ export function Layout() {
   const { choice, cycle } = useTheme()
   const due = useDueIds().length
   const { pathname } = useLocation()
-  const themeLabel = `Giao diện: ${THEME_LABEL[choice].toLowerCase()}`
+  const themeLabel = t('layout.giaoDien2', { toLowerCase: THEME_LABEL[choice].toLowerCase() })
   const search = useSearchUi()
   // Điện thoại, khung Hỏi AI đang mở: bấm điều hướng thì thu gọn khung và chuyển trang trong một lần bấm.
   const dockNav = useDockNavClick()
@@ -119,20 +120,20 @@ export function Layout() {
             className="flex min-h-11 min-w-0 flex-1 items-center gap-2.5 rounded-xl border border-line bg-paper px-3 text-sm text-muted transition-colors hover:border-ai hover:text-ink"
           >
             <SearchIcon className="size-4" />
-            <span className="flex-1 truncate text-left">Tìm từ, chữ Hán…</span>
+            <span className="flex-1 truncate text-left">{t('layout.timTuChuHan')}</span>
             <kbd className="rounded border border-line border-b-2 px-1.5 text-xs font-semibold">/</kbd>
           </button>
           <button
             type="button"
             onClick={() => searchUi.open({ draw: true })}
-            aria-label="Vẽ chữ để tìm"
-            title="Vẽ chữ để tìm"
+            aria-label={t('layout.veChuDeTim')}
+            title={t('layout.veChuDeTim')}
             className="grid w-11 shrink-0 place-items-center rounded-xl border border-line bg-paper text-muted transition-colors hover:border-ai hover:text-ink"
           >
             <PenIcon className="size-4" />
           </button>
         </div>
-        <nav aria-label="Điều hướng chính" className="mt-5 space-y-5">
+        <nav aria-label={t('layout.dieuHuongChinh')} className="mt-5 space-y-5">
           {NAV_GROUPS.map((g) => (
             <div key={g.key}>
               <p className="mb-1 px-3 text-[11px] font-semibold tracking-wider text-muted uppercase">{g.title}</p>
@@ -174,7 +175,7 @@ export function Layout() {
         >
           <ThemeIcon choice={choice} />
           <span className="flex flex-col items-start leading-tight">
-            <span className="text-xs">Giao diện</span>
+            <span className="text-xs">{t('layout.giaoDien')}</span>
             <span className="font-medium text-ink">{THEME_LABEL[choice]}</span>
           </span>
         </button>
@@ -184,7 +185,7 @@ export function Layout() {
       <header data-app-header className="sticky top-0 z-20 border-b border-line bg-paper/90 pt-[env(safe-area-inset-top)] backdrop-blur lg:hidden">
         <div className="mx-auto flex h-14 max-w-[900px] items-center gap-4 px-4 md:px-6">
           <Logo onClick={dockNav('/')} />
-          <nav className="ml-auto hidden items-center gap-0.5 md:flex" aria-label="Điều hướng chính">
+          <nav className="ml-auto hidden items-center gap-0.5 md:flex" aria-label={t('layout.dieuHuongChinh')}>
             {/* Tablet: logo đã dẫn về trang chủ, bỏ mục Trang chủ. */}
             {NAV.filter((n) => n.to !== '/').map((n) => {
               const active = navActive(n, pathname)
@@ -206,8 +207,8 @@ export function Layout() {
           <button
             type="button"
             onClick={() => searchUi.open()}
-            aria-label="Tìm kiếm"
-            title="Tìm kiếm (phím /)"
+            aria-label={t('layout.timKiem')}
+            title={t('layout.timKiemPhim')}
             className="ml-auto grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink md:ml-0"
           >
             <SearchIcon />
@@ -215,8 +216,8 @@ export function Layout() {
           <button
             type="button"
             onClick={() => searchUi.open({ draw: true })}
-            aria-label="Vẽ chữ để tìm"
-            title="Vẽ chữ để tìm"
+            aria-label={t('layout.veChuDeTim')}
+            title={t('layout.veChuDeTim')}
             className="grid size-11 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink md:hidden"
           >
             <PenIcon />
@@ -249,7 +250,7 @@ export function Layout() {
 
       {/* Điện thoại: thanh điều hướng đáy */}
       <nav
-        aria-label="Điều hướng chính"
+        aria-label={t('layout.dieuHuongChinh')}
         data-bottom-nav
         className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       >

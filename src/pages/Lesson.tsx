@@ -21,24 +21,31 @@ import { splitLessons } from '../lib/lessons'
 import { useLessonSize } from '../lib/settings'
 import type { Deck, VocabItem } from '../types'
 import { NotFound } from './NotFound'
+import { t as tr } from '../i18n'
 
 type Tab = 'list' | 'flashcards' | 'quiz'
 const TABS: { value: Tab; label: string }[] = [
-  { value: 'list', label: 'Danh sách' },
-  { value: 'flashcards', label: 'Flashcard' },
-  { value: 'quiz', label: 'Quiz' },
+  { value: 'list', get label() {
+    return tr('common.danhSach')
+  } },
+  { value: 'flashcards', get label() {
+    return tr('common.flashcard')
+  } },
+  { value: 'quiz', get label() {
+    return tr('common.quiz')
+  } },
 ]
 
 function StatusDot({ id }: { id: string }) {
   const card = useCards()[id]
-  if (!card) return <span className="sr-only">Chưa học</span>
+  if (!card) return <span className="sr-only">{tr('common.chuaHoc')}</span>
   const mastered = isMastered(card)
   return (
     <span
-      title={mastered ? 'Đã thuộc' : 'Đã học'}
+      title={mastered ? tr('common.daThuoc') : tr('common.daHoc')}
       className={`inline-block size-2.5 shrink-0 rounded-full ${mastered ? 'bg-ai' : 'bg-cell-line'}`}
     >
-      <span className="sr-only">{mastered ? 'Đã thuộc' : 'Đã học'}</span>
+      <span className="sr-only">{mastered ? tr('common.daThuoc') : tr('common.daHoc')}</span>
     </span>
   )
 }
@@ -46,8 +53,8 @@ function StatusDot({ id }: { id: string }) {
 function Extras({ item }: { item: VocabItem }) {
   const bits = [
     item.pos,
-    item.alt?.length ? `Cách viết khác: ${item.alt.join('、')}` : '',
-    item.origin ? `Gốc tiếng Anh: ${item.origin}` : '',
+    item.alt?.length ? tr('lesson.cachVietKhac', { join: item.alt.join('、') }) : '',
+    item.origin ? tr('lesson.gocTiengAnh', { origin: item.origin }) : '',
     item.note,
   ].filter(Boolean)
   const links = (item.related?.length ?? 0) + (item.parent ? 1 : 0)
@@ -59,7 +66,7 @@ function Extras({ item }: { item: VocabItem }) {
         <>
           {bits.length > 0 && '. '}
           <Link to={`/word/${item.id}`} className="relative z-10 font-medium text-ai hover:underline">
-            {item.parent ? 'Xem từ chính' : `${item.related!.length} từ liên quan`}
+            {item.parent ? tr('lesson.xemTuChinh') : tr('lesson.tuLienQuan', { length: item.related!.length })}
           </Link>
         </>
       )}
@@ -80,22 +87,14 @@ function WordList({ items, start }: { items: VocabItem[]; start: number }) {
               <th scope="col" className="w-20 py-3 pl-4 font-medium">
                 #
               </th>
-              <th scope="col" className="py-3 pr-4 font-medium">
-                Chữ
-              </th>
-              <th scope="col" className="py-3 pr-4 font-medium">
-                Cách đọc
-              </th>
+              <th scope="col" className="py-3 pr-4 font-medium">{tr('lesson.chu')}</th>
+              <th scope="col" className="py-3 pr-4 font-medium">{tr('common.cachDoc')}</th>
               {showHanViet && (
-                <th scope="col" className="py-3 pr-4 font-medium whitespace-nowrap">
-                  Hán Việt
-                </th>
+                <th scope="col" className="py-3 pr-4 font-medium whitespace-nowrap">{tr('lesson.hanViet')}</th>
               )}
-              <th scope="col" className="py-3 pr-4 font-medium">
-                Nghĩa
-              </th>
+              <th scope="col" className="py-3 pr-4 font-medium">{tr('lesson.nghia')}</th>
               <th scope="col" className="w-24 py-3 pr-4">
-                <span className="sr-only">Lưu, nghe</span>
+                <span className="sr-only">{tr('lesson.luuNghe')}</span>
               </th>
             </tr>
           </thead>
@@ -114,7 +113,7 @@ function WordList({ items, start }: { items: VocabItem[]; start: number }) {
                   </Link>
                 </td>
                 <td lang="ja" className="py-3 pr-4 font-jp whitespace-nowrap">
-                  {w.reading || <span className="font-sans text-sm text-muted">Chưa có</span>}
+                  {w.reading || <span className="font-sans text-sm text-muted">{tr('lesson.chuaCo')}</span>}
                 </td>
                 {showHanViet && (
                   <td className="py-3 pr-4">
@@ -183,23 +182,23 @@ function LessonBody({ deck, items }: { deck: Deck & { kind: 'vocab' }; items: Vo
   if (list.length === 0) return <NotFound />
 
   const base = deckPath(deck)
-  const title = weakMode ? 'Từ chưa thuộc' : `Bài ${index + 1}`
+  const title = weakMode ? tr('lesson.tuChuaThuoc') : tr('common.bai', { v: index + 1 })
   const start = weakMode ? 0 : index * size
-  const back: SessionLink = { to: base, label: `Về ${deckTitle(deck)}` }
+  const back: SessionLink = { to: base, label: tr('lesson.ve', { deckTitle: deckTitle(deck) }) }
   const nextLesson: SessionLink | undefined =
-    !weakMode && index + 1 < lessons.length ? { to: `${base}/${index + 2}?tab=${tab}`, label: `Bài tiếp theo: Bài ${index + 2}` } : undefined
+    !weakMode && index + 1 < lessons.length ? { to: `${base}/${index + 2}?tab=${tab}`, label: tr('common.baiTiepTheoBai', { v: index + 2 }) } : undefined
 
   return (
     <div className={LESSON_PAGE} data-lesson-page>
       <PageHeader title={title} back={{ to: base, label: deckTitle(deck) }}>
         <span className="text-sm text-muted">
-          {weakMode ? `${list.length} từ` : `Từ ${start + 1}–${start + list.length}, ${list.length} từ`}
+          {weakMode ? tr('lesson.tu', { length: list.length }) : tr('lesson.tuTu', { v: start + 1, v2: start + list.length, length: list.length })}
         </span>
       </PageHeader>
 
       <div className="mb-6">
         <Segmented
-          label="Chế độ học"
+          label={tr('common.cheDoHoc')}
           value={tab}
           onChange={(t) => setParams(t === 'list' ? {} : { tab: t }, { replace: true })}
           options={TABS}
@@ -214,16 +213,12 @@ function LessonBody({ deck, items }: { deck: Deck & { kind: 'vocab' }; items: Vo
             <ButtonLink
               to={`?tab=flashcards`}
               className="inline-flex min-h-12 items-center justify-center rounded-lg bg-ai px-5 font-semibold text-on-ai hover:opacity-90"
-            >
-              Học bằng flashcard
-            </ButtonLink>
+            >{tr('lesson.hocBangFlashcard')}</ButtonLink>
             {nextLesson && (
               <ButtonLink
                 to={`${base}/${index + 2}`}
                 className="inline-flex min-h-12 items-center justify-center rounded-lg border-2 border-ai px-5 font-semibold text-ai hover:bg-ai-soft"
-              >
-                Bài tiếp theo
-              </ButtonLink>
+              >{tr('lesson.baiTiepTheo')}</ButtonLink>
             )}
           </div>
         </>

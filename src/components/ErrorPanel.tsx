@@ -1,24 +1,21 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { isRouteErrorResponse, useRouteError } from 'react-router-dom'
 import { Button } from './Pressable'
+import { t } from '../i18n'
 
 /** Lỗi trong vùng nội dung: luôn có chữ và nút, không bao giờ để trắng. */
 export function ErrorPanel({ error, onRetry }: { error?: unknown; onRetry?: () => void }) {
   const detail = isRouteErrorResponse(error) ? `${error.status} ${error.statusText}` : error instanceof Error ? error.message : ''
   return (
     <div role="alert" data-error-panel className="mx-auto mt-10 max-w-md rounded-2xl border border-line bg-surface p-6 text-center">
-      <h1 className="text-lg font-bold">Trang này gặp lỗi</h1>
-      <p className="mt-2 text-sm text-muted">Có thể do mạng chập chờn hoặc ứng dụng vừa được cập nhật. Tải lại thường là đủ.</p>
+      <h1 className="text-lg font-bold">{t('errorPanel.trangNayGapLoi')}</h1>
+      <p className="mt-2 text-sm text-muted">{t('errorPanel.coTheDoMang')}</p>
       {detail && <p className="mt-3 truncate font-mono text-xs text-muted">{detail}</p>}
       <div className="mt-5 flex justify-center gap-2">
         {onRetry && (
-          <Button onClick={onRetry} className="min-h-11 rounded-lg border border-line px-5 font-semibold">
-            Thử lại
-          </Button>
+          <Button onClick={onRetry} className="min-h-11 rounded-lg border border-line px-5 font-semibold">{t('common.thuLai')}</Button>
         )}
-        <Button onClick={() => window.location.reload()} className="min-h-11 rounded-lg bg-beni px-5 font-semibold text-on-ai">
-          Tải lại
-        </Button>
+        <Button onClick={() => window.location.reload()} className="min-h-11 rounded-lg bg-beni px-5 font-semibold text-on-ai">{t('errorPanel.taiLai')}</Button>
       </div>
     </div>
   )
@@ -34,7 +31,7 @@ export class MainErrorBoundary extends Component<{ children: ReactNode; resetKey
   state = { error: null as unknown, key: this.props.resetKey }
 
   static getDerivedStateFromError(error: unknown) {
-    return { error: error ?? new Error('Lỗi không rõ') }
+    return { error: error ?? new Error(t('errorPanel.loiKhongRo')) }
   }
 
   static getDerivedStateFromProps(props: { resetKey: string }, state: { error: unknown; key: string }) {

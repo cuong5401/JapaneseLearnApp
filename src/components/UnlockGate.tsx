@@ -1,6 +1,7 @@
 import { motion, useAnimationControls } from 'motion/react'
 import { useRef, useState, type ReactNode } from 'react'
 import { isUnlocked, tryUnlock } from '../lib/unlock'
+import { t } from '../i18n'
 
 const LENGTH = 4
 
@@ -44,11 +45,11 @@ export function UnlockGate({ children }: { children: ReactNode }) {
           言
         </span>
         <h1 className="mt-5 text-2xl font-bold tracking-tight">Kotonoha</h1>
-        <p className="mt-1 text-muted">Nhập mã 4 số để mở</p>
+        <p className="mt-1 text-muted">{t('unlockGate.nhapMa4So')}</p>
 
         {/* Một ô nhập ẩn phủ lên 4 ô hiển thị: bàn phím số trên điện thoại, dán được, tự điền mã. */}
         <motion.label animate={shake} className="group relative mt-8 block cursor-text">
-          <span className="sr-only">Mã mở khóa 4 số</span>
+          <span className="sr-only">{t('unlockGate.maMoKhoa4')}</span>
           <input
             ref={inputRef}
             autoFocus
@@ -84,7 +85,7 @@ export function UnlockGate({ children }: { children: ReactNode }) {
         </motion.label>
 
         <p id="unlock-msg" role="status" className={`mt-4 h-5 text-sm ${error ? 'font-medium text-beni' : 'text-muted'}`}>
-          {error ? 'Mã chưa đúng, thử lại.' : checking ? 'Đang kiểm tra…' : 'Chỉ hỏi một lần trên mỗi máy.'}
+          {error ? t('unlockGate.maChuaDungThu') : checking ? t('unlockGate.dangKiemTra') : t('unlockGate.chiHoiMotLan')}
         </p>
       </div>
     </main>

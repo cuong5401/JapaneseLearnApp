@@ -178,6 +178,7 @@ export default defineConfig(({ command, mode, isPreview }) => {
     test: {
       // Test đơn vị nằm cạnh mã nguồn; tests/ là Playwright.
       include: ['src/**/*.test.ts'],
+      setupFiles: ['src/i18n/testSetup.ts'],
     },
   }
 })

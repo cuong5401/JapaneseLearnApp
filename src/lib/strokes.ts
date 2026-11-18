@@ -1,4 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react'
+import { t } from '../i18n'
 
 /**
  * Thứ tự nét (KanjiVG, Ulrich Apel, CC BY-SA 3.0): public/data/strokes/<hex>.json, sinh bằng scripts/import-strokes.py.
@@ -19,7 +20,7 @@ export interface StrokeData {
   strokes: Stroke[]
 }
 
-export const STROKE_CREDIT = 'Dữ liệu thứ tự nét: KanjiVG (Ulrich Apel), CC BY-SA'
+export const strokeCredit = () => t('credits.strokes')
 export const STROKE_VIEWBOX = 109
 
 const BASE = `${import.meta.env.BASE_URL ?? '/'}data/`
@@ -274,7 +275,7 @@ export async function loadStrokeData(ch: string): Promise<StrokeData | null> {
     return null
   }
   const r = await fetch(`${BASE}${strokeFile(ch)}`)
-  if (!r.ok) throw new Error(`Lỗi ${r.status} khi tải nét chữ ${ch}`)
+  if (!r.ok) throw new Error(t('strokes.loadError', { status: r.status, ch }))
   const data = parseStrokeData(await r.json())
   set(ch, data ? { status: 'ready', data } : { status: 'missing' })
   return data
@@ -318,6 +319,7 @@ const ARITY: Record<string, number> = { m: 2, l: 2, t: 2, c: 6, s: 4, q: 4, h: 1
  * Lỗi cú pháp của một path SVG (rỗng = hợp lệ): ký tự lạ, lệnh thiếu / thừa tham số, số "-0"
  * (dấu hiệu nén sai: "14.62-0.02" làm tròn thành "14.60" làm hỏng phần còn lại của path).
  */
+/* i18n-ignore-start: thông báo kiểm tra dữ liệu cho script / test, không hiện cho người dùng */
 export function pathErrors(d: string): string[] {
   const errors: string[] = []
   if (/-0(?![.\d]*[1-9])/.test(d)) errors.push('có số "-0"')
@@ -348,3 +350,4 @@ export function pathErrors(d: string): string[] {
   }
   return errors
 }
+/* i18n-ignore-end */

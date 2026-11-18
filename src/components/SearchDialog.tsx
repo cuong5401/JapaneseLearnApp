@@ -9,11 +9,19 @@ import { setHandoff } from '../lib/ai/handoff'
 import { modelSupportsImages } from '../lib/ai/providers'
 import { aiSettings, useAiSettings } from '../lib/ai/settings'
 import { search, type SearchDoc, type SearchKind } from '../lib/search'
+import { t } from '../i18n'
+import { aiContent } from '../lib/ai/content'
 
 const GROUPS: { kind: SearchKind; title: string }[] = [
-  { kind: 'word', title: 'Từ vựng' },
-  { kind: 'kanji', title: 'Chữ Hán' },
-  { kind: 'grammar', title: 'Ngữ pháp' },
+  { kind: 'word', get title() {
+    return t('common.tuVung')
+  } },
+  { kind: 'kanji', get title() {
+    return t('common.chuHan')
+  } },
+  { kind: 'grammar', get title() {
+    return t('common.nguPhap2')
+  } },
 ]
 
 /** Bảng vẽ chữ: chunk riêng, kéo theo Web Worker nhận dạng (~2 MB mẫu nét) chỉ khi mở. */
@@ -64,7 +72,7 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
   const canAskAi = ai.hasKey && modelSupportsImages(ai.provider, aiSettings.model())
   const askAiDrawn = (png: string) => {
     if (!png) return
-    const request: DockRequest = { mode: 'lookup', text: 'Đây là chữ Hán tôi vẽ tay. Đó là chữ gì?', image: { mime: 'image/png', data: png } }
+    const request: DockRequest = { mode: 'lookup', text: aiContent().drawnKanji, image: { mime: 'image/png', data: png } }
     onClose()
     // Trang /ai không có khung nổi: chuyển ảnh qua sessionStorage như trước. Trang khác: mở khung chat nổi.
     if (pathname.startsWith('/ai')) {
@@ -105,7 +113,7 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
       <motion.div
         role="dialog"
         aria-modal="true"
-        aria-label="Tìm kiếm"
+        aria-label={t('searchDialog.timKiem')}
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.18 }}
@@ -127,8 +135,8 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
             aria-expanded={flat.length > 0}
             aria-controls="search-results"
             aria-activedescendant={flat[active] ? `sr-${flat[active].id}` : undefined}
-            aria-label="Tìm từ, chữ Hán, ngữ pháp"
-            placeholder="Chữ Nhật, kana, romaji, Hán Việt hoặc nghĩa"
+            aria-label={t('searchDialog.timTuChuHan')}
+            placeholder={t('searchDialog.chuNhatKanaRomaji')}
             autoComplete="off"
             autoCapitalize="off"
             spellCheck={false}
@@ -137,9 +145,9 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
           <button
             type="button"
             onClick={() => setDrawing((d) => !d)}
-            aria-label="Vẽ chữ để tìm"
+            aria-label={t('searchDialog.veChuDeTim')}
             aria-pressed={drawing}
-            title="Vẽ chữ để tìm"
+            title={t('searchDialog.veChuDeTim')}
             data-draw-toggle
             className={`grid size-11 shrink-0 place-items-center rounded-lg ${drawing ? 'bg-ai-soft text-ai' : 'text-muted hover:bg-sunken hover:text-ink'}`}
           >
@@ -148,9 +156,7 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
               <path d="m13.5 6.5 4 4" />
             </svg>
           </button>
-          <button type="button" onClick={onClose} className="min-h-11 rounded-lg px-3 text-sm text-muted hover:bg-sunken hover:text-ink">
-            Đóng
-          </button>
+          <button type="button" onClick={onClose} className="min-h-11 rounded-lg px-3 text-sm text-muted hover:bg-sunken hover:text-ink">{t('common.dong')}</button>
         </div>
 
         {drawing && (
@@ -162,28 +168,23 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
             className="absolute inset-x-0 bottom-0 z-10 max-h-[75%] overflow-y-auto overscroll-contain rounded-t-2xl border-t border-line bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgb(0_0_0/0.12)] sm:inset-x-auto sm:top-[3.75rem] sm:right-3 sm:bottom-auto sm:max-h-none sm:w-[22rem] sm:rounded-2xl sm:border sm:pb-4 sm:shadow-xl"
           >
             <div aria-hidden className="mx-auto -mt-1.5 mb-3 h-1.5 w-10 rounded-full bg-line sm:hidden" />
-            <Suspense fallback={<p className="py-10 text-center text-sm text-muted">Đang mở bảng vẽ…</p>}>
+            <Suspense fallback={<p className="py-10 text-center text-sm text-muted">{t('searchDialog.dangMoBangVe')}</p>}>
               <HandwritingPanel onPick={pickDrawn} onView={viewDrawn} onClose={() => setDrawing(false)} onAskAi={canAskAi ? askAiDrawn : undefined} />
             </Suspense>
           </motion.div>
         )}
 
         {/* Chỉ là listbox khi có kết quả (listbox rỗng / chỉ có lời nhắn thì sai vai trò ARIA). */}
-        <div ref={listRef} id="search-results" role={flat.length > 0 && deferred.trim() ? 'listbox' : undefined} aria-label="Kết quả tìm kiếm" className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
+        <div ref={listRef} id="search-results" role={flat.length > 0 && deferred.trim() ? 'listbox' : undefined} aria-label={t('searchDialog.ketQuaTimKiem')} className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
           {files.status === 'error' && (
-            <p className="m-3 rounded-lg bg-beni-soft p-3 text-sm text-beni">
-              Một số dữ liệu chưa tải được.{' '}
-              <button type="button" onClick={files.retry} className="font-semibold underline">
-                Thử lại
-              </button>
+            <p className="m-3 rounded-lg bg-beni-soft p-3 text-sm text-beni">{t('searchDialog.motSoDuLieu')}{' '}
+              <button type="button" onClick={files.retry} className="font-semibold underline">{t('common.thuLai')}</button>
             </p>
           )}
           {!deferred.trim() ? (
-            <p className="px-3 py-6 text-sm text-muted">
-              Ví dụ: 参加, さんか, sanka, tham gia, THAM.{pending && ` Đang tải dữ liệu (${loaded}/${total})…`}
-            </p>
+            <p className="px-3 py-6 text-sm text-muted">{t('searchDialog.viDuSankaTham', { v: pending && t('searchDialog.loadingPart', { loaded, total }) })}</p>
           ) : flat.length === 0 ? (
-            <p className="px-3 py-6 text-sm text-muted">{pending ? `Đang tải dữ liệu (${loaded}/${total})…` : `Không tìm thấy "${deferred}". Thử bỏ dấu hoặc gõ ngắn hơn.`}</p>
+            <p className="px-3 py-6 text-sm text-muted">{pending ? t('searchDialog.dangTaiDuLieu', { loaded, total }) : t('searchDialog.khongTimThayThu', { deferred })}</p>
           ) : (
             <>
               {GROUPS.map((g, gi) =>
@@ -224,11 +225,11 @@ export default function SearchDialog({ onClose, initialDraw = false }: { onClose
                   </section>
                 ) : null,
               )}
-              {pending && <p className="px-3 py-2 text-xs text-muted">Đang tải thêm dữ liệu ({loaded}/{total}), kết quả có thể thay đổi.</p>}
+              {pending && <p className="px-3 py-2 text-xs text-muted">{t('searchDialog.dangTaiThemDu', { loaded, total })}</p>}
             </>
           )}
         </div>
-        <p className="hidden border-t border-line px-4 py-2 text-xs text-muted sm:block">↑ ↓ để chọn, Enter để mở, Esc để đóng. Tối đa 50 kết quả.</p>
+        <p className="hidden border-t border-line px-4 py-2 text-xs text-muted sm:block">{t('searchDialog.deChonEnterDe')}</p>
       </motion.div>
     </div>,
     document.body,

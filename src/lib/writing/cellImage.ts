@@ -3,6 +3,7 @@ import type { CellPng, RenderPng } from './docx'
 import { KLEE_FAMILY, loadKleeFace } from './fonts'
 import { FALLBACK_SCALE, GRAY, GUIDE_DASH, LINE, STROKE_WIDTH, VIEWBOX, glyphParts } from './layout'
 import { LEADER_WIDTH, numberLabels, numberSize } from './numbers'
+import { t } from '../../i18n'
 
 const DPI = 300
 
@@ -15,7 +16,7 @@ export function pngRenderer(strokes: ReadonlyMap<string, StrokeData | null>): Re
     canvas.width = side
     canvas.height = side
     const ctx = canvas.getContext('2d')
-    if (!ctx) throw new Error('Trình duyệt không hỗ trợ canvas')
+    if (!ctx) throw new Error(t('cellImage.trinhDuyetKhongHo'))
     const scalePt = side / spec.pt
     const gray = (g: number) => `rgb(${Math.round(g * 255)},${Math.round(g * 255)},${Math.round(g * 255)})`
 
@@ -77,7 +78,7 @@ export function pngRenderer(strokes: ReadonlyMap<string, StrokeData | null>): Re
     }
 
     const blob = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, 'image/png'))
-    if (!blob) throw new Error('Không tạo được ảnh PNG')
+    if (!blob) throw new Error(t('cellImage.khongTaoDuocAnh'))
     return new Uint8Array(await blob.arrayBuffer())
   }
 }

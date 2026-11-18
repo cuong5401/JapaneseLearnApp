@@ -1,4 +1,5 @@
 import { Reorder, useDragControls } from 'motion/react'
+import { t } from '../../i18n'
 
 export interface CharInfo {
   /** Âm Hán Việt / romaji */
@@ -32,7 +33,7 @@ function Row({ ch, i, total, checked, info, onToggle, onMove }: { ch: string; i:
       data-writing-char={ch}
     >
       <label className="flex min-h-14 min-w-0 flex-1 cursor-pointer items-center gap-3 pl-3">
-        <input type="checkbox" checked={checked} onChange={onToggle} aria-label={`Chọn chữ ${ch}`} className="size-5 shrink-0 cursor-pointer accent-[var(--ai)]" />
+        <input type="checkbox" checked={checked} onChange={onToggle} aria-label={t('charList.chonChu', { ch })} className="size-5 shrink-0 cursor-pointer accent-[var(--ai)]" />
         <span className="w-6 shrink-0 text-right text-xs text-muted tabular-nums">{i + 1}</span>
         <span lang="ja" className={`grid size-10 shrink-0 place-items-center rounded-[3px] border border-cell-line font-jp text-2xl leading-none ${checked ? '' : 'opacity-40'}`}>
           {ch}
@@ -44,14 +45,12 @@ function Row({ ch, i, total, checked, info, onToggle, onMove }: { ch: string; i:
           </span>
         </span>
         {info.missing && (
-          <span className="ml-auto shrink-0 rounded-md bg-kihada-soft px-1.5 py-0.5 text-[11px] font-medium text-ink" title="Không có dữ liệu nét KanjiVG: ô mẫu và ô mờ dùng font Klee One" data-missing-strokes>
-            Không có nét
-          </span>
+          <span className="ml-auto shrink-0 rounded-md bg-kihada-soft px-1.5 py-0.5 text-[11px] font-medium text-ink" title={t('charList.khongCoDuLieu')} data-missing-strokes>{t('charList.khongCoNet')}</span>
         )}
       </label>
       <button
         type="button"
-        aria-label={`Kéo để đổi thứ tự chữ ${ch} (hoặc dùng phím mũi tên lên / xuống)`}
+        aria-label={t('charList.keoDeDoiThu', { ch })}
         aria-keyshortcuts="ArrowUp ArrowDown"
         onPointerDown={(e) => controls.start(e)}
         onKeyDown={(e) => {
@@ -91,18 +90,13 @@ export function CharList({ order, off, info, onReorder, onToggle, onAll, pending
   return (
     <section aria-labelledby="writing-list" className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
       <div className="mb-2 flex flex-wrap items-center gap-1">
-        <h2 id="writing-list" className="mr-auto text-lg font-bold">
-          Chữ sẽ in{' '}
+        <h2 id="writing-list" className="mr-auto text-lg font-bold">{t('charList.chuSeIn')}{' '}
           <span className="text-sm font-medium text-muted tabular-nums" data-writing-count>
             {checked}/{order.length}
           </span>
         </h2>
-        <button type="button" onClick={() => onAll(true)} className="min-h-11 rounded-lg px-3 text-sm font-medium text-ai hover:bg-ai-soft">
-          Chọn tất cả
-        </button>
-        <button type="button" onClick={() => onAll(false)} className="min-h-11 rounded-lg px-3 text-sm font-medium text-muted hover:bg-sunken hover:text-ink">
-          Bỏ chọn
-        </button>
+        <button type="button" onClick={() => onAll(true)} className="min-h-11 rounded-lg px-3 text-sm font-medium text-ai hover:bg-ai-soft">{t('charList.chonTatCa')}</button>
+        <button type="button" onClick={() => onAll(false)} className="min-h-11 rounded-lg px-3 text-sm font-medium text-muted hover:bg-sunken hover:text-ink">{t('charList.boChon')}</button>
       </div>
       {pending ? (
         <ul aria-hidden className="max-h-[26rem] overflow-hidden rounded-xl border border-line">
@@ -114,7 +108,7 @@ export function CharList({ order, off, info, onReorder, onToggle, onAll, pending
           ))}
         </ul>
       ) : order.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-line px-3 py-6 text-center text-sm text-muted">Chưa có chữ nào.</p>
+        <p className="rounded-xl border border-dashed border-line px-3 py-6 text-center text-sm text-muted">{t('charList.chuaCoChuNao')}</p>
       ) : (
         <Reorder.Group
           axis="y"

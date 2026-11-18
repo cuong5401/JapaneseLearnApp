@@ -10,6 +10,7 @@ import { Layout } from './components/Layout'
 import { LegacyLevel } from './components/LegacyLevel'
 import { UnlockGate } from './components/UnlockGate'
 import { fixDuplicateBase } from './lib/basePath'
+import { initLocale, useLocale } from './i18n'
 import { loadManifest } from './lib/dataStore'
 import { PUBLIC_BUILD } from './lib/edition'
 // Bắt sự kiện beforeinstallprompt sớm, trước khi trang nào kịp render.
@@ -81,12 +82,26 @@ const router = createBrowserRouter([
   },
 ], { basename: import.meta.env.BASE_URL })
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <MotionConfig reducedMotion="user">
-      <UnlockGate>
-        <RouterProvider router={router} />
-      </UnlockGate>
-    </MotionConfig>
-  </StrictMode>,
+/**
+ * Đổi ngôn ngữ giao diện: render lại cả cây với từ điển mới (key = ngôn ngữ). Router tạo một lần ở trên nên URL,
+ * lịch sử và dữ liệu đã tải giữ nguyên; không tải lại trang.
+ */
+function LocaleRoot() {
+  const locale = useLocale()
+  return (
+    <UnlockGate key={locale}>
+      <RouterProvider router={router} />
+    </UnlockGate>
+  )
+}
+
+// Nạp từ điển của ngôn ngữ đã chọn trước khi render (chunk nhỏ, đã precache).
+void initLocale().then(() =>
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <MotionConfig reducedMotion="user">
+        <LocaleRoot />
+      </MotionConfig>
+    </StrictMode>,
+  ),
 )

@@ -19,7 +19,8 @@
 | `npm run build` | `tsc -b` + build bản đầy đủ vào `dist/` (base `/JapaneseLearnApp/`, kèm `404.html`) |
 | `npm run build:public` | Bản không kèm ngữ pháp N4–N1 (không dùng khi deploy) |
 | `npm run preview` | Xem bản build: http://localhost:4173/JapaneseLearnApp/ |
-| `npm run lint` | oxlint |
+| `npm run lint` | oxlint + `scripts/check-i18n.mjs` (không còn chữ giao diện viết cứng) |
+| `npm run i18n:review` | Xuất cặp Việt–Nhật ra `docs/i18n-ja-review.md` (chạy lại sau khi sửa từ điển) |
 | `npm test` | Vitest (`src/**/*.test.ts`) |
 | `npm run test:e2e` | Playwright trên dev server: project `desktop`, `iphone` (WebKit), `android` |
 | `npm run test:e2e:preview` | Playwright trên bản build (cần `npm run build` trước), base production |
@@ -108,6 +109,37 @@
   trong SRS + sổ tay một lần mỗi máy (import đầu tiên trong `main.tsx`) và khi nhập file tiến độ cũ (không có
   `radicalIds: 'kangxi'`). Đổi lại cách đánh số bộ thủ thì phải thêm migration mới.
 
+## Ngôn ngữ giao diện (i18n: Tiếng Việt / 日本語)
+
+- **Mọi chữ giao diện qua từ điển**: `t('khóa', { thamSo })` từ `src/i18n` (menu, tiêu đề, nút, nhãn, placeholder, aria-label,
+  title, toast, lỗi, màn trống, hộp thoại, tiêu đề / chân trang phiếu luyện viết…). Không viết chữ cứng trong JSX/TS:
+  `scripts/check-i18n.mjs` (chạy trong `npm run lint`, CI) báo lỗi chuỗi có dấu tiếng Việt và chữ Latin ở JSX / thuộc tính hiển thị.
+  Ngoại lệ có chủ đích: `// i18n-ignore` cuối dòng hoặc vùng `/* i18n-ignore-start */ … /* i18n-ignore-end */` (vd. thông báo
+  kiểm tra dữ liệu cho script, tên nhóm ngữ pháp là giá trị dữ liệu, tên model AI).
+- Từ điển tự viết, khóa có kiểu chặt: `src/i18n/vi.ts` (gốc, `as const`) và `ja.ts` (`Dict` = đủ đúng khóa của vi; thiếu / thừa
+  là lỗi TypeScript; `src/i18n/i18n.test.ts` kiểm cùng khóa, cùng tham số `{ten}`, bản ja không còn chữ Việt). Thêm chữ mới:
+  thêm khóa vào **cả hai** file. Khóa `<khu vực>.<tên>` (khu vực = tên file, `common.*` cho chữ dùng chung).
+- Runtime `src/i18n/index.ts`: cả hai từ điển là chunk tải lười; `main.tsx` chờ `initLocale()` rồi mới render. Đổi ngôn ngữ
+  (`setLocale`) render lại cả cây (`LocaleRoot` key = ngôn ngữ, router giữ nguyên) → không tải lại trang; cập nhật `<html lang>`
+  và `<title>`. Lưu `jla:v1:locale`, **có** trong Xuất / Nhập tiến độ (`backup.locale`). Ngày / số: `formatDate`, `formatDateTime`,
+  `formatNumber` (Intl theo ngôn ngữ). Unit test nạp từ điển vi qua `src/i18n/testSetup.ts`.
+- **Không gọi `t()` lúc nạp module** (trước khi có từ điển): nhãn trong mảng / object cấp module dùng getter
+  (`get label() { return t('…') }`); store tạo dữ liệu mặc định có chữ (sổ "Từ khó") phải khởi tạo lười. Bản dev báo
+  `[i18n]` trên console nếu gọi sớm hoặc thiếu khóa; `tests/i18n.spec.ts` fail khi thấy cảnh báo này.
+- **Dữ liệu học giữ tiếng Việt** ở mọi ngôn ngữ giao diện: nghĩa từ, âm Hán Việt, tên / nghĩa bộ thủ, giải thích ngữ pháp,
+  cách dùng trợ số từ, câu dịch ví dụ, ghi chú kana (`src/data/`). Chỉ dịch nhãn cố định quanh dữ liệu (音読み, 訓読み, 漢越音,
+  意味, 例文, 部首, 画数…). Tên nhóm ngữ pháp là giá trị dữ liệu, hiển thị qua `groupLabel()`.
+- **AI mặc định tiếng Việt**, không phụ thuộc giao diện: system prompt, câu hỏi soạn sẵn (nút "Hỏi AI", chip "Hỏi về …", ảnh vẽ
+  tay, kiểm tra kết nối), dữ liệu gửi kèm theo `aiSettings.explainLang` ('vi' mặc định | 'ja', Cài đặt → Trình độ → "Ngôn ngữ
+  giải thích của AI"); nội dung ở `src/lib/ai/content/{vi,ja}.ts` (không qua từ điển, bỏ qua khi quét). Khung giao diện của AI
+  (nút, tiêu đề, placeholder, nhãn chế độ) theo ngôn ngữ giao diện. Dịch / tạo câu ví dụ (`complete.ts`) luôn ra tiếng Việt.
+- Font: `[lang='ja']:not(html)` dùng `--font-jp`; `<html lang="ja">` không đổi font giao diện (dữ liệu tiếng Việt giữ Be Vietnam Pro).
+- Phiếu luyện viết in chữ giao diện 日本語: `scripts/build-pdf-fonts.mjs` lấy thêm chữ của các khóa `layout.*`, `sources.*`,
+  `kanjiLessons.*` (… `PRINTED_KEYS`) vào subset Noto Sans JP → thêm khóa in trên phiếu thì sửa `PRINTED_KEYS` và chạy lại script.
+- Tiếng Nhật: tự nhiên, ngắn kiểu app học (ホーム・学習・復習・ノート・マイページ・設定), câu thông báo dùng です・ます.
+- Test: `tests/i18n.spec.ts` (đổi ngôn ngữ không tải lại, dữ liệu vẫn tiếng Việt, AI mặc định tiếng Việt, PDF tiếng Nhật, chụp 7 màn
+  ở 390 / 1280px với `I18N_SHOTS=<thư mục>`, không tràn ngang, không lộ khóa).
+
 ## Quy tắc bắt buộc
 
 - **Đường dẫn:** base production `'/JapaneseLearnApp/'`, dev `'/'`. Tài nguyên tĩnh dùng `import.meta.env.BASE_URL`.
@@ -122,7 +154,8 @@
 - **Dữ liệu người dùng** (localStorage, `jla:v1:*`): `cards` (SRS FSRS), `review-log`, `srs-settings`, `lesson-size`,
   `kana`, `notebooks`, `grammar-checked`, `ai-words` → **có** trong Xuất/Nhập tiến độ (`src/lib/backup.ts`, version 2;
   file version 1 = SM-2 tự đổi sang FSRS khi nhập).
-  `ai-chats` (tối đa 10 cuộc, cuộc ghim không bị xóa), `ai-settings`, `ai-dock`, `jla:theme` hiện **chưa** có
+  `locale` (ngôn ngữ giao diện) cũng có trong file xuất.
+  `ai-chats` (tối đa 10 cuộc, cuộc ghim không bị xóa), `ai-settings` (kể cả `explainLang`), `ai-dock`, `jla:theme` hiện **chưa** có
   trong file xuất. Thêm loại dữ liệu học mới thì thêm vào `backup.ts` (kèm sanitize + test).
 - **Mỗi lần xong việc:** lint, build, test (unit + e2e liên quan), commit, push, kiểm tra workflow deploy xanh
   (không có `gh`: dùng `curl https://api.github.com/repos/cuong5401/JapaneseLearnApp/actions/runs`), rồi báo cáo:

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { useBlocker, useLocation, type BlockerFunction } from 'react-router-dom'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { clearSession, leavesSession, readSession, sessionKey, writeSession, type SavedSession } from '../lib/studySession'
+import { t } from '../i18n'
 
 /**
  * Nhớ phiên học đang dở theo bài (sessionStorage, xem `lib/studySession.ts`).
@@ -58,19 +59,17 @@ export function useLeaveGuard(active: boolean, info: { answered: number; total: 
   }, [blocked, active, blocker])
 
   if (!blocked) return null
-  const unit = info.unit ?? 'câu'
+  const unit = info.unit ?? t('useStudySession.cau')
   return (
     <ConfirmDialog
-      title="Rời phiên học?"
-      confirmLabel="Rời trang"
-      cancelLabel="Học tiếp"
+      title={t('useStudySession.roiPhienHoc')}
+      confirmLabel={t('useStudySession.roiTrang')}
+      cancelLabel={t('useStudySession.hocTiep')}
       onConfirm={() => {
         leaving.current = true
         blocker.proceed?.()
       }}
       onCancel={() => blocker.reset?.()}
-    >
-      Tiến độ đã được lưu ({unit} {info.answered}/{info.total}). Mở lại bài này để tiếp tục từ chỗ đang dừng.
-    </ConfirmDialog>
+    >{t('useStudySession.tienDoDaDuoc', { unit, answered: info.answered, total: info.total })}</ConfirmDialog>
   )
 }

@@ -6,6 +6,7 @@ import type { AiImage } from '../lib/ai/types'
 import { normalizeKana, search, type SearchDoc } from '../lib/search'
 import { showToast } from '../lib/toast'
 import { useSearchDocs } from './useSearchDocs'
+import { t } from '../i18n'
 
 /** Tra từ: mục khớp trong dữ liệu Kotonoha (khớp đúng chữ / cách đọc trước, tối đa 3 mục). */
 export function findLocalHits(docs: readonly SearchDoc[], q: string): LocalHit[] {
@@ -38,7 +39,7 @@ export function useChatSend(active: Conversation | null, onConversation: (id: st
     if (!id) {
       id = chats.create(mode, titleFrom(q))
       if (!id) {
-        showToast('Đã đủ 10 cuộc trò chuyện đều được ghim. Bỏ ghim một cuộc để tạo cuộc mới.')
+        showToast(t('useChatSend.daDu10Cuoc'))
         return false
       }
       onConversation(id)

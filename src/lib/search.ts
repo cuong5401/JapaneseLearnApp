@@ -1,5 +1,6 @@
 import { isRomaji, toHiragana } from 'wanakana'
 import type { GrammarEntry, KanjiEntry, Level, VocabItem } from '../types'
+import { t } from '../i18n'
 
 /** Chữ thường, bỏ dấu tiếng Việt (đ → d), gộp khoảng trắng: "Tham Gia" → "tham gia". */
 export function normalizeVi(text: string): string {
@@ -61,8 +62,8 @@ export function kanjiDocs(items: readonly KanjiEntry[]): SearchDoc[] {
     id: k.id,
     title: k.kanji,
     reading: [k.hanViet, ...(k.hanVietAlt ?? [])].join(', '),
-    subtitle: `${k.wordCount} từ chứa chữ này`,
-    badge: k.firstLevel ? `từ ${k.firstLevel}` : 'Kanji',
+    subtitle: t('common.tuChuaChuNay', { wordCount: k.wordCount }),
+    badge: k.firstLevel ? t('search.tu', { firstLevel: k.firstLevel }) : 'Kanji',
     href: `/kanji?k=${encodeURIComponent(k.kanji)}`,
     ja: [k.kanji],
     vi: [k.hanViet, ...(k.hanVietAlt ?? [])].map(normalizeVi),
@@ -74,8 +75,8 @@ export function grammarDocs(items: readonly GrammarEntry[], level: Level): Searc
     kind: 'grammar',
     id: g.id,
     title: g.title,
-    subtitle: g.meaning ? g.meaning.slice(0, 90) : 'Mở để xem giải thích',
-    badge: `${level}${g.lesson ? ` Bài ${g.lesson}` : ''}`,
+    subtitle: g.meaning ? g.meaning.slice(0, 90) : t('search.moDeXemGiai'),
+    badge: `${level}${g.lesson ? t('search.bai', { lesson: g.lesson }) : ''}`,
     href: `/grammar/${level.toLowerCase()}/${g.id}`,
     // Bỏ "～" / "A " ở đầu mẫu để "として" khớp phần đầu của "～として（は）".
     ja: [normalizeKana(g.title.replace(/^(?:[～〜~]|[A-ZＡ-Ｚ]\s)+/, ''))],

@@ -4,6 +4,7 @@ import type { KanaScript, KanjiEntry, StudyEntry, VocabItem } from '../../types'
 import { KANJI_LEVEL_SHORT, isKanjiLevel, type KanjiLevelFilter } from '../kanjiLessons'
 import type { KanjiReading } from '../readings'
 import { slug, type WritingItem } from './layout'
+import { t } from '../../i18n'
 
 /** Nguồn chữ của phiếu luyện viết (đồng bộ với URL /writing?src=…). */
 export type WritingSource =
@@ -52,21 +53,21 @@ export function sourceTitle(s: WritingSource, extra: { notebookName?: string } =
   if (s.kind === 'kanji') {
     const l = lessonLabel(s.lessons)
     const level = KANJI_LEVEL_SHORT[s.level]
-    return { title: `${level} · Bài ${l.label}`, fileKey: `${/^N\d$/.test(level) ? level : slug(level)}-bai${l.key}` }
+    return { title: t('sources.bai', { level, label: l.label }), fileKey: `${/^N\d$/.test(level) ? level : slug(level)}-bai${l.key}` }
   }
   if (s.kind === 'notebook') {
-    const name = extra.notebookName ?? 'Sổ tay'
-    return { title: `Sổ tay · ${name}`, fileKey: `so-tay-${slug(name) || 'so'}` }
+    const name = extra.notebookName ?? t('common.soTay')
+    return { title: t('sources.soTay', { name }), fileKey: `so-tay-${slug(name) || 'so'}` }
   }
   if (s.kind === 'kana') {
     const rows = KANA_ROWS.filter((r) => s.rows.includes(r.id))
     const script = SCRIPT_LABELS[s.script]
     const all = rows.length === KANA_ROWS.filter((r) => r.script === s.script).length
-    const label = all ? 'cả bảng' : rows.length > 4 ? `${rows.length} hàng` : rows.map((r) => r.label).join(', ')
+    const label = all ? t('sources.caBang') : rows.length > 4 ? t('sources.hang', { length: rows.length }) : rows.map((r) => r.label).join(', ')
     const key = all ? '' : rows.length > 4 ? `-${rows.length}-hang` : `-${rows.map((r) => rowKey(r.id)).join('-')}`
     return { title: `${script} · ${label}`, fileKey: `${slug(script)}${key}` }
   }
-  return { title: 'Tự chọn', fileKey: 'tu-chon' }
+  return { title: t('sources.tuChon'), fileKey: 'tu-chon' }
 }
 
 /* ───────────── Danh sách chữ của từng nguồn ───────────── */

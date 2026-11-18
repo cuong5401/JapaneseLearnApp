@@ -1,5 +1,6 @@
 import { displayKun, kunSegments } from '../readings'
 import { fadeCount, type WritingOptions } from './options'
+import { getLocale, t } from '../../i18n'
 
 /**
  * Bố cục phiếu luyện viết (hàm thuần, đơn vị point = 1/72 inch, gốc tọa độ góc trên trái).
@@ -194,7 +195,7 @@ export function headerCells(item: WritingItem, n: number, o: WritingOptions): He
     ]
   }
   const cells: HeaderCell[] = []
-  if (o.showHanViet) cells.push({ parts: [item.hanViet ? `${item.hanViet.toUpperCase()}: Số ${n}` : `Số ${n}`], joiner: '', font: 'vi-bold' })
+  if (o.showHanViet) cells.push({ parts: [item.hanViet ? t('layout.so2', { toUpperCase: item.hanViet.toUpperCase(), n }) : t('layout.so', { n })], joiner: '', font: 'vi-bold' })
   if (o.showOn) cells.push({ parts: item.on?.length ? item.on : ['—'], joiner: '、', font: 'vi-bold' })
   if (o.showKun) {
     const kun = displayKun(item.kun ?? [])
@@ -253,8 +254,8 @@ export interface ScenePage {
   prims: Prim[]
 }
 
-export const pageTitle = (sheet: Pick<Sheet, 'title'>) => `LUYỆN VIẾT · ${sheet.title}`
-export const pageFooter = (page: number, total: number) => `Kotonoha · Trang ${page}/${total}`
+export const pageTitle = (sheet: Pick<Sheet, 'title'>) => t('layout.luyenViet', { title: sheet.title })
+export const pageFooter = (page: number, total: number) => `${t('writing.footerPrefix')}${page}/${total}${t('writing.footerSuffix')}`
 export const PAGE_TEXT = { titleSize: 11, dateSize: 9, footerSize: 8, titleY: 32, footerFromBottom: 22 }
 
 /** Đường chân chữ để text cỡ `size` nằm giữa dải [top, top+h]. */
@@ -396,5 +397,6 @@ export function fileName(fileKey: string, ext: 'pdf' | 'docx') {
 
 export function formatDate(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0')
-  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`
+  // Theo ngôn ngữ giao diện: 18/11/2026 (vi) · 2026/11/18 (ja)
+  return getLocale() === 'ja' ? `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}` : `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`
 }

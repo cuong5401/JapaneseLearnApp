@@ -1,5 +1,6 @@
 import { useReadings } from '../../lib/readings'
 import { KunText } from './KunText'
+import { t } from '../../i18n'
 
 /**
  * Âm On / Kun (KANJIDIC2) trong panel chi tiết chữ Hán. Kun giữ ký hiệu gốc (おも.う), okurigana in nhạt.
@@ -13,7 +14,7 @@ export function KanjiReadings({ ch }: { ch: string }) {
   const kun = entry?.kun ?? []
   return (
     <dl className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm" data-kanji-readings>
-      <dt className={`${row} text-muted`}>Âm On</dt>
+      <dt className={`${row} text-muted`}>{t('kanjiReadings.amOn')}</dt>
       <dd className={row} data-reading-on>
         {loading ? (
           <span className="inline-block h-4 w-24 animate-pulse rounded bg-sunken align-middle" />
@@ -25,7 +26,7 @@ export function KanjiReadings({ ch }: { ch: string }) {
           <span className="text-muted">—</span>
         )}
       </dd>
-      <dt className={`${row} text-muted`}>Âm Kun</dt>
+      <dt className={`${row} text-muted`}>{t('kanjiReadings.amKun')}</dt>
       <dd className={row} data-reading-kun>
         {loading ? (
           <span className="inline-block h-4 w-32 animate-pulse rounded bg-sunken align-middle" />
@@ -37,10 +38,10 @@ export function KanjiReadings({ ch }: { ch: string }) {
       </dd>
       {loading || entry?.s ? (
         <>
-          <dt className={`${row} text-muted`}>Số nét</dt>
+          <dt className={`${row} text-muted`}>{t('kanjiReadings.soNet')}</dt>
           <dd className={row}>
             {loading ? <span className="inline-block h-4 w-16 animate-pulse rounded bg-sunken align-middle" /> : entry?.s}
-            {entry?.jlpt ? <span className="text-muted"> · JLPT cũ cấp {entry.jlpt}</span> : null}
+            {entry?.jlpt ? <span className="text-muted">{t('kanjiReadings.jlptCuCap', { jlpt: entry.jlpt })}</span> : null}
           </dd>
         </>
       ) : null}
@@ -62,11 +63,11 @@ export function KanjiReadingsCompact({ ch, truncate = false, className = '' }: {
   return (
     <div className={`text-sm ${className}`} data-kanji-readings-compact>
       <p className={line} data-compact-on>
-        <span className="mr-2 text-muted">On</span>
+        <span className="mr-2 text-muted">{t('readings.on')}</span>
         {loading ? skeleton('w-20') : entry?.on.length ? <span lang="ja" className="font-jp">{entry.on.join('、')}</span> : dash}
       </p>
       <p className={line} data-compact-kun title={entry?.kun.length && truncate ? entry.kun.join('、') : undefined}>
-        <span className="mr-2 text-muted">Kun</span>
+        <span className="mr-2 text-muted">{t('readings.kun')}</span>
         {loading ? skeleton('w-28') : entry?.kun.length ? <KunText kun={entry.kun} /> : dash}
       </p>
     </div>

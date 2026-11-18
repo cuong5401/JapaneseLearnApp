@@ -21,6 +21,7 @@ import { kanjiPool, mergeKanjiWords, pickRandom, pushRecent, readRecent, type Ca
 import { speechText } from '../lib/speech'
 import { webWords } from '../lib/webWords'
 import type { DataManifest, KanjiEntry, SrsCard, VocabDeckKey } from '../types'
+import { t } from '../i18n'
 
 /**
  * Trang chủ gọn: desktop 1280×800 nằm trong một màn hình (không cuộn), điện thoại tối đa ~2 màn.
@@ -101,7 +102,7 @@ function RandomKanji({ kanji, onOpenKanji, onOpenWord }: { kanji: KanjiEntry; on
       <button
         type="button"
         onClick={onOpenKanji}
-        aria-label={`Xem chi tiết chữ ${kanji.kanji}, ${kanji.hanViet}`}
+        aria-label={t('home.xemChiTietChu', { kanji: kanji.kanji, hanViet: kanji.hanViet })}
         data-open-kanji
         className="flex min-w-0 items-center gap-4 rounded-xl text-left sm:w-[19rem] sm:shrink-0"
       >
@@ -110,11 +111,11 @@ function RandomKanji({ kanji, onOpenKanji, onOpenWord }: { kanji: KanjiEntry; on
           <span className="block truncate text-[clamp(1.375rem,6cqw,2rem)] leading-tight font-bold tracking-wide">{kanji.hanViet}</span>
           <KanjiReadingsCompact ch={kanji.kanji} truncate className="mt-0.5" />
           <span className="mt-0.5 block text-sm text-muted" data-word-total={total}>
-            <span className="tabular-nums">{total}</span> từ{kanji.firstLevel && ` · từ ${kanji.firstLevel}`}
+            <span className="tabular-nums">{total}</span>{t('home.tu3')}{kanji.firstLevel && t('home.tu2', { firstLevel: kanji.firstLevel })}
           </span>
         </span>
       </button>
-      <ul className="min-w-0 flex-1 space-y-0.5 border-t border-cell-line/60 pt-2 text-sm sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5" aria-label={`Từ có chữ ${kanji.kanji}`} data-kanji-words>
+      <ul className="min-w-0 flex-1 space-y-0.5 border-t border-cell-line/60 pt-2 text-sm sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5" aria-label={t('home.tuCoChu', { kanji: kanji.kanji })} data-kanji-words>
         {words.map((w) => (
           <li key={w.id} data-kanji-word={w.id} className="flex items-center gap-2">
             <button
@@ -132,11 +133,11 @@ function RandomKanji({ kanji, onOpenKanji, onOpenWord }: { kanji: KanjiEntry; on
               )}
               <span className="min-w-0 truncate text-muted">{w.meaning}</span>
             </button>
-            <SpeakButton text={w.speak} size="sm" label={`Nghe ${w.word}`} />
+            <SpeakButton text={w.speak} size="sm" label={t('common.listenTo', { text: w.word })} />
           </li>
         ))}
         {Array.from({ length: Math.max(0, MAX_WORDS - words.length) }, (_, i) => (
-          <li key={`s${i}`} className="flex min-h-11 items-center" {...(loading ? { role: 'status', 'aria-label': 'Đang tải từ đi kèm' } : { 'aria-hidden': true })}>
+          <li key={`s${i}`} className="flex min-h-11 items-center" {...(loading ? { role: 'status', 'aria-label': t('home.dangTaiTuDi') } : { 'aria-hidden': true })}>
             {loading && <Skeleton className="h-5 w-2/3 bg-surface/60" />}
           </li>
         ))}
@@ -188,9 +189,7 @@ function RandomKanjiCard() {
   return (
     <section aria-labelledby="random-kanji" className="@container min-w-0 rounded-2xl bg-ai-soft p-4 sm:px-6 sm:py-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 id="random-kanji" className="text-sm font-medium text-ai">
-          Chữ Hán ngẫu nhiên
-        </h2>
+        <h2 id="random-kanji" className="text-sm font-medium text-ai">{t('home.chuHanNgauNhien')}</h2>
         {kanji && (
           <button
             type="button"
@@ -198,9 +197,7 @@ function RandomKanjiCard() {
             data-next-kanji
             className="-my-2 -mr-2 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-ai hover:bg-surface/60 active:scale-95"
           >
-            <DiceIcon />
-            Chữ khác
-          </button>
+            <DiceIcon />{t('home.chuKhac')}</button>
         )}
       </div>
       {index.status === 'error' ? (
@@ -214,7 +211,7 @@ function RandomKanjiCard() {
           </motion.div>
         </AnimatePresence>
       ) : (
-        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6" role="status" aria-label="Đang tải chữ Hán ngẫu nhiên">
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6" role="status" aria-busy="true" aria-label={t('home.dangTaiChuHan')}>
           <div className="flex items-center gap-4 sm:w-[19rem]">
             <Skeleton className="size-20 shrink-0 bg-surface/60 sm:size-24" />
             <div className="flex-1 space-y-2">
@@ -242,21 +239,19 @@ function ReviewToday() {
   const tomorrow = useMemo(() => dueForecast(current, now)[1] ?? 0, [current, now])
   return (
     <section aria-labelledby="due" className={CARD} data-due-card>
-      <h2 id="due" className="text-sm font-medium text-muted">
-        Ôn tập hôm nay
-      </h2>
+      <h2 id="due" className="text-sm font-medium text-muted">{t('home.onTapHomNay')}</h2>
       <p className="mt-1 flex items-baseline gap-2">
         <AnimatedNumber value={due} className={`text-4xl font-bold tabular-nums ${due > 0 ? 'text-ai' : 'text-muted'}`} />
-        <span className="text-muted">thẻ đến hạn</span>
+        <span className="text-muted">{t('home.theDenHan')}</span>
       </p>
       <p className="mt-1 min-h-5 text-sm text-muted" data-due-tomorrow>
-        {due > 0 ? 'Ôn xong để giữ nhịp nhớ.' : current.length > 0 ? `Ngày mai: ${tomorrow} thẻ` : 'Học bài mới, thẻ sẽ tự vào lịch ôn.'}
+        {due > 0 ? t('home.onXongDeGiu') : current.length > 0 ? t('home.ngayMaiThe', { tomorrow }) : t('home.hocBaiMoiThe')}
       </p>
       <ButtonLink
         to="/review"
         className={`mt-auto inline-flex min-h-11 items-center justify-center rounded-lg px-4 font-semibold ${due > 0 ? 'bg-ai text-on-ai hover:opacity-90' : 'border border-line text-muted hover:bg-sunken hover:text-ink'}`}
       >
-        {due > 0 ? 'Bắt đầu' : 'Xem lịch ôn'}
+        {due > 0 ? t('home.batDau') : t('home.xemLichOn')}
       </ButtonLink>
     </section>
   )
@@ -294,36 +289,34 @@ function ContinueCard() {
     return { i, ...prog[i] }
   }, [items, size, cards])
 
-  const name = activity.kind === 'kanji' ? 'Chữ Hán' : deckTitle({ kind: 'vocab', key: deck })
-  const unit = activity.kind === 'kanji' ? 'chữ' : 'từ'
+  const name = activity.kind === 'kanji' ? t('common.chuHan') : deckTitle({ kind: 'vocab', key: deck })
+  const unit = activity.kind === 'kanji' ? t('common.chu') : t('common.tu')
   const href = lesson ? (activity.kind === 'kanji' ? `/kanji?bai=${lesson.i + 1}` : `/vocab/${deck}/${lesson.i + 1}`) : '/learn'
   const started = Boolean(lesson && lesson.learned > 0)
   return (
     <section aria-labelledby="continue" className={CARD} data-continue-card>
-      <h2 id="continue" className="text-sm font-medium text-muted">
-        Học tiếp
-      </h2>
+      <h2 id="continue" className="text-sm font-medium text-muted">{t('home.hocTiep')}</h2>
       {lesson ? (
         <>
           <p className="mt-1 flex flex-col sm:flex-row sm:items-baseline sm:gap-2" data-continue-title>
-            <span className="text-xl font-bold">Bài {lesson.i + 1}</span>
+            <span className="text-xl font-bold">{t('common.bai', { v: lesson.i + 1 })}</span>
             <span className="truncate text-sm font-medium text-muted sm:text-base">{name}</span>
           </p>
           <div className="mt-2 flex items-center gap-3">
-            <ProgressBar total={lesson.total} learned={lesson.learned} mastered={lesson.mastered} label={`Tiến độ bài ${lesson.i + 1}`} />
+            <ProgressBar total={lesson.total} learned={lesson.learned} mastered={lesson.mastered} label={t('home.tienDoBai', { v: lesson.i + 1 })} />
             <span className="shrink-0 text-xs text-muted tabular-nums">
               {lesson.learned}/{lesson.total} {unit}
             </span>
           </div>
         </>
       ) : (
-        <div className="mt-1 space-y-2" role="status" aria-label="Đang tải bài học tiếp">
+        <div className="mt-1 space-y-2" role="status" aria-busy="true" aria-label={t('home.dangTaiBaiHoc')}>
           <Skeleton className="h-7 w-40" />
           <Skeleton className="h-4" />
         </div>
       )}
       <ButtonLink to={href} className="mt-auto inline-flex min-h-11 items-center justify-center rounded-lg border-2 border-ai px-4 font-semibold text-ai hover:bg-ai-soft">
-        {started ? 'Tiếp tục' : 'Bắt đầu học'}
+        {started ? t('home.tiepTuc') : t('home.batDauHoc')}
       </ButtonLink>
     </section>
   )
@@ -353,7 +346,7 @@ function LevelTile({ deck, manifest }: { deck: VocabDeckKey; manifest?: DataMani
   const info = VOCAB_DECK_INFO[deck]
   const total = fileCount(manifest, info.path)
   const s = usePrefixStats(DECK_ID_PREFIX[deck], total ?? 0)
-  return <Tile to={`/vocab/${deck}`} glyph={info.level ?? info.ja[0]} fit={0.36} title={info.name} line={total !== undefined ? `${s.learned}/${total} từ` : '…'} />
+  return <Tile to={`/vocab/${deck}`} glyph={info.level ?? info.ja[0]} fit={0.36} title={info.name} line={total !== undefined ? t('home.tu', { learned: s.learned, total }) : '…'} />
 }
 
 function Shortcuts({ manifest }: { manifest?: DataManifest }) {
@@ -363,20 +356,16 @@ function Shortcuts({ manifest }: { manifest?: DataManifest }) {
   const kana = useKanaSummary()
   const counters = useCounterSummary(manifest)
   const items = [
-    { to: '/kanji', glyph: '漢', title: 'Chữ Hán', line: kanjiTotal !== undefined ? `${kanji.learned}/${kanjiTotal} chữ` : '…' },
-    { to: '/grammar', glyph: '文', title: 'Ngữ pháp', line: grammar.line },
-    { to: '/kana', glyph: 'あ', title: 'Kana', line: `${kana.mastered}/${kana.total} đã thuộc` },
-    { to: '/learn/counters', glyph: '本', title: 'Cách đếm', line: counters.line },
+    { to: '/kanji', glyph: '漢', title: t('common.chuHan'), line: kanjiTotal !== undefined ? t('home.chu', { learned: kanji.learned, kanjiTotal }) : '…' },
+    { to: '/grammar', glyph: '文', title: t('common.nguPhap2'), line: grammar.line },
+    { to: '/kana', glyph: 'あ', title: t('common.kana'), line: t('home.daThuoc', { mastered: kana.mastered, total: kana.total }) },
+    { to: '/learn/counters', glyph: '本', title: t('common.cachDem'), line: counters.line },
   ]
   return (
     <section aria-labelledby="shortcuts" data-shortcuts>
       <div className="mb-2 flex items-center justify-between">
-        <h2 id="shortcuts" className="text-sm font-medium text-muted">
-          Lối tắt
-        </h2>
-        <Link to="/learn" className="-mr-2 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-medium text-ai hover:bg-ai-soft md:hidden">
-          Tất cả →
-        </Link>
+        <h2 id="shortcuts" className="text-sm font-medium text-muted">{t('home.loiTat')}</h2>
+        <Link to="/learn" className="-mr-2 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-medium text-ai hover:bg-ai-soft md:hidden">{t('home.tatCa')}</Link>
       </div>
       {/* Điện thoại: một hàng cuộn ngang (scroll-snap); từ tablet: lưới 5 cột. */}
       <ul data-hscroll className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-2 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] md:mx-0 md:grid md:snap-none md:grid-cols-5 md:overflow-visible md:px-0 md:pb-0">
@@ -394,9 +383,7 @@ function Shortcuts({ manifest }: { manifest?: DataManifest }) {
           <Link
             to="/learn"
             className="flex h-full min-h-[4.5rem] items-center justify-center gap-2 rounded-xl border border-dashed border-ai/50 font-semibold text-ai transition-colors hover:bg-ai-soft"
-          >
-            Tất cả →
-          </Link>
+          >{t('home.tatCa')}</Link>
         </li>
       </ul>
     </section>
@@ -407,7 +394,7 @@ export function Home() {
   const manifest = useManifest()
   return (
     <div className="space-y-4 lg:space-y-5">
-      <h1 className="sr-only">Kotonoha – Trang chủ</h1>
+      <h1 className="sr-only">{t('home.kotonohaTrangChu')}</h1>
       <div className="grid grid-cols-2 gap-3 lg:gap-5">
         <ReviewToday />
         <ContinueCard />

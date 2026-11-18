@@ -2,10 +2,11 @@ import { COLUMN_LABELS, KANA_GROUP_LABELS, KANA_GROUPS, rowsOf, type KanaRow } f
 import { kanaLevel, type KanaLevel, type KanaStat } from '../../lib/kanaProgress'
 import type { KanaChar, KanaGroup, KanaScript } from '../../types'
 import { LEVEL_CELL, LEVEL_LABEL } from './levels'
+import { t } from '../../i18n'
 
 export function LevelLegend() {
   return (
-    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted" aria-label="Chú thích màu">
+    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted" aria-label={t('kanaChart.chuThichMau')}>
       {(Object.keys(LEVEL_LABEL) as KanaLevel[]).map((l) => (
         <li key={l} className="flex items-center gap-1.5">
           <span className={`size-3.5 rounded-[3px] border ${LEVEL_CELL[l]}`} aria-hidden />
@@ -63,15 +64,11 @@ function Table({ group, ...p }: ChartProps & { group: KanaGroup }) {
         <h2 id={`kana-${group}`} className="text-lg font-bold">
           {KANA_GROUP_LABELS[group]}
         </h2>
-        <span className="text-sm tabular-nums text-muted">
-          Đã thuộc {mastered}/{chars.length}
-        </span>
+        <span className="text-sm tabular-nums text-muted">{t('kanaChart.daThuoc', { mastered, length: chars.length })}</span>
       </div>
       <div role="table" aria-label={KANA_GROUP_LABELS[group]} className="space-y-1">
         <div role="row" className={`grid ${COLS[group]} gap-1 px-0.5 text-center text-xs text-muted sm:gap-1.5`}>
-          <span role="columnheader" className="sr-only">
-            Chọn hàng
-          </span>
+          <span role="columnheader" className="sr-only">{t('kanaChart.chonHang2')}</span>
           <span aria-hidden />
           {COLUMN_LABELS[group].slice(0).map((c) => (
             <span role="columnheader" key={c}>
@@ -95,7 +92,7 @@ function Table({ group, ...p }: ChartProps & { group: KanaGroup }) {
                   type="checkbox"
                   checked={on}
                   onChange={() => p.onToggleRow(row)}
-                  aria-label={`Chọn hàng ${row.label}`}
+                  aria-label={t('kanaChart.chonHang', { label: row.label })}
                   className="size-5 cursor-pointer accent-[var(--ai)]"
                 />
                 <span lang="ja" className="font-jp leading-none">
@@ -108,7 +105,7 @@ function Table({ group, ...p }: ChartProps & { group: KanaGroup }) {
                     <Cell k={k} stat={p.stats[k.id]} active={p.active?.id === k.id} onPick={p.onPick} />
                   </span>
                 ) : (
-                  <span role="cell" key={i} aria-label="Ô trống" className="block h-14 sm:h-16" />
+                  <span role="cell" key={i} aria-label={t('kanaChart.oTrong')} className="block h-14 sm:h-16" />
                 ),
               )}
             </div>

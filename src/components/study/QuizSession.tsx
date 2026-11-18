@@ -16,6 +16,7 @@ import type { VocabItem } from '../../types'
 import type { SessionLink } from './FlashcardSession'
 import { ResumePrompt } from './ResumePrompt'
 import { useLeaveGuard, useStudySession } from '../../hooks/useStudySession'
+import { t } from '../../i18n'
 
 type Mode = 'choice' | 'typing'
 const LENGTH = 10
@@ -67,20 +68,20 @@ function Setup({ items, onStart }: { items: VocabItem[]; onStart: (m: Mode) => v
   const total = Math.min(LENGTH, items.length)
   const typing = Math.min(LENGTH, items.filter(typeable).length)
   const modes: { mode: Mode; title: string; detail: string; glyph: string; disabled?: boolean }[] = [
-    { mode: 'choice', glyph: '選', title: 'Trắc nghiệm', detail: `${total} câu, chọn 1 trong 4 đáp án, xen kẽ Nhật → Việt và Việt → Nhật.` },
+    { mode: 'choice', glyph: '選', title: t('quizSession.tracNghiem'), detail: t('quizSession.cauChon1Trong', { total }) },
     {
       mode: 'typing',
       glyph: '打',
-      title: 'Gõ cách đọc',
+      title: t('quizSession.goCachDoc'),
       detail: typing
-        ? `${typing} câu, gõ cách đọc bằng romaji hoặc kana.${typing < total ? ' Từ thiếu cách đọc được bỏ qua.' : ''}`
-        : 'Các từ ở đây chưa có cách đọc nên không gõ được.',
+        ? t('quizSession.cauGoCachDoc', { typing, v: typing < total ? t('quizSession.missingReading') : '' })
+        : t('quizSession.cacTuODay'),
       disabled: typing === 0,
     },
   ]
   return (
     <div>
-      <p className="text-muted">Kết quả được đưa vào lịch ôn tập: câu sai sẽ quay lại sớm hơn.</p>
+      <p className="text-muted">{t('quizSession.ketQuaDuocDua')}</p>
       <Stagger as="ul" className="mt-6 grid gap-3 md:grid-cols-2">
         {modes.map((m) => (
           <StaggerItem as="li" key={m.mode}>
@@ -122,19 +123,19 @@ function Result({
   return (
     <div className="max-w-[560px]">
       {perfect && <Celebration />}
-      <h2 className="text-lg font-semibold text-muted">Kết quả</h2>
+      <h2 className="text-lg font-semibold text-muted">{t('common.ketQua')}</h2>
       <p className="mt-1 text-6xl font-bold">
         <AnimatedNumber value={right} className={perfect ? 'text-matsu' : ''} />
         <span className="text-2xl text-muted">/{answers.length}</span>
       </p>
       <p className="mt-2 text-muted">
-        {perfect ? 'Đúng hết. Các từ này sẽ được giãn lịch ôn.' : 'Các câu sai sẽ quay lại sớm trong lịch ôn.'}
-        {answers.some((a) => a.hinted) && ` ${answers.filter((a) => a.hinted).length} câu có dùng gợi ý (chấm "Khó").`}
+        {perfect ? t('quizSession.dungHetCacTu') : t('quizSession.cacCauSaiSe')}
+        {answers.some((a) => a.hinted) && t('quizSession.cauCoDungGoi', { length: answers.filter((a) => a.hinted).length })}
       </p>
 
       {wrong.length > 0 && (
         <>
-          <h2 className="mt-8 mb-2 font-semibold">Cần xem lại</h2>
+          <h2 className="mt-8 mb-2 font-semibold">{t('quizSession.canXemLai')}</h2>
           <Stagger as="ul" className="divide-y divide-line rounded-xl border border-line bg-surface px-4">
             {wrong.map(({ item }) => (
               <StaggerItem as="li" key={item.id} className="flex items-center gap-3 py-3">
@@ -152,17 +153,13 @@ function Result({
       )}
 
       <div className="mt-8 grid grid-cols-2 gap-2">
-        <Button onClick={onRestart} className="min-h-12 rounded-lg bg-ai font-semibold text-on-ai hover:opacity-90">
-          Làm lượt mới
-        </Button>
+        <Button onClick={onRestart} className="min-h-12 rounded-lg bg-ai font-semibold text-on-ai hover:opacity-90">{t('common.lamLuotMoi')}</Button>
         {next ? (
           <ButtonLink to={next.to} className="grid min-h-12 place-items-center rounded-lg border-2 border-ai font-semibold text-ai hover:bg-ai-soft">
             {next.label}
           </ButtonLink>
         ) : (
-          <ButtonLink to="/review" className="grid min-h-12 place-items-center rounded-lg border border-line font-medium hover:bg-sunken">
-            Đi tới ôn tập
-          </ButtonLink>
+          <ButtonLink to="/review" className="grid min-h-12 place-items-center rounded-lg border border-line font-medium hover:bg-sunken">{t('quizSession.diToiOnTap')}</ButtonLink>
         )}
       </div>
       <ButtonLink to={back.to} className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-ai hover:underline">
@@ -312,22 +309,22 @@ export function QuizSession({
 
   const aside = (
     <SessionPanel
-      title={mode === 'choice' ? 'Trắc nghiệm' : 'Gõ cách đọc'}
+      title={mode === 'choice' ? t('quizSession.tracNghiem') : t('quizSession.goCachDoc')}
       stats={[
-        { label: 'Câu hiện tại', value: index + 1, total: questions.length },
-        { label: 'Đúng', value: right, tone: 'good' },
-        { label: 'Sai', value: answers.length - right, tone: 'bad' },
+        { label: t('common.cauHienTai'), value: index + 1, total: questions.length },
+        { label: t('common.dung'), value: right, tone: 'good' },
+        { label: t('common.wrong'), value: answers.length - right, tone: 'bad' },
       ]}
       shortcuts={
         mode === 'choice'
           ? [
-              { keys: ['1–4'], label: 'Chọn đáp án' },
-              { keys: ['H'], label: 'Gợi ý (bỏ 2 đáp án sai)' },
-              { keys: ['Enter'], label: 'Câu tiếp theo' },
+              { keys: ['1–4'], label: t('common.chonDapAn') },
+              { keys: ['H'], label: t('quizSession.goiYBo2') },
+              { keys: ['Enter'], label: t('common.cauTiepTheo') },
             ]
           : [
-              { keys: ['Enter'], label: 'Kiểm tra' },
-              { keys: ['Enter'], label: 'Câu tiếp theo' },
+              { keys: ['Enter'], label: t('common.kiemTra') },
+              { keys: ['Enter'], label: t('common.cauTiepTheo') },
             ]
       }
     />
@@ -337,9 +334,7 @@ export function QuizSession({
     <StudyLayout aside={aside}>
         {leaveGuard}
         <div className="mb-5 flex items-center gap-3 text-sm text-muted">
-          <span className="tabular-nums lg:hidden">
-            Câu {index + 1}/{questions.length}
-          </span>
+          <span className="tabular-nums lg:hidden">{t('common.cau', { v: index + 1, length: questions.length })}</span>
           <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-sunken">
             <motion.div
               className="absolute inset-0 origin-left rounded-full bg-ai"
@@ -362,7 +357,7 @@ export function QuizSession({
             {mode === 'choice' ? (
               <>
                 <div className="@container rounded-2xl border border-line bg-surface p-6 text-center">
-                  <p className="text-sm text-muted">{q.direction === 'ja-vi' ? 'Từ này nghĩa là gì?' : 'Chọn từ tiếng Nhật đúng nghĩa'}</p>
+                  <p className="text-sm text-muted">{q.direction === 'ja-vi' ? t('quizSession.tuNayNghiaLa') : t('quizSession.chonTuTiengNhat')}</p>
                   {q.direction === 'ja-vi' ? (
                     <p lang="ja" className="mt-3 font-jp text-[clamp(2rem,12cqw,3.25rem)] font-bold break-words">
                       {q.item.word}
@@ -423,23 +418,20 @@ export function QuizSession({
             ) : (
               <form onSubmit={onType}>
                 <div className="@container rounded-2xl border border-line bg-surface p-6 text-center">
-                  <p className="text-sm text-muted">Gõ cách đọc của từ</p>
+                  <p className="text-sm text-muted">{t('quizSession.goCachDocCua')}</p>
                   <p lang="ja" className="mt-3 font-jp text-[clamp(2rem,12cqw,3.25rem)] font-bold break-words">
                     {q.item.word}
                   </p>
                   <p className="mt-3 text-muted">{q.item.meaning}</p>
                   {hinted && !answered && (
-                    <p className="mt-2 text-sm text-muted" data-hint-text>
-                      Gợi ý: bắt đầu bằng{' '}
+                    <p className="mt-2 text-sm text-muted" data-hint-text>{t('quizSession.goiYBatDau')}{' '}
                       <span lang="ja" className="font-jp text-lg text-ink">
                         {[...q.item.reading][0]}
                       </span>
                     </p>
                   )}
                 </div>
-                <label htmlFor="quiz-answer" className="sr-only">
-                  Cách đọc
-                </label>
+                <label htmlFor="quiz-answer" className="sr-only">{t('common.cachDoc')}</label>
                 <motion.div animate={answered && !lastCorrect ? SHAKE : { x: 0 }} transition={SHAKE_T}>
                   <input
                     id="quiz-answer"
@@ -453,7 +445,7 @@ export function QuizSession({
                     autoCorrect="off"
                     spellCheck={false}
                     enterKeyHint="go"
-                    placeholder="romaji hoặc kana"
+                    placeholder={t('quizSession.romajiHoacKana')}
                     className={`mt-4 h-14 w-full rounded-xl border-2 bg-surface px-4 text-center text-xl outline-none focus:border-ai ${
                       !answered ? 'border-line' : lastCorrect ? 'border-matsu' : 'border-beni'
                     }`}
@@ -463,7 +455,7 @@ export function QuizSession({
                   {preview}
                 </p>
                 <Button type="submit" className="mt-2 min-h-12 w-full rounded-lg bg-ai font-semibold text-on-ai hover:opacity-90">
-                  {answered ? (isLast ? 'Xem kết quả' : 'Câu tiếp theo') : 'Kiểm tra'}
+                  {answered ? (isLast ? t('common.xemKetQua') : t('common.cauTiepTheo')) : t('common.kiemTra')}
                 </Button>
               </form>
             )}
@@ -479,13 +471,13 @@ export function QuizSession({
               data-quiz-hint
               className="min-h-11 rounded-lg border border-line px-4 text-sm font-medium text-muted hover:border-ai hover:text-ink disabled:opacity-50"
             >
-              {hinted ? 'Đã dùng gợi ý (đúng sẽ tính "Khó")' : 'Gợi ý'}
+              {hinted ? t('quizSession.daDungGoiY') : t('quizSession.goiY')}
             </button>
           )}
           {answered && (
             <>
               <p className={`font-semibold ${lastCorrect ? 'text-matsu' : 'text-beni'}`}>
-                {lastCorrect ? 'Chính xác' : 'Chưa đúng'}
+                {lastCorrect ? t('common.chinhXac') : t('quizSession.chuaDung')}
                 {mode === 'typing' && (
                   <span lang="ja" className="ml-2 font-jp font-normal text-ink">
                     {q.item.reading}
@@ -499,7 +491,7 @@ export function QuizSession({
                   autoFocus
                   className="ml-auto min-h-11 rounded-lg bg-ai px-5 font-semibold text-on-ai hover:opacity-90"
                 >
-                  {isLast ? 'Xem kết quả' : 'Câu tiếp theo'}
+                  {isLast ? t('common.xemKetQua') : t('common.cauTiepTheo')}
                 </Button>
               )}
             </>

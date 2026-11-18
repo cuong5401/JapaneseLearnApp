@@ -11,11 +11,12 @@ import { BookmarkButton } from '../components/notebook/BookmarkButton'
 import { useGrammar, useManifest } from '../hooks/useData'
 import { useCards } from '../hooks/useProgress'
 import { useGrammarChecked } from '../lib/grammarChecked'
-import { groupsOf } from '../lib/grammarGroups'
+import { groupLabel, groupsOf } from '../lib/grammarGroups'
 import { parseLevel } from '../lib/levels'
 import { normalizeKana, normalizeVi } from '../lib/search'
 import { LEVELS, type GrammarEntry, type Level } from '../types'
 import { NotFound } from './NotFound'
+import { t } from '../i18n'
 
 function GrammarRow({ g, level }: { g: GrammarEntry; level: Level }) {
   const learned = Boolean(useCards()[g.id])
@@ -34,11 +35,11 @@ function GrammarRow({ g, level }: { g: GrammarEntry; level: Level }) {
         {g.auto && <AutoBadge g={g} className="mt-1.5" />}
       </span>
       {learned && (
-        <span className="shrink-0 rounded-full bg-matsu-soft px-2 py-0.5 text-xs font-medium text-matsu">Đã hiểu</span>
+        <span className="shrink-0 rounded-full bg-matsu-soft px-2 py-0.5 text-xs font-medium text-matsu">{t('grammar.daHieu')}</span>
       )}
     </Link>
     <span className="absolute top-1.5 right-1.5">
-      <BookmarkButton itemRef={g.id} label={`mẫu ${g.title}`} size="sm" />
+      <BookmarkButton itemRef={g.id} label={t('grammar.mau2', { title: g.title })} size="sm" />
     </span>
     </div>
   )
@@ -49,7 +50,7 @@ const UNCHECKED = 'chua-kiem-tra'
 
 function GroupChips({ options, value, onChange }: { options: { value: string; label: string; count: number }[]; value: string; onChange: (v: string) => void }) {
   return (
-    <div role="group" aria-label="Lọc theo nhóm" className="mt-4 flex flex-wrap gap-2">
+    <div role="group" aria-label={t('grammar.locTheoNhom')} className="mt-4 flex flex-wrap gap-2">
       {options.map((o) => {
         const on = o.value === value
         return (
@@ -113,7 +114,7 @@ function GrammarList({ items, level }: { items: GrammarEntry[]; level: Level }) 
     const map = new Map<string, GrammarEntry[]>()
     if (!group && groupNames.length) for (const name of groupNames) map.set(name, [])
     for (const g of filtered) {
-      const key = g.lesson ? `Bài ${g.lesson}` : !group && g.group ? g.group : ''
+      const key = g.lesson ? t('grammar.bai', { lesson: g.lesson }) : !group && g.group ? groupLabel(g.group) : ''
       map.set(key, [...(map.get(key) ?? []), g])
     }
     return [...map.entries()].filter(([, list]) => list.length > 0)
@@ -121,37 +122,37 @@ function GrammarList({ items, level }: { items: GrammarEntry[]; level: Level }) 
 
   const chipOptions = groupNames.length
     ? [
-        { value: '', label: 'Tất cả', count: items.length },
-        ...groupNames.map((n) => ({ value: n, label: n, count: items.filter((g) => g.group === n).length })),
-        ...(autoCount ? [{ value: UNCHECKED, label: 'Chưa kiểm tra', count: unchecked }] : []),
+        { value: '', label: t('common.tatCa'), count: items.length },
+        ...groupNames.map((n) => ({ value: n, label: groupLabel(n), count: items.filter((g) => g.group === n).length })),
+        ...(autoCount ? [{ value: UNCHECKED, label: t('grammar.chuaKiemTra'), count: unchecked }] : []),
       ]
     : []
 
   if (items.length === 0)
     return (
       <div className="rounded-2xl border border-line bg-surface p-8 text-center">
-        <h2 className="font-semibold">Chưa có dữ liệu ngữ pháp {level}</h2>
-        <p className="mt-1 text-sm text-muted">Thêm nội dung vào file Excel hoặc data-source/grammar-extra rồi chạy lại script chuyển đổi.</p>
+        <h2 className="font-semibold">{t('grammar.chuaCoDuLieu', { level })}</h2>
+        <p className="mt-1 text-sm text-muted">{t('grammar.themNoiDungVao')}</p>
       </div>
     )
 
   return (
     <div>
       <label className="block max-w-md">
-        <span className="sr-only">Lọc mẫu ngữ pháp</span>
+        <span className="sr-only">{t('grammar.locMauNguPhap')}</span>
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Lọc theo tiêu đề hoặc ý nghĩa"
+          placeholder={t('grammar.locTheoTieuDe')}
           className="h-11 w-full rounded-xl border-2 border-line bg-surface px-4 outline-none focus:border-ai"
         />
       </label>
       {chipOptions.length > 0 && <GroupChips options={chipOptions} value={group} onChange={setGroup} />}
       <p className="mt-3 text-sm text-muted">
-        {filtered.length === items.length ? `${items.length} mẫu` : `${filtered.length}/${items.length} mẫu khớp`}
-        {autoCount > 0 && ` · ${autoCount} mẫu Kotonoha soạn, ${unchecked} chưa kiểm tra`}
+        {filtered.length === items.length ? t('grammar.mau', { length: items.length }) : t('grammar.mauKhop', { length: filtered.length, length2: items.length })}
+        {autoCount > 0 && t('grammar.mauKotonohaSoanChua', { autoCount, unchecked })}
       </p>
-      {filtered.length === 0 && <p className="mt-6 text-muted">Không có mẫu nào khớp. Thử bỏ dấu hoặc gõ ngắn hơn.</p>}
+      {filtered.length === 0 && <p className="mt-6 text-muted">{t('grammar.khongCoMauNao')}</p>}
       <div className="mt-4 space-y-8">
         {groups.map(([name, list]) => (
           <section key={name || 'all'}>
@@ -194,10 +195,10 @@ function GrammarLevel({ level, counts }: { level: Level; counts?: { kind: string
   const navigate = useNavigate()
   return (
     <div>
-      <PageHeader title={`Ngữ pháp ${level}`} back={{ to: '/', label: 'Trang chủ' }} />
-      <nav aria-label="Chọn cấp" className="mb-6">
+      <PageHeader title={t('common.nguPhap', { level })} back={{ to: '/', label: t('common.trangChu') }} />
+      <nav aria-label={t('grammar.chonCap')} className="mb-6">
         <Segmented
-          label="Cấp ngữ pháp"
+          label={t('grammar.capNguPhap')}
           value={level}
           onChange={(l) => navigate(`/grammar/${l.toLowerCase()}`)}
           options={LEVELS.map((l) => {

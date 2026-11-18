@@ -1,5 +1,6 @@
 import { useState, type MouseEvent } from 'react'
 import { hasJapaneseVoice, speak, speechSupported } from '../lib/speech'
+import { t } from '../i18n'
 
 interface Props {
   text: string
@@ -7,7 +8,7 @@ interface Props {
   size?: 'sm' | 'md'
 }
 
-export function SpeakButton({ text, label = 'Nghe phát âm', size = 'md' }: Props) {
+export function SpeakButton({ text, label = t('speakButton.nghePhatAm'), size = 'md' }: Props) {
   const [note, setNote] = useState<string | null>(null)
 
   if (!speechSupported) return null
@@ -16,7 +17,7 @@ export function SpeakButton({ text, label = 'Nghe phát âm', size = 'md' }: Pro
     e.stopPropagation()
     speak(text)
     if (hasJapaneseVoice() === false) {
-      setNote('Máy chưa có giọng đọc tiếng Nhật. Cài thêm giọng ja-JP trong cài đặt hệ thống để nghe chuẩn hơn.')
+      setNote(t('speakButton.mayChuaCoGiong'))
     }
   }
 

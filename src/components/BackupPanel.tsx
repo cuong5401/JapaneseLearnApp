@@ -9,6 +9,8 @@ import { progress } from '../lib/progress'
 import { mergeLogs, reviewLog } from '../lib/reviewLog'
 import { srsSettings } from '../lib/srsSettings'
 import { setLessonSize, useLessonSize } from '../lib/settings'
+import { getLocale, setLocale, t } from '../i18n'
+import { showToast } from '../lib/toast'
 
 type Pending = { name: string; backup: Backup; skipped: number; added: number; updated: number; kana: number; notes: number }
 type Notice = { tone: 'ok' | 'error'; text: string }
@@ -25,7 +27,7 @@ export function BackupPanel() {
   const kanaTotal = Object.keys(kanaStats).length
 
   const exportFile = () => {
-    const blob = new Blob([JSON.stringify(createBackup(cards, lessonSize, kanaStats, new Date(), notebooks.getSnapshot(), grammarChecked.getSnapshot(), aiWords.getSnapshot(), { reviewLog: reviewLog.packed(), srsSettings: srsSettings.getSnapshot() }), null, 1)], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify(createBackup(cards, lessonSize, kanaStats, new Date(), notebooks.getSnapshot(), grammarChecked.getSnapshot(), aiWords.getSnapshot(), { reviewLog: reviewLog.packed(), srsSettings: srsSettings.getSnapshot(), locale: getLocale() }), null, 1)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -34,7 +36,7 @@ export function BackupPanel() {
     a.click()
     a.remove()
     setTimeout(() => URL.revokeObjectURL(url), 1000)
-    setNotice({ tone: 'ok', text: `Đã xuất ${total} thẻ${kanaTotal ? ` và ${kanaTotal} chữ kana` : ''}. Mở file này ở máy kia bằng “Nhập tiến độ”.` })
+    setNotice({ tone: 'ok', text: t('backupPanel.daXuatTheMo', { total, v: kanaTotal ? t('backupPanel.andKana', { n: kanaTotal }) : '' }) })
   }
 
   const onFile = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -80,43 +82,35 @@ export function BackupPanel() {
     if (pending.backup.reviewLog) reviewLog.replace(mergeLogs(reviewLog.packed(), pending.backup.reviewLog))
     if (pending.backup.srsSettings) srsSettings.replace(pending.backup.srsSettings)
     setPending(null)
-    setNotice({ tone: 'ok', text: `Đã nhập: ${m.added} thẻ mới, ${m.updated} thẻ được cập nhật${k.changed ? `, ${k.changed} chữ kana` : ''}${nb && nb.addedItems + nb.addedBooks ? `, ${nb.addedBooks} sổ tay mới, ${nb.addedItems} mục sổ tay` : ''}${gc.added ? `, ${gc.added} mẫu ngữ pháp đã kiểm tra` : ''}.` })
+    const text = t('backupPanel.daNhapTheMoi', { added: m.added, updated: m.updated, v: k.changed ? t('backupPanel.extraKana', { n: k.changed }) : '', v2: nb && nb.addedItems + nb.addedBooks ? t('backupPanel.extraBooks', { books: nb.addedBooks, items: nb.addedItems }) : '', v3: gc.added ? t('backupPanel.extraGrammar', { n: gc.added }) : '' })
+    // Ngôn ngữ trong file khác ngôn ngữ đang dùng: đổi theo file (cả cây render lại) rồi báo bằng toast.
+    const lang = pending.backup.locale
+    if (lang && lang !== getLocale()) void setLocale(lang).then(() => showToast(text))
+    else setNotice({ tone: 'ok', text })
   }
 
   return (
     <div>
-      <p className="text-sm text-muted">
-        Tiến độ lưu riêng trên từng trình duyệt. Xuất ra file rồi nhập ở máy khác để học tiếp. Khi nhập, mỗi thẻ giữ bản được ôn gần nhất, không
-        mất thẻ đang có.
-      </p>
+      <p className="text-sm text-muted">{t('backupPanel.tienDoLuuRieng')}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           type="button"
           onClick={exportFile}
           disabled={total + kanaTotal === 0}
           className="min-h-11 rounded-lg bg-ai px-4 font-semibold text-on-ai hover:opacity-90 disabled:opacity-40"
-        >
-          Xuất tiến độ
-        </button>
+        >{t('backupPanel.xuatTienDo')}</button>
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
           className="min-h-11 rounded-lg border-2 border-ai px-4 font-semibold text-ai hover:bg-ai-soft"
-        >
-          Nhập tiến độ
-        </button>
-        <input ref={fileRef} type="file" accept="application/json,.json" onChange={onFile} className="sr-only" tabIndex={-1} aria-label="Chọn file tiến độ" />
+        >{t('backupPanel.nhapTienDo')}</button>
+        <input ref={fileRef} type="file" accept="application/json,.json" onChange={onFile} className="sr-only" tabIndex={-1} aria-label={t('backupPanel.chonFileTienDo')} />
       </div>
 
       {pending && (
-        <div role="alertdialog" aria-label="Xác nhận nhập tiến độ" className="mt-4 rounded-xl border border-ai bg-ai-soft/50 p-4">
+        <div role="alertdialog" aria-label={t('backupPanel.xacNhanNhapTien')} className="mt-4 rounded-xl border border-ai bg-ai-soft/50 p-4">
           <p className="font-semibold break-all">{pending.name}</p>
-          <p className="mt-1 text-sm">
-            {Object.keys(pending.backup.cards).length} thẻ trong file: {pending.added} thẻ mới, {pending.updated} thẻ mới hơn bản trên máy này
-            {pending.kana > 0 && `, ${pending.kana} chữ kana mới hơn`}
-            {pending.notes > 0 && `, ${pending.notes} mục sổ tay / đánh dấu kiểm tra mới`}
-            {pending.skipped > 0 && `, ${pending.skipped} mục hỏng bị bỏ qua`}.
-          </p>
+          <p className="mt-1 text-sm">{t('backupPanel.theTrongFileThe', { length: Object.keys(pending.backup.cards).length, added: pending.added, updated: pending.updated, v: pending.kana > 0 && t('backupPanel.pendingKana', { n: pending.kana }), v2: pending.notes > 0 && t('backupPanel.pendingNotes', { n: pending.notes }), v3: pending.skipped > 0 && t('backupPanel.pendingSkipped', { n: pending.skipped }) })}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
@@ -124,11 +118,9 @@ export function BackupPanel() {
               disabled={pending.added + pending.updated + pending.kana + pending.notes === 0}
               className="min-h-11 rounded-lg bg-ai px-4 font-semibold text-on-ai hover:opacity-90 disabled:opacity-40"
             >
-              {pending.added + pending.updated + pending.kana + pending.notes === 0 ? 'Không có gì mới' : 'Nhập và gộp'}
+              {pending.added + pending.updated + pending.kana + pending.notes === 0 ? t('backupPanel.khongCoGiMoi') : t('backupPanel.nhapVaGop')}
             </button>
-            <button type="button" onClick={() => setPending(null)} className="min-h-11 rounded-lg border border-line bg-surface px-4">
-              Hủy
-            </button>
+            <button type="button" onClick={() => setPending(null)} className="min-h-11 rounded-lg border border-line bg-surface px-4">{t('common.huy')}</button>
           </div>
         </div>
       )}

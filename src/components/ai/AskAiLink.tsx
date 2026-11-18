@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { aiDock } from '../../lib/ai/dock'
 import { askAiHref } from '../../lib/ai/handoff'
 import type { PresetQuestion } from '../../lib/ai/questions'
+import { t } from '../../i18n'
 
 /**
  * Nút "Hỏi AI": mở khung chat nổi với câu hỏi soạn sẵn (tự gửi nếu đã có key, chưa có thì điền sẵn).
@@ -23,8 +24,6 @@ export function AskAiLink({ question, className = '' }: { question: PresetQuesti
     >
       <span lang="ja" aria-hidden className="font-jp">
         問
-      </span>
-      Hỏi AI
-    </button>
+      </span>{t('common.hoiAi')}</button>
   )
 }

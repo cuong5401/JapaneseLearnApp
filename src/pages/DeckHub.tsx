@@ -13,6 +13,7 @@ import { useDeck } from '../hooks/useDeck'
 import { useStats } from '../hooks/useProgress'
 import type { TermCategory } from '../types'
 import { NotFound } from './NotFound'
+import { t } from '../i18n'
 
 /** Trang nhóm thuật ngữ chuyên ngành (dữ liệu đóng gói sẵn, không chia bài). */
 function TermHub({ category }: { category: TermCategory }) {
@@ -22,13 +23,13 @@ function TermHub({ category }: { category: TermCategory }) {
   const deck = { kind: 'terms', category } as const
   const base = deckPath(deck)
   const activities = [
-    { to: `${base}/flashcards`, glyph: '札', title: 'Flashcard', detail: `${words.length} thuật ngữ, vuốt để chấm nhớ / chưa nhớ` },
-    { to: `${base}/quiz`, glyph: '問', title: 'Quiz', detail: 'Trắc nghiệm hoặc gõ cách đọc' },
+    { to: `${base}/flashcards`, glyph: '札', title: t('common.flashcard'), detail: t('deckHub.thuatNguVuotDe', { length: words.length }) },
+    { to: `${base}/quiz`, glyph: '問', title: t('common.quiz'), detail: t('deckHub.tracNghiemHoacGo') },
   ]
 
   return (
     <div>
-      <PageHeader title={deckTitle(deck)} back={{ to: '/', label: 'Trang chủ' }}>
+      <PageHeader title={deckTitle(deck)} back={{ to: '/', label: t('common.trangChu') }}>
         <span lang="ja" className="font-jp text-lg text-muted">
           {TERM_INFO[category].ja}
         </span>
@@ -36,20 +37,16 @@ function TermHub({ category }: { category: TermCategory }) {
 
       <div className="rounded-xl border border-line bg-surface p-4">
         <div className="flex items-baseline justify-between text-sm">
-          <span>
-            Đã học <strong className="tabular-nums">{stats.learned}</strong>/{stats.total}
+          <span>{t('deckHub.daHoc')}<strong className="tabular-nums">{stats.learned}</strong>/{stats.total}
           </span>
-          <span className="text-muted">
-            Đã thuộc <strong className="tabular-nums text-ink">{stats.mastered}</strong>
+          <span className="text-muted">{t('deckHub.daThuoc')}<strong className="tabular-nums text-ink">{stats.mastered}</strong>
           </span>
         </div>
         <div className="mt-2.5">
-          <ProgressBar {...stats} label="Tiến độ bộ này" />
+          <ProgressBar {...stats} label={t('deckHub.tienDoBoNay')} />
         </div>
         {stats.due > 0 && (
-          <Link to="/review" className="mt-3 inline-block text-sm font-medium text-ai hover:underline">
-            {stats.due} thẻ của bộ này đang đến hạn ôn
-          </Link>
+          <Link to="/review" className="mt-3 inline-block text-sm font-medium text-ai hover:underline">{t('deckHub.theCuaBoNay', { due: stats.due })}</Link>
         )}
       </div>
 
@@ -81,7 +78,7 @@ export function TermStudy({ mode }: { mode: 'flashcards' | 'quiz' }) {
   const deck = useDeck()
   if (!deck || deck.kind !== 'terms') return <NotFound />
   const words = getTerms(deck.category)
-  const back = { to: deckPath(deck), label: `Về ${deckTitle(deck)}` }
+  const back = { to: deckPath(deck), label: t('deckHub.ve', { deckTitle: deckTitle(deck) }) }
   return (
     <div className={STUDY_PAGE}>
       <PageHeader title={mode === 'flashcards' ? 'Flashcard' : 'Quiz'} back={{ to: deckPath(deck), label: deckTitle(deck) }} />

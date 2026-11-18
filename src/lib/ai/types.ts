@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 /** Lớp AI dùng chung: giao diện chat không phụ thuộc nhà cung cấp (Gemini, Claude, mock khi test). */
 
 export type ProviderId = 'gemini' | 'claude' | 'mock'
@@ -55,20 +56,20 @@ export function aiErrorText(e: unknown): string {
   const err = e instanceof AiError ? e : new AiError('unknown')
   switch (err.kind) {
     case 'auth':
-      return 'API key không đúng hoặc chưa được cấp quyền. Kiểm tra lại trong Cài đặt.'
+      return t('types.apiKeyKhongDung')
     case 'quota':
-      return 'Đã hết lượt miễn phí, thử lại sau ít phút.'
+      return t('types.daHetLuotMien')
     case 'network':
-      return 'Không kết nối được, kiểm tra mạng rồi thử lại.'
+      return t('types.khongKetNoiDuoc')
     case 'busy':
-      return 'Máy chủ AI đang quá tải, thử lại sau.'
+      return t('types.mayChuAiDang')
     case 'bad_request':
-      return 'Yêu cầu không hợp lệ (có thể tên model sai hoặc model không hỗ trợ ảnh). Kiểm tra model trong Cài đặt.'
+      return t('types.yeuCauKhongHop')
     case 'refusal':
-      return 'AI từ chối trả lời câu này. Thử hỏi theo cách khác.'
+      return t('types.aiTuChoiTra')
     case 'aborted':
-      return 'Đã dừng.'
+      return t('types.daDung')
     default:
-      return 'Có lỗi khi gọi AI, thử lại sau.'
+      return t('types.coLoiKhiGoi')
   }
 }

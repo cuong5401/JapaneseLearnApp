@@ -6,14 +6,26 @@ import type { WritingSource } from '../../lib/writing/sources'
 import type { KanaScript, KanjiEntry } from '../../types'
 import { BookColor } from '../notebook/BookColor'
 import { Segmented } from '../Segmented'
+import { t } from '../../i18n'
 
 type Kind = WritingSource['kind']
 
 const KINDS: { value: Kind; label: string }[] = [
-  { value: 'kanji', label: 'Bài Chữ Hán' },
-  { value: 'notebook', label: 'Sổ tay' },
-  { value: 'kana', label: 'Kana' },
-  { value: 'custom', label: 'Tự nhập' },
+  { value: 'kanji', get label() {
+    return t('sourcePicker.baiChuHan')
+  } },
+  { value: 'notebook', get label() {
+    return t('common.soTay')
+  } },
+  {
+    value: 'kana',
+    get label() {
+      return t('common.kana')
+    },
+  },
+  { value: 'custom', get label() {
+    return t('sourcePicker.tuNhap')
+  } },
 ]
 
 /** Nút chọn dạng chip (nhiều lựa chọn). */
@@ -59,22 +71,20 @@ export function SourcePicker(p: Props) {
 
   return (
     <section aria-labelledby="writing-source" className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
-      <h2 id="writing-source" className="mb-3 text-lg font-bold">
-        Chọn chữ
-      </h2>
-      <Segmented label="Nguồn chữ" value={s.kind} onChange={switchKind} options={KINDS} />
+      <h2 id="writing-source" className="mb-3 text-lg font-bold">{t('sourcePicker.chonChu')}</h2>
+      <Segmented label={t('sourcePicker.nguonChu')} value={s.kind} onChange={switchKind} options={KINDS} />
 
       <div className="mt-4">
         {s.kind === 'kanji' && (
           <>
             <Segmented
               size="sm"
-              label="Cấp xuất hiện"
+              label={t('sourcePicker.capXuatHien')}
               value={s.level}
               onChange={(level) => p.onChange({ kind: 'kanji', level, lessons: [1] })}
               options={KANJI_LEVEL_OPTIONS.filter((o) => p.levels.includes(o.value))}
             />
-            <p className="mt-3 mb-2 text-sm text-muted">Chọn một hoặc nhiều bài (giống cách chia bài ở trang Chữ Hán):</p>
+            <p className="mt-3 mb-2 text-sm text-muted">{t('sourcePicker.chonMotHoacNhieu')}</p>
             <div className="flex max-h-56 flex-wrap gap-2 overflow-y-auto overscroll-contain p-0.5" data-writing-lessons>
               {(p.lessons ?? Array.from({ length: 30 }, () => null)).map((l, i) => {
                 const n = i + 1
@@ -84,13 +94,12 @@ export function SourcePicker(p: Props) {
                   <Chip
                     key={n}
                     on={on}
-                    label={`Bài ${n}`}
+                    label={t('sourcePicker.bai2', { n })}
                     onClick={() => {
                       const next = on ? s.lessons.filter((x) => x !== n) : [...s.lessons, n].sort((a, b) => a - b)
                       if (next.length) p.onChange({ ...s, lessons: next })
                     }}
-                  >
-                    Bài {n}
+                  >{t('sourcePicker.bai')}{n}
                     <span lang="ja" className="font-jp text-xs text-muted" aria-hidden>
                       {l.slice(0, 3).map((k) => k.kanji).join('')}
                     </span>
@@ -103,7 +112,7 @@ export function SourcePicker(p: Props) {
 
         {s.kind === 'notebook' &&
           (p.books.length ? (
-            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Sổ tay">
+            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t('common.soTay')}>
               {p.books.map((b) => (
                 <button
                   key={b.id}
@@ -122,25 +131,25 @@ export function SourcePicker(p: Props) {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted">Chưa có sổ tay nào.</p>
+            <p className="text-sm text-muted">{t('sourcePicker.chuaCoSoTay')}</p>
           ))}
 
         {s.kind === 'kana' && <KanaRows script={s.script} rows={s.rows} onChange={(script, rows) => p.onChange({ kind: 'kana', script, rows })} />}
 
         {s.kind === 'custom' && (
           <label className="block">
-            <span className="mb-1.5 block text-sm text-muted">Dán chữ bất kỳ: chữ trùng và chữ không có dữ liệu nét sẽ tự bỏ.</span>
+            <span className="mb-1.5 block text-sm text-muted">{t('sourcePicker.danChuBatKy')}</span>
             <textarea
               value={p.customText}
               onChange={(e) => p.onCustomText(e.target.value)}
               rows={3}
               lang="ja"
-              placeholder="Ví dụ: 日本語を勉強します"
+              placeholder={t('sourcePicker.viDu')}
               className="w-full rounded-xl border-2 border-line bg-surface px-3 py-2 font-jp outline-none focus:border-ai pointer-coarse:text-base"
               data-writing-custom
             />
             <span className="mt-1 block min-h-5 text-sm text-muted" aria-live="polite">
-              {p.dropped.length > 0 && `Đã bỏ ${p.dropped.length} ký tự không có dữ liệu nét: ${p.dropped.slice(0, 20).join(' ')}${p.dropped.length > 20 ? '…' : ''}`}
+              {p.dropped.length > 0 && t('sourcePicker.daBoKyTu', { length: p.dropped.length, join: p.dropped.slice(0, 20).join(' '), v: p.dropped.length > 20 ? '…' : '' })}
             </span>
           </label>
         )}
@@ -155,12 +164,12 @@ function KanaRows({ script, rows, onChange }: { script: KanaScript; rows: string
     <>
       <Segmented<KanaScript>
         size="sm"
-        label="Bảng chữ"
+        label={t('sourcePicker.bangChu')}
         value={script}
         onChange={(sc) => onChange(sc, [sc === 'hiragana' ? 'h-basic-a' : 'k-basic-a'])}
         options={[
-          { value: 'hiragana', label: 'Hiragana あ' },
-          { value: 'katakana', label: 'Katakana ア' },
+          { value: 'hiragana', label: `${t('common.hiragana')} あ` },
+          { value: 'katakana', label: `${t('common.katakana')} ア` },
         ]}
       />
       <div className="mt-3 flex flex-wrap gap-2" data-writing-kana-rows>
@@ -170,7 +179,7 @@ function KanaRows({ script, rows, onChange }: { script: KanaScript; rows: string
             <Chip
               key={r.id}
               on={on}
-              label={`Hàng ${r.label}`}
+              label={t('sourcePicker.hang', { label: r.label })}
               onClick={() => {
                 const next = on ? rows.filter((x) => x !== r.id) : [...rows, r.id]
                 if (next.length) onChange(script, next)

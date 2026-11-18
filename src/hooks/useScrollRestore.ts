@@ -8,8 +8,8 @@ const MAX_WAIT = 5000
 /** Không còn khối "Đang tải" mà chiều cao trang đứng yên chừng này thì coi là xong. */
 const STABLE_MS = 300
 
-/** Vùng main còn khối giữ chỗ đang tải (skeleton có role="status" aria-label="Đang tải…"). */
-const loading = () => Boolean(document.querySelector('main [role="status"][aria-label^="Đang tải"]'))
+/** Vùng main còn khối giữ chỗ đang tải (skeleton có role="status" aria-busy="true"). */
+const loading = () => Boolean(document.querySelector('main [role="status"][aria-busy="true"]'))
 
 const storageKey = (key: string, pathname: string, search: string) => `${KEY}${key}:${pathname}${search}`
 

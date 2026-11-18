@@ -1,6 +1,7 @@
 import { useId, type ReactNode } from 'react'
 import { COLS, PAPERS, PER_PAGE, ROWS, fadeCount, setWritingOptions, type Guide, type WritingOptions } from '../../lib/writing/options'
 import { Segmented } from '../Segmented'
+import { t } from '../../i18n'
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -20,7 +21,13 @@ function Toggle({ checked, onChange, children }: { checked: boolean; onChange: (
   )
 }
 
-const GUIDE_LABEL: Record<Guide, string> = { cross: 'Chữ thập nét đứt', quad: '4 ô vuông', none: 'Không' }
+const GUIDE_LABEL: Record<Guide, string> = { get cross() {
+    return t('optionsPanel.chuThapNetDut')
+  }, get quad() {
+    return t('optionsPanel.4OVuong')
+  }, get none() {
+    return t('optionsPanel.khong')
+  } }
 const num = <T extends number>(list: readonly T[], unit = '') => list.map((v) => ({ value: v, label: `${v}${unit}` }))
 
 /** Tùy chọn phiếu (lưu ngay, lần sau mở lại giữ nguyên). */
@@ -30,30 +37,28 @@ export function OptionsPanel({ o, hasKanji }: { o: WritingOptions; hasKanji: boo
   const fades = fadeCount(o)
   return (
     <section aria-labelledby="writing-options" className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
-      <h2 id="writing-options" className="mb-3 text-lg font-bold">
-        Tùy chọn
-      </h2>
+      <h2 id="writing-options" className="mb-3 text-lg font-bold">{t('optionsPanel.tuyChon')}</h2>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Khổ giấy (dọc)">
-          <Segmented size="sm" label="Khổ giấy" value={o.paper} onChange={(paper) => set({ paper })} options={PAPERS.map((p) => ({ value: p, label: p }))} />
+        <Field label={t('optionsPanel.khoGiayDoc')}>
+          <Segmented size="sm" label={t('optionsPanel.khoGiay')} value={o.paper} onChange={(paper) => set({ paper })} options={PAPERS.map((p) => ({ value: p, label: p }))} />
         </Field>
-        <Field label="Số chữ mỗi trang">
-          <Segmented size="sm" label="Số chữ mỗi trang" value={o.perPage} onChange={(perPage) => set({ perPage })} options={num(PER_PAGE)} />
+        <Field label={t('optionsPanel.soChuMoiTrang')}>
+          <Segmented size="sm" label={t('optionsPanel.soChuMoiTrang')} value={o.perPage} onChange={(perPage) => set({ perPage })} options={num(PER_PAGE)} />
         </Field>
-        <Field label="Số ô mỗi hàng">
-          <Segmented size="sm" label="Số ô mỗi hàng" value={o.cols} onChange={(cols) => set({ cols })} options={num(COLS)} />
+        <Field label={t('optionsPanel.soOMoiHang')}>
+          <Segmented size="sm" label={t('optionsPanel.soOMoiHang')} value={o.cols} onChange={(cols) => set({ cols })} options={num(COLS)} />
         </Field>
-        <Field label="Số hàng tập viết mỗi chữ">
-          <Segmented size="sm" label="Số hàng tập viết" value={o.rows} onChange={(rows) => set({ rows })} options={num(ROWS)} />
+        <Field label={t('optionsPanel.soHangTapViet2')}>
+          <Segmented size="sm" label={t('optionsPanel.soHangTapViet')} value={o.rows} onChange={(rows) => set({ rows })} options={num(ROWS)} />
         </Field>
-        <Field label="Đường kẻ trong ô">
-          <Segmented size="sm" label="Đường kẻ trong ô" value={o.guide} onChange={(guide) => set({ guide })} options={(['cross', 'quad', 'none'] as Guide[]).map((g) => ({ value: g, label: GUIDE_LABEL[g] }))} />
+        <Field label={t('optionsPanel.duongKeTrongO')}>
+          <Segmented size="sm" label={t('optionsPanel.duongKeTrongO')} value={o.guide} onChange={(guide) => set({ guide })} options={(['cross', 'quad', 'none'] as Guide[]).map((g) => ({ value: g, label: GUIDE_LABEL[g] }))} />
         </Field>
         <div className="flex flex-col gap-1.5">
           <label htmlFor={fadeId} className="flex items-baseline justify-between text-sm font-medium text-muted">
-            <span>Ô chữ mờ để tô (hàng đầu)</span>
+            <span>{t('optionsPanel.oChuMoDe')}</span>
             <span className="text-ink tabular-nums" data-fade-value>
-              {o.fade === 'row' ? 'Cả hàng' : `${fades} ô`}
+              {o.fade === 'row' ? t('optionsPanel.caHang') : t('optionsPanel.o', { fades })}
             </span>
           </label>
           <input
@@ -71,38 +76,28 @@ export function OptionsPanel({ o, hasKanji }: { o: WritingOptions; hasKanji: boo
         </div>
       </div>
       <div className="mt-3 grid gap-x-4 sm:grid-cols-2">
-        <Toggle checked={o.fadeGradient} onChange={(fadeGradient) => set({ fadeGradient })}>
-          Chữ mờ nhạt dần từ trái sang phải
-        </Toggle>
-        <Toggle checked={o.numbers} onChange={(numbers) => set({ numbers })}>
-          Số thứ tự nét ở ô chữ mẫu
-        </Toggle>
+        <Toggle checked={o.fadeGradient} onChange={(fadeGradient) => set({ fadeGradient })}>{t('optionsPanel.chuMoNhatDan')}</Toggle>
+        <Toggle checked={o.numbers} onChange={(numbers) => set({ numbers })}>{t('optionsPanel.soThuTuNet')}</Toggle>
       </div>
       <fieldset className="mt-3 border-t border-line pt-3">
-        <legend className="sr-only">Hàng tiêu đề</legend>
-        <p className="text-sm font-medium text-muted">Hàng tiêu đề {hasKanji ? '' : '(kana luôn hiện romaji và chữ bảng kia)'}</p>
+        <legend className="sr-only">{t('optionsPanel.hangTieuDe2')}</legend>
+        <p className="text-sm font-medium text-muted">{t('optionsPanel.hangTieuDe', { v: hasKanji ? '' : t('optionsPanel.kanaNote') })}</p>
         <div className="grid gap-x-4 sm:grid-cols-3">
-          <Toggle checked={o.showHanViet} onChange={(showHanViet) => set({ showHanViet })}>
-            Hán Việt + số thứ tự
-          </Toggle>
-          <Toggle checked={o.showOn} onChange={(showOn) => set({ showOn })}>
-            Âm On
-          </Toggle>
-          <Toggle checked={o.showKun} onChange={(showKun) => set({ showKun })}>
-            Âm Kun
-          </Toggle>
+          <Toggle checked={o.showHanViet} onChange={(showHanViet) => set({ showHanViet })}>{t('optionsPanel.hanVietSoThu')}</Toggle>
+          <Toggle checked={o.showOn} onChange={(showOn) => set({ showOn })}>{t('optionsPanel.amOn')}</Toggle>
+          <Toggle checked={o.showKun} onChange={(showKun) => set({ showKun })}>{t('optionsPanel.amKun')}</Toggle>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-3">
-          <span className="text-sm">Từ ví dụ</span>
+          <span className="text-sm">{t('optionsPanel.tuViDu')}</span>
           <Segmented
             size="sm"
-            label="Số từ ví dụ"
+            label={t('optionsPanel.soTuViDu')}
             value={o.examples}
             onChange={(examples) => set({ examples })}
             options={[
-              { value: 0, label: 'Không' },
-              { value: 1, label: '1 từ' },
-              { value: 2, label: '2 từ' },
+              { value: 0, label: t('optionsPanel.khong') },
+              { value: 1, label: t('optionsPanel.1Tu') },
+              { value: 2, label: t('optionsPanel.2Tu') },
             ]}
           />
         </div>

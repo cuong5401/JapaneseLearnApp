@@ -8,13 +8,14 @@ import { PROVIDERS } from '../../lib/ai/providers'
 import type { LiveAnswer } from '../../lib/ai/session'
 import { AiWordCard } from './AiWordCard'
 import { AiMarkdown } from './Markdown'
+import { t } from '../../i18n'
 
 /** Mục tìm thấy trong dữ liệu Kotonoha (Tra từ): hiện ngay, bấm mở chi tiết trong ngăn xếp. */
 export function LocalHits({ hits }: { hits: LocalHit[] }) {
   const stack = useDetailStack()
   return (
     <div className="mt-2 rounded-xl border border-matsu/40 bg-matsu-soft/40 p-3" data-local-hits>
-      <p className="mb-1.5 text-xs font-semibold text-matsu">Có trong dữ liệu Kotonoha</p>
+      <p className="mb-1.5 text-xs font-semibold text-matsu">{t('chatParts.coTrongDuLieu')}</p>
       <ul className="space-y-1">
         {hits.map((h) => (
           <li key={h.kind + h.id}>
@@ -44,7 +45,7 @@ export function UserBubble({ m }: { m: StoredMessage }) {
   return (
     <div className="flex flex-col items-end" data-msg="user">
       <div className="max-w-[85%] rounded-2xl rounded-br-md bg-ai px-4 py-2.5 whitespace-pre-wrap text-on-ai">
-        {m.hadImage && <span className="mb-1 block text-xs opacity-80">[Ảnh khung vẽ]</span>}
+        {m.hadImage && <span className="mb-1 block text-xs opacity-80">{t('chatParts.anhKhungVe')}</span>}
         {m.text}
       </div>
       {m.hits && m.hits.length > 0 && (
@@ -62,21 +63,19 @@ export function AssistantBubble({ text, error, streaming, onRetry }: { text: str
   return (
     <div data-msg="assistant" data-streaming={streaming ? 'true' : undefined} className="@container min-w-0">
       <div className="rounded-2xl rounded-bl-md border border-line bg-surface px-4 py-3">
-        {body ? <AiMarkdown text={body} /> : streaming ? <span className="inline-block animate-pulse text-muted">Đang trả lời…</span> : null}
+        {body ? <AiMarkdown text={body} /> : streaming ? <span className="inline-block animate-pulse text-muted">{t('chatParts.dangTraLoi')}</span> : null}
         {streaming && body && <span aria-hidden className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-ai align-middle" />}
         {error && (
           <p role="alert" className="mt-2 flex flex-wrap items-center gap-2 text-sm font-medium text-beni">
             {error}
             {onRetry && (
-              <button type="button" onClick={onRetry} className="min-h-11 rounded-lg border border-beni px-3 text-sm hover:bg-beni-soft">
-                Thử lại
-              </button>
+              <button type="button" onClick={onRetry} className="min-h-11 rounded-lg border border-beni px-3 text-sm hover:bg-beni-soft">{t('common.thuLai')}</button>
             )}
           </p>
         )}
       </div>
       {!streaming && words.length > 0 && (
-        <ul aria-label="Từ vựng trong câu trả lời" className="mt-2 grid gap-2 @md:grid-cols-2">
+        <ul aria-label={t('chatParts.tuVungTrongCau')} className="mt-2 grid gap-2 @md:grid-cols-2">
           {words.map((w) => (
             <AiWordCard key={w.word} w={w} />
           ))}
@@ -90,27 +89,22 @@ export function AssistantBubble({ text, error, streaming, onRetry }: { text: str
 export function SetupCard() {
   return (
     <section data-ai-setup className="rounded-2xl border border-ai bg-surface p-5 sm:p-6">
-      <h2 className="text-lg font-bold">Thiết lập Hỏi AI</h2>
-      <p className="mt-1 text-sm text-muted">Kotonoha là trang tĩnh, không có máy chủ: trình duyệt gọi thẳng AI bằng API key của bạn. Key chỉ lưu trên máy này.</p>
+      <h2 className="text-lg font-bold">{t('chatParts.thietLapHoiAi')}</h2>
+      <p className="mt-1 text-sm text-muted">{t('chatParts.kotonohaLaTrangTinh')}</p>
       <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm">
-        <li>
-          Lấy API key:{' '}
+        <li>{t('chatParts.layApiKey')}{' '}
           {PROVIDERS.map((p, i) => (
             <span key={p.id}>
-              {i > 0 && ' hoặc '}
+              {i > 0 && t('chatParts.hoac')}
               <a href={p.keyUrl} target="_blank" rel="noreferrer noopener" className="font-medium text-ai underline">
                 {p.name}
               </a>
             </span>
-          ))}
-          . Gemini có hạn mức miễn phí.
-        </li>
-        <li>Mở Cài đặt → mục AI, chọn nhà cung cấp và dán key.</li>
-        <li>Bấm "Kiểm tra kết nối", rồi quay lại đây để hỏi.</li>
+          ))}{t('chatParts.geminiCoHanMuc')}</li>
+        <li>{t('chatParts.moCaiDatMuc')}</li>
+        <li>{t('chatParts.bamKiemTraKet')}</li>
       </ol>
-      <Link to="/settings#ai" className="mt-5 inline-flex min-h-11 items-center rounded-lg bg-ai px-5 font-semibold text-on-ai hover:opacity-90">
-        Mở Cài đặt AI
-      </Link>
+      <Link to="/settings#ai" className="mt-5 inline-flex min-h-11 items-center rounded-lg bg-ai px-5 font-semibold text-on-ai hover:opacity-90">{t('chatParts.moCaiDatAi')}</Link>
     </section>
   )
 }
@@ -120,7 +114,7 @@ export function ModeChips({ mode, onChange, compact = false }: { mode: ChatMode;
   return (
     <div
       role="group"
-      aria-label="Chế độ"
+      aria-label={t('chatParts.cheDo')}
       className={compact ? '-mx-1 flex gap-1.5 overflow-x-auto overscroll-x-contain px-1 pb-1 [scrollbar-width:none]' : 'flex flex-wrap gap-2'}
     >
       {MODES.map((m) => (
@@ -221,7 +215,7 @@ export function Composer({ draft, setDraft, onSend, busy, onStop, placeholder, c
       {before}
       <div className="flex items-end gap-2">
         <label className="min-w-0 flex-1">
-          <span className="sr-only">Câu hỏi</span>
+          <span className="sr-only">{t('chatParts.cauHoi')}</span>
           <textarea
             ref={ref}
             value={draft}
@@ -236,13 +230,9 @@ export function Composer({ draft, setDraft, onSend, busy, onStop, placeholder, c
           />
         </label>
         {busy ? (
-          <button type="button" onClick={onStop} className="min-h-11 shrink-0 rounded-xl border-2 border-beni px-4 font-semibold text-beni hover:bg-beni-soft">
-            Dừng
-          </button>
+          <button type="button" onClick={onStop} className="min-h-11 shrink-0 rounded-xl border-2 border-beni px-4 font-semibold text-beni hover:bg-beni-soft">{t('chatParts.dung')}</button>
         ) : (
-          <button type="submit" disabled={!draft.trim()} className="min-h-11 shrink-0 rounded-xl bg-ai px-4 font-semibold text-on-ai hover:opacity-90 disabled:opacity-40">
-            Gửi
-          </button>
+          <button type="submit" disabled={!draft.trim()} className="min-h-11 shrink-0 rounded-xl bg-ai px-4 font-semibold text-on-ai hover:opacity-90 disabled:opacity-40">{t('chatParts.gui')}</button>
         )}
       </div>
     </form>

@@ -1,12 +1,13 @@
 import type { SrsCard } from '../types'
 import { isMastered } from './srs'
+import { t } from '../i18n'
 
 export const LESSON_SIZES = [20, 30, 50] as const
 export type LessonSize = (typeof LESSON_SIZES)[number]
 
 /** Chia danh sách thành các bài liên tiếp, giữ nguyên thứ tự. */
 export function splitLessons<T>(items: readonly T[], size: number): T[][] {
-  if (size < 1) throw new Error('Số từ mỗi bài phải lớn hơn 0')
+  if (size < 1) throw new Error(t('lessons.soTuMoiBai'))
   const out: T[][] = []
   for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size))
   return out

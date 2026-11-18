@@ -1,4 +1,5 @@
 import { Button } from '../Pressable'
+import { t } from '../../i18n'
 
 /**
  * Mở lại bài đang làm dở: "Tiếp tục từ câu 8/20?" với Tiếp tục / Làm lại.
@@ -7,7 +8,7 @@ import { Button } from '../Pressable'
 export function ResumePrompt({
   answered,
   total,
-  unit = 'câu',
+  unit = t('resumePrompt.cau'),
   onResume,
   onRestart,
 }: {
@@ -25,20 +26,12 @@ export function ResumePrompt({
       data-session-resume
       className="mx-auto max-w-[560px] rounded-2xl border border-line bg-surface p-6 text-center sm:p-8"
     >
-      <p className="text-sm text-muted">Bạn đang làm dở bài này</p>
-      <h2 id="resume-title" className="mt-1 text-xl font-bold">
-        Tiếp tục từ {unit} {at}/{total}?
-      </h2>
-      <p className="mt-2 text-sm text-muted">
-        Đã chấm {answered} {unit}. Kết quả đã chấm vẫn nằm trong lịch ôn dù bạn chọn làm lại.
-      </p>
+      <p className="text-sm text-muted">{t('resumePrompt.banDangLamDo')}</p>
+      <h2 id="resume-title" className="mt-1 text-xl font-bold">{t('resumePrompt.tiepTucTu', { unit, at, total })}</h2>
+      <p className="mt-2 text-sm text-muted">{t('resumePrompt.daChamKetQua', { answered, unit })}</p>
       <div className="mt-6 grid gap-2 sm:grid-cols-2">
-        <Button autoFocus onClick={onResume} className="min-h-12 rounded-lg bg-ai font-semibold text-on-ai hover:opacity-90">
-          Tiếp tục
-        </Button>
-        <Button onClick={onRestart} className="min-h-12 rounded-lg border border-line font-medium hover:bg-sunken">
-          Làm lại
-        </Button>
+        <Button autoFocus onClick={onResume} className="min-h-12 rounded-lg bg-ai font-semibold text-on-ai hover:opacity-90">{t('resumePrompt.tiepTuc')}</Button>
+        <Button onClick={onRestart} className="min-h-12 rounded-lg border border-line font-medium hover:bg-sunken">{t('resumePrompt.lamLai')}</Button>
       </div>
     </section>
   )

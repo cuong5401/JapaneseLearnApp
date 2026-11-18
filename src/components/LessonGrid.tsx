@@ -8,13 +8,20 @@ import { ButtonLink, CardLink } from './Pressable'
 import { ProgressBar } from './ProgressBar'
 import { Segmented } from './Segmented'
 import { Stagger, StaggerItem } from './Stagger'
+import { t } from '../i18n'
 
 const PER_PAGE = 40
 
 const STATE_LABEL: Record<LessonState, { text: string; cls: string }> = {
-  new: { text: 'Chưa học', cls: 'text-muted' },
-  learning: { text: 'Đang học', cls: 'text-ai' },
-  mastered: { text: 'Đã thuộc', cls: 'text-matsu' },
+  new: { get text() {
+    return t('common.chuaHoc')
+  }, cls: 'text-muted' },
+  learning: { get text() {
+    return t('common.dangHoc')
+  }, cls: 'text-ai' },
+  mastered: { get text() {
+    return t('common.daThuoc')
+  }, cls: 'text-matsu' },
 }
 
 function LessonTile({ href, index, preview, progress, current }: { href: string; index: number; preview: ReactNode; progress: LessonProgress; current: boolean }) {
@@ -22,20 +29,20 @@ function LessonTile({ href, index, preview, progress, current }: { href: string;
   return (
     <CardLink
       to={href}
-      aria-label={`Bài ${index + 1}, ${state.text}, đã học ${progress.learned}/${progress.total}`}
+      aria-label={t('lessonGrid.baiDaHoc', { v: index + 1, text: state.text, learned: progress.learned, total: progress.total })}
       className={`flex h-full flex-col rounded-xl border p-3.5 transition-colors ${
         current ? 'border-ai bg-ai-soft' : progress.state === 'mastered' ? 'border-matsu/50 bg-surface' : 'border-line bg-surface hover:border-ai'
       }`}
     >
       <span className="flex items-baseline justify-between gap-2">
-        <span className="font-semibold">Bài {index + 1}</span>
+        <span className="font-semibold">{t('common.bai', { v: index + 1 })}</span>
         <span className={`text-xs font-medium ${state.cls}`}>{state.text}</span>
       </span>
       <span lang="ja" className="mt-1 truncate font-jp text-sm text-muted">
         {preview}
       </span>
       <span className="mt-auto flex items-center gap-2 pt-3">
-        <ProgressBar {...progress} label={`Tiến độ bài ${index + 1}`} />
+        <ProgressBar {...progress} label={t('lessonGrid.tienDoBai', { v: index + 1 })} />
         <span className="shrink-0 text-xs tabular-nums text-muted">
           {progress.learned}/{progress.total}
         </span>
@@ -89,26 +96,25 @@ export function LessonGrid<T extends { id: string }>({ items, unit, title, href,
       { replace: true, preventScrollReset: true },
     )
 
-  if (items.length === 0) return <p className="rounded-2xl border border-line bg-surface p-6 text-center text-muted">Chưa có mục nào.</p>
+  if (items.length === 0) return <p className="rounded-2xl border border-line bg-surface p-6 text-center text-muted">{t('lessonGrid.chuaCoMucNao')}</p>
 
   return (
     <>
       <section className="grid gap-4 rounded-2xl border border-line bg-surface p-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
         <div>
           <p className="text-sm text-muted">
-            <AnimatedNumber value={items.length} className="font-semibold text-ink" /> {unit}, chia thành {lessons.length} bài
-          </p>
+            <AnimatedNumber value={items.length} className="font-semibold text-ink" /> {unit}{t('lessonGrid.chiaThanh')}{lessons.length}{t('lessonGrid.bai2')}</p>
           <div className="mt-3 flex items-center gap-3">
-            <ProgressBar {...stats} label={`Tiến độ ${title}`} />
+            <ProgressBar {...stats} label={t('lessonGrid.tienDo', { title })} />
             <span className="shrink-0 text-sm tabular-nums text-muted">
               {stats.learned}/{stats.total}
             </span>
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
-            <span className="text-muted">Mỗi bài</span>
+            <span className="text-muted">{t('lessonGrid.moiBai')}</span>
             <Segmented
               size="sm"
-              label={`Số ${unit} mỗi bài`}
+              label={t('lessonGrid.soMoiBai', { unit })}
               value={size}
               onChange={(v) => {
                 setLessonSize(v)
@@ -119,19 +125,19 @@ export function LessonGrid<T extends { id: string }>({ items, unit, title, href,
           </div>
         </div>
         <ButtonLink to={href(next)} className="inline-flex min-h-12 items-center justify-center rounded-lg bg-ai px-6 font-semibold text-on-ai hover:opacity-90">
-          {progress[next]?.state === 'learning' ? `Học tiếp Bài ${next + 1}` : `Học Bài ${next + 1}`}
+          {progress[next]?.state === 'learning' ? t('lessonGrid.hocTiepBai', { v: next + 1 }) : t('lessonGrid.hocBai', { v: next + 1 })}
         </ButtonLink>
       </section>
 
       {between}
 
       <div className="mt-8 flex flex-wrap items-baseline justify-between gap-3">
-        <h2 className="text-xl font-bold tracking-tight">Các bài</h2>
+        <h2 className="text-xl font-bold tracking-tight">{t('lessonGrid.cacBai')}</h2>
         {links}
       </div>
 
       {pages > 1 && (
-        <nav aria-label="Trang danh sách bài" className="mt-3 flex flex-wrap gap-2">
+        <nav aria-label={t('lessonGrid.trangDanhSachBai')} className="mt-3 flex flex-wrap gap-2">
           {Array.from({ length: pages }, (_, p) => (
             <button
               key={p}
@@ -141,9 +147,7 @@ export function LessonGrid<T extends { id: string }>({ items, unit, title, href,
               className={`min-h-11 rounded-lg border px-3 text-sm tabular-nums ${
                 p === shownPage ? 'border-ai bg-ai-soft font-semibold text-ai' : 'border-line text-muted hover:text-ink'
               }`}
-            >
-              Bài {p * PER_PAGE + 1}–{Math.min(lessons.length, (p + 1) * PER_PAGE)}
-            </button>
+            >{t('lessonGrid.bai', { v: p * PER_PAGE + 1, min: Math.min(lessons.length, (p + 1) * PER_PAGE) })}</button>
           ))}
         </nav>
       )}

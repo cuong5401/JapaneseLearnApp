@@ -1,5 +1,6 @@
 import { Rating, State, createEmptyCard, fsrs, type Card, type FSRS, type Grade as FsrsGrade, type ReviewLog } from 'ts-fsrs'
 import type { Grade, SrsCard } from '../types'
+import { formatNumber, t } from '../i18n'
 
 /**
  * Lịch ôn FSRS (ts-fsrs 5.x). Hàm thuần: nhận cài đặt và thời điểm từ ngoài để test được.
@@ -121,13 +122,13 @@ const DAY = 24 * HOUR
 
 /** Khoảng thời gian gọn kiểu tiếng Việt: "1 phút", "10 phút", "3 giờ", "1 ngày", "4 ngày", "2 tháng", "1,2 năm". */
 export function formatDelay(ms: number): string {
-  if (ms < MIN) return '< 1 phút'
-  if (ms < HOUR) return `${Math.round(ms / MIN)} phút`
-  if (ms < DAY) return `${Math.round(ms / HOUR)} giờ`
+  if (ms < MIN) return t('srs.1Phut')
+  if (ms < HOUR) return t('srs.phut', { round: Math.round(ms / MIN) })
+  if (ms < DAY) return t('srs.gio', { round: Math.round(ms / HOUR) })
   const days = Math.round(ms / DAY)
-  if (days < 30) return `${days} ngày`
-  if (days < 365) return `${Math.round(days / 30)} tháng`
-  return `${(Math.round((days / 365) * 10) / 10).toString().replace('.', ',')} năm`
+  if (days < 30) return t('srs.ngay', { days })
+  if (days < 365) return t('srs.thang', { round: Math.round(days / 30) })
+  return t('srs.nam', { replace: formatNumber(Math.round((days / 365) * 10) / 10) })
 }
 
 /** Mức chấm của một câu quiz: sai = Quên, đúng sau khi xem gợi ý = Khó, đúng = Nhớ. */

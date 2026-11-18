@@ -16,6 +16,7 @@ import { shuffleWith } from '../lib/kanaSession'
 import { speak } from '../lib/speech'
 import { readJSON, writeJSON } from '../lib/storage'
 import type { KanaChar, KanaScript } from '../types'
+import { t } from '../i18n'
 
 /* Lựa chọn trên bảng (nhớ giữa các lần mở): bảng chữ đang xem và các hàng đã chọn. */
 interface ChartState {
@@ -137,13 +138,11 @@ export function Kana() {
 
   return (
     <div>
-      <PageHeader title="Luyện kana" back={{ to: '/', label: 'Trang chủ' }}>
-        <p className="text-sm text-muted" data-kana-mastered>
-          Đã thuộc{' '}
+      <PageHeader title={t('kana.luyenKana')} back={{ to: '/', label: t('common.trangChu') }}>
+        <p className="text-sm text-muted" data-kana-mastered>{t('common.daThuoc')}{' '}
           <strong className="text-lg text-ink tabular-nums">
             {mastered}/{all.length}
-          </strong>{' '}
-          chữ {SCRIPT_LABELS[script]}
+          </strong>{' '}{t('kana.chu')}{SCRIPT_LABELS[script]}
         </p>
       </PageHeader>
 
@@ -151,12 +150,12 @@ export function Kana() {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Segmented<KanaScript>
-              label="Bảng chữ"
+              label={t('kana.bangChu')}
               value={script}
               onChange={(s) => setChart({ ...chart, script: s })}
               options={[
-                { value: 'hiragana', label: 'Hiragana あ' },
-                { value: 'katakana', label: 'Katakana ア' },
+                { value: 'hiragana', label: `${t('common.hiragana')} あ` },
+                { value: 'katakana', label: `${t('common.katakana')} ア` },
               ]}
             />
             <LevelLegend />
@@ -164,34 +163,26 @@ export function Kana() {
 
           <div className="mt-4 grid grid-cols-2 gap-2">
             <Button
-              onClick={() => startPractice({ title: `Chữ yếu (${SCRIPT_LABELS[script]})`, chars: weak })}
+              onClick={() => startPractice({ title: t('kana.chuYeu', { v: SCRIPT_LABELS[script] }), chars: weak })}
               disabled={weak.length === 0}
-              title={weak.length === 0 ? 'Chưa có chữ nào trả lời sai' : undefined}
+              title={weak.length === 0 ? t('kana.chuaCoChuNao') : undefined}
               className="min-h-12 rounded-xl border border-line bg-surface px-3 text-sm font-semibold hover:border-ai disabled:opacity-45"
-            >
-              Luyện chữ yếu{weak.length > 0 && ` (${weak.length})`}
-            </Button>
+            >{t('kana.luyenChuYeu', { v: weak.length > 0 && ` (${weak.length})` })}</Button>
             <Button
               onClick={() =>
-                startPractice({ title: `Ôn ngẫu nhiên (${SCRIPT_LABELS[script]})`, chars: shuffleWith(learned, Math.random).slice(0, 20) })
+                startPractice({ title: t('kana.onNgauNhien', { v: SCRIPT_LABELS[script] }), chars: shuffleWith(learned, Math.random).slice(0, 20) })
               }
               disabled={learned.length === 0}
-              title={learned.length === 0 ? 'Chưa luyện chữ nào' : undefined}
+              title={learned.length === 0 ? t('kana.chuaLuyenChuNao') : undefined}
               className="min-h-12 rounded-xl border border-line bg-surface px-3 text-sm font-semibold hover:border-ai disabled:opacity-45"
-            >
-              Ôn ngẫu nhiên 20 chữ đã học
-            </Button>
+            >{t('kana.onNgauNhien20')}</Button>
           </div>
 
-          <p className="mt-6 text-sm text-muted">Chọn hàng muốn luyện bằng ô đầu hàng. Chạm vào chữ để nghe và xem chi tiết.</p>
+          <p className="mt-6 text-sm text-muted">{t('kana.chonHangMuonLuyen')}</p>
           <div className="mt-1 mb-3 flex items-center gap-1 text-sm">
-            <span className="mr-auto tabular-nums text-muted">Đã chọn {count} chữ</span>
-            <button type="button" onClick={() => selectAll(true)} className="min-h-11 rounded-lg px-3 font-medium text-ai hover:bg-ai-soft">
-              Chọn tất cả
-            </button>
-            <button type="button" onClick={() => selectAll(false)} className="min-h-11 rounded-lg px-3 font-medium text-muted hover:bg-sunken hover:text-ink">
-              Bỏ chọn
-            </button>
+            <span className="mr-auto tabular-nums text-muted">{t('kana.daChonChu', { count })}</span>
+            <button type="button" onClick={() => selectAll(true)} className="min-h-11 rounded-lg px-3 font-medium text-ai hover:bg-ai-soft">{t('kana.chonTatCa')}</button>
+            <button type="button" onClick={() => selectAll(false)} className="min-h-11 rounded-lg px-3 font-medium text-muted hover:bg-sunken hover:text-ink">{t('kana.boChon')}</button>
           </div>
           <WritingSheetLink
             to={`/writing?src=kana&script=${script}&rows=${scriptRows.filter((r) => selected.has(r.id)).map((r) => r.id).join(',')}`}
@@ -203,11 +194,11 @@ export function Kana() {
           {/* Nút luyện cố định ở đáy (trên thanh điều hướng điện thoại). */}
           <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-10 mt-6 md:bottom-4">
             <Button
-              onClick={() => startPractice({ title: `Luyện ${count} chữ ${SCRIPT_LABELS[script]}`, chars: selectedChars })}
+              onClick={() => startPractice({ title: t('kana.luyenChu', { count, v: SCRIPT_LABELS[script] }), chars: selectedChars })}
               disabled={count === 0}
               className="min-h-14 w-full rounded-xl bg-ai text-lg font-semibold text-on-ai shadow-lg shadow-ink/15 hover:opacity-95 disabled:bg-sunken disabled:text-muted disabled:shadow-none"
             >
-              {count === 0 ? 'Chọn ít nhất một hàng để luyện' : `Luyện ${count} chữ đã chọn`}
+              {count === 0 ? t('kana.chonItNhatMot') : t('kana.luyenChuDaChon', { count })}
             </Button>
           </div>
         </div>
@@ -215,7 +206,7 @@ export function Kana() {
         {desktop && detail && (
           <aside
             className="sticky top-10 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain rounded-2xl border border-line bg-surface p-5"
-            aria-label="Chi tiết chữ kana"
+            aria-label={t('kana.chiTietChuKana')}
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div key={detail.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
@@ -227,7 +218,7 @@ export function Kana() {
       </div>
 
       {!desktop && (
-        <BottomSheet open={Boolean(detail)} onClose={() => setPicked(null)} label={`Chi tiết chữ ${detail?.kana ?? ''}`}>
+        <BottomSheet open={Boolean(detail)} onClose={() => setPicked(null)} label={t('kana.chiTietChu', { v: detail?.kana ?? '' })}>
           {detail && <KanaDetail k={detail} stat={stats[detail.id]} onPick={pickFromDetail} />}
         </BottomSheet>
       )}

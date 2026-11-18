@@ -1,4 +1,5 @@
 import { toKatakana, toRomaji } from 'wanakana'
+import { t } from '../i18n'
 import type { KanaChar, KanaGroup, KanaScript } from '../types'
 
 /**
@@ -51,9 +52,15 @@ const YOON: RowDef[] = [
 const TABLE_DEFS: Record<KanaGroup, RowDef[]> = { basic: BASIC, dakuten: DAKUTEN, yoon: YOON }
 
 export const KANA_GROUP_LABELS: Record<KanaGroup, string> = {
-  basic: 'Bảng 50 âm',
-  dakuten: 'Âm đục, bán đục',
-  yoon: 'Âm ghép',
+  get basic() {
+    return t('kana.groupBasic')
+  },
+  get dakuten() {
+    return t('kana.groupDakuten')
+  },
+  get yoon() {
+    return t('kana.groupYoon')
+  },
 }
 
 export const KANA_GROUPS: KanaGroup[] = ['basic', 'dakuten', 'yoon']

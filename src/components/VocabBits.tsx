@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import type { VocabItem } from '../types'
+import { t } from '../i18n'
 
 /** Âm Hán Việt dạng chữ hoa nhỏ, đặt dưới chữ Nhật. */
 export function HanViet({ text, className = '' }: { text?: string; className?: string }) {
@@ -39,11 +40,11 @@ export function WordHead({
 /** Thông tin phụ: từ loại, cách viết khác, từ gốc, ghi chú, từ liên quan. */
 export function WordMeta({ item, compact = false }: { item: VocabItem; compact?: boolean }) {
   const rows: { label: string; value: ReactNode; ja?: boolean }[] = []
-  if (item.pos) rows.push({ label: 'Từ loại', value: item.pos })
-  if (item.alt?.length) rows.push({ label: 'Cách viết khác', value: item.alt.join('、'), ja: true })
-  if (item.readingAlt?.length) rows.push({ label: 'Cách đọc khác', value: item.readingAlt.join('、'), ja: true })
-  if (item.origin) rows.push({ label: 'Gốc tiếng Anh', value: <span lang="en">{item.origin}</span> })
-  if (item.note) rows.push({ label: 'Ghi chú', value: item.note })
+  if (item.pos) rows.push({ label: t('vocabBits.tuLoai'), value: item.pos })
+  if (item.alt?.length) rows.push({ label: t('vocabBits.cachVietKhac'), value: item.alt.join('、'), ja: true })
+  if (item.readingAlt?.length) rows.push({ label: t('vocabBits.cachDocKhac'), value: item.readingAlt.join('、'), ja: true })
+  if (item.origin) rows.push({ label: t('vocabBits.gocTiengAnh'), value: <span lang="en">{item.origin}</span> })
+  if (item.note) rows.push({ label: t('vocabBits.ghiChu'), value: item.note })
   const linkCount = (item.related?.length ?? 0) + (item.parent ? 1 : 0)
   if (!rows.length && !linkCount) return null
 
@@ -59,14 +60,14 @@ export function WordMeta({ item, compact = false }: { item: VocabItem; compact?:
       ))}
       {linkCount > 0 && (
         <div className="contents">
-          <dt className="text-muted">{item.parent ? 'Từ chính' : 'Từ liên quan'}</dt>
+          <dt className="text-muted">{item.parent ? t('vocabBits.tuChinh') : t('vocabBits.tuLienQuan')}</dt>
           <dd>
             <Link
               to={`/word/${item.id}`}
               onClick={(e) => e.stopPropagation()}
               className="font-medium text-ai underline-offset-2 hover:underline"
             >
-              {item.parent ? 'Xem từ chính' : `Xem ${item.related!.length} từ`}
+              {item.parent ? t('vocabBits.xemTuChinh') : t('vocabBits.xemTu', { length: item.related!.length })}
             </Link>
           </dd>
         </div>

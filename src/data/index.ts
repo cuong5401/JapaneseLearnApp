@@ -6,6 +6,7 @@ import { PUBLIC_BUILD, isGrammarId } from '../lib/edition'
 import termsIt from './terms/it.json'
 import termsElectronics from './terms/electronics.json'
 import termsOffice from './terms/office.json'
+import { t } from '../i18n'
 
 /*
  * Dữ liệu từ vựng, kanji, ngữ pháp nằm trong public/data và được tải khi cần (src/lib/dataStore.ts).
@@ -22,14 +23,36 @@ export interface VocabDeckInfo {
 }
 
 export const VOCAB_DECK_INFO: Record<VocabDeckKey, VocabDeckInfo> = {
-  n5: { key: 'n5', path: 'vocab/n5.json', name: 'Nhập môn', ja: '入門', level: 'N5' },
-  n4: { key: 'n4', path: 'vocab/n4.json', name: 'Sơ cấp', ja: '初級', level: 'N4' },
-  n3: { key: 'n3', path: 'vocab/n3.json', name: 'Trung cấp', ja: '中級', level: 'N3' },
-  n2: { key: 'n2', path: 'vocab/n2.json', name: 'Trung cao cấp', ja: '中上級', level: 'N2' },
-  n1: { key: 'n1', path: 'vocab/n1.json', name: 'Cao cấp', ja: '上級', level: 'N1' },
-  compounds: { key: 'compounds', path: 'vocab/compounds.json', name: 'Từ ghép', ja: '熟語', note: 'Từ Hán ghép hai chữ' },
-  onomatopoeia: { key: 'onomatopoeia', path: 'vocab/onomatopoeia.json', name: 'Từ láy', ja: '擬音語', note: 'Từ tượng thanh, tượng hình' },
-  adverbs: { key: 'adverbs', path: 'vocab/adverbs.json', name: 'Phó từ', ja: '副詞', note: 'Trạng từ hay gặp' },
+  n5: { key: 'n5', path: 'vocab/n5.json', get name() {
+    return t('index.nhapMon')
+  }, ja: '入門', level: 'N5' },
+  n4: { key: 'n4', path: 'vocab/n4.json', get name() {
+    return t('index.soCap')
+  }, ja: '初級', level: 'N4' },
+  n3: { key: 'n3', path: 'vocab/n3.json', get name() {
+    return t('index.trungCap')
+  }, ja: '中級', level: 'N3' },
+  n2: { key: 'n2', path: 'vocab/n2.json', get name() {
+    return t('index.trungCaoCap')
+  }, ja: '中上級', level: 'N2' },
+  n1: { key: 'n1', path: 'vocab/n1.json', get name() {
+    return t('index.caoCap')
+  }, ja: '上級', level: 'N1' },
+  compounds: { key: 'compounds', path: 'vocab/compounds.json', get name() {
+    return t('index.tuGhep')
+  }, ja: '熟語', get note() {
+    return t('index.tuHanGhepHai')
+  } },
+  onomatopoeia: { key: 'onomatopoeia', path: 'vocab/onomatopoeia.json', get name() {
+    return t('index.tuLay')
+  }, ja: '擬音語', get note() {
+    return t('index.tuTuongThanhTuong')
+  } },
+  adverbs: { key: 'adverbs', path: 'vocab/adverbs.json', get name() {
+    return t('index.phoTu')
+  }, ja: '副詞', get note() {
+    return t('index.trangTuHayGap')
+  } },
 }
 
 export const LEVEL_DECKS: VocabDeckKey[] = ['n5', 'n4', 'n3', 'n2', 'n1']
@@ -48,9 +71,21 @@ export const DECK_ID_PREFIX: Record<VocabDeckKey, string> = {
 }
 
 export const TERM_INFO: Record<TermCategory, { name: string; ja: string; note: string; prefix: string }> = {
-  it: { name: 'Công nghệ thông tin', ja: '情報技術', note: 'Phát triển phần mềm, dự án', prefix: 'it' },
-  electronics: { name: 'Điện tử', ja: '電子', note: 'Mạch, linh kiện, sản xuất', prefix: 'el' },
-  office: { name: 'Văn phòng', ja: '事務', note: 'Họp, giấy tờ, giao tiếp công sở', prefix: 'of' },
+  it: { get name() {
+    return t('index.congNgheThongTin')
+  }, ja: '情報技術', get note() {
+    return t('index.phatTrienPhanMem')
+  }, prefix: 'it' },
+  electronics: { get name() {
+    return t('index.dienTu')
+  }, ja: '電子', get note() {
+    return t('index.machLinhKienSan')
+  }, prefix: 'el' },
+  office: { get name() {
+    return t('index.vanPhong')
+  }, ja: '事務', get note() {
+    return t('index.hopGiayToGiao')
+  }, prefix: 'of' },
 }
 
 const TERMS: Record<TermCategory, VocabItem[]> = {
@@ -74,7 +109,7 @@ export function deckKeyForId(id: string): VocabDeckKey | null {
 
 export function deckTitle(deck: Deck): string {
   if (deck.kind === 'terms') return TERM_INFO[deck.category].name
-  if (deck.kind === 'ai') return 'Từ AI gợi ý'
+  if (deck.kind === 'ai') return t('index.tuAiGoiY')
   const info = VOCAB_DECK_INFO[deck.key]
   return info.level ? `${info.level} ${info.name}` : info.name
 }

@@ -23,13 +23,22 @@ import { CounterBack, CounterFront } from '../components/study/counterFaces'
 import type { Grade, StudyEntry } from '../types'
 import { ResumePrompt } from '../components/study/ResumePrompt'
 import { useLeaveGuard, useStudySession } from '../hooks/useStudySession'
+import { formatDateTime, t as tr } from '../i18n'
 
 /** 4 mức chấm FSRS: Quên (Again) / Khó (Hard) / Nhớ (Good) / Dễ (Easy), phím 1–4. */
 const GRADES: { q: Grade; label: string; cls: string }[] = [
-  { q: 1, label: 'Quên', cls: 'border-beni text-beni hover:bg-beni-soft' },
-  { q: 2, label: 'Khó', cls: 'border-line hover:bg-sunken' },
-  { q: 3, label: 'Nhớ', cls: 'border-line hover:bg-sunken' },
-  { q: 4, label: 'Dễ', cls: 'border-matsu text-matsu hover:bg-matsu-soft' },
+  { q: 1, get label() {
+    return tr('review.quen')
+  }, cls: 'border-beni text-beni hover:bg-beni-soft' },
+  { q: 2, get label() {
+    return tr('review.kho')
+  }, cls: 'border-line hover:bg-sunken' },
+  { q: 3, get label() {
+    return tr('review.nho')
+  }, cls: 'border-line hover:bg-sunken' },
+  { q: 4, get label() {
+    return tr('review.de')
+  }, cls: 'border-matsu text-matsu hover:bg-matsu-soft' },
 ]
 
 const gradeList = {
@@ -61,14 +70,14 @@ function Front({ entry }: { entry: StudyEntry }) {
 
 function Back({ entry }: { entry: StudyEntry }) {
   // Chữ ngoài kanji.json không vào lịch ôn; chỉ phòng khi có thẻ cũ.
-  if (entry.kind === 'char') return <p className="text-center text-muted">Chưa có dữ liệu cho chữ này.</p>
+  if (entry.kind === 'char') return <p className="text-center text-muted">{tr('review.chuaCoDuLieu')}</p>
   if (entry.kind === 'counter') return <CounterBack item={entry.item} n={entry.n} />
   if (entry.kind === 'radical') {
     const r = entry.item
     const chars = kanjiOfRadical(r.no).slice(0, 8)
     return (
       <div className="text-center">
-        <p className="text-2xl font-bold capitalize">Bộ {r.name}</p>
+        <p className="text-2xl font-bold capitalize">{tr('review.bo', { name: r.name })}</p>
         <p className="text-muted">{r.meaning}</p>
         {chars.length > 0 && (
           <p lang="ja" className="mt-3 font-jp text-xl tracking-widest">
@@ -83,8 +92,8 @@ function Back({ entry }: { entry: StudyEntry }) {
     return (
       <div className="text-center">
         <p className="text-2xl font-bold tracking-wide">{k.hanViet}</p>
-        {k.hanVietAlt?.length ? <p className="text-sm text-muted">Âm khác: {k.hanVietAlt.join(', ')}</p> : null}
-        <p className="mt-2 text-sm text-muted">{k.wordCount} từ chứa chữ này</p>
+        {k.hanVietAlt?.length ? <p className="text-sm text-muted">{tr('common.amKhac', { join: k.hanVietAlt.join(', ') })}</p> : null}
+        <p className="mt-2 text-sm text-muted">{tr('common.tuChuaChuNay', { wordCount: k.wordCount })}</p>
       </div>
     )
   }
@@ -93,7 +102,7 @@ function Back({ entry }: { entry: StudyEntry }) {
     const ex = g.examples?.[0]
     return (
       <div className="w-full text-center">
-        <p className="text-lg font-semibold">{g.meaning ?? 'Mẫu này chưa tách được ý nghĩa, mở trang chi tiết để xem.'}</p>
+        <p className="text-lg font-semibold">{g.meaning ?? tr('review.mauNayChuaTach')}</p>
         {ex && (
           <p className="mt-3 text-sm text-muted">
             <span lang="ja" className="font-jp text-base text-ink">
@@ -107,9 +116,7 @@ function Back({ entry }: { entry: StudyEntry }) {
             )}
           </p>
         )}
-        <Link to={`/grammar/${g.level.toLowerCase()}/${g.id}`} className="mt-3 inline-block text-sm font-medium text-ai hover:underline">
-          Xem giải thích đầy đủ
-        </Link>
+        <Link to={`/grammar/${g.level.toLowerCase()}/${g.id}`} className="mt-3 inline-block text-sm font-medium text-ai hover:underline">{tr('review.xemGiaiThichDay')}</Link>
       </div>
     )
   }
@@ -117,7 +124,7 @@ function Back({ entry }: { entry: StudyEntry }) {
   return (
     <div className="w-full text-center">
       <p lang="ja" className="flex items-center justify-center gap-3 font-jp text-xl">
-        {w.reading || <span className="font-sans text-sm text-muted">Chưa có cách đọc</span>}
+        {w.reading || <span className="font-sans text-sm text-muted">{tr('review.chuaCoCachDoc')}</span>}
         <SpeakButton text={speechText(w)} size="sm" />
       </p>
       <HanViet text={w.hanViet} className="mt-1" />
@@ -138,23 +145,43 @@ function Back({ entry }: { entry: StudyEntry }) {
   )
 }
 
-const KIND_LABEL = { word: 'Từ vựng', kanji: 'Chữ Hán', grammar: 'Ngữ pháp', radical: 'Bộ thủ', counter: 'Cách đếm' } as const
+const KIND_LABEL = { get word() {
+    return tr('common.tuVung')
+  }, get kanji() {
+    return tr('common.chuHan')
+  }, get grammar() {
+    return tr('common.nguPhap2')
+  }, get radical() {
+    return tr('common.boThu')
+  }, get counter() {
+    return tr('common.cachDem')
+  } } as const
 
 function entryLabel(entry: StudyEntry) {
-  if (entry.kind === 'word') return `${KIND_LABEL.word}, ${deckTitle(entry.deck)}`
-  if (entry.kind === 'counter') return entry.n ? `${KIND_LABEL.counter}: số + ${entry.item.counter}` : `${KIND_LABEL.counter} ${entry.item.level}`
+  if (entry.kind === 'word') return tr('review.kindDeck', { kind: KIND_LABEL.word, deck: deckTitle(entry.deck) })
+  if (entry.kind === 'counter') return entry.n ? tr('review.so2', { counter: KIND_LABEL.counter, counter2: entry.item.counter }) : `${KIND_LABEL.counter} ${entry.item.level}`
   if (entry.kind === 'grammar') return `${KIND_LABEL.grammar} ${entry.item.level}`
-  if (entry.kind === 'radical') return `${KIND_LABEL.radical} số ${entry.item.no}`
+  if (entry.kind === 'radical') return tr('review.so', { radical: KIND_LABEL.radical, no: entry.item.no })
   if (entry.kind === 'char') return KIND_LABEL.kanji
-  return entry.item.firstLevel ? `${KIND_LABEL.kanji}, xuất hiện từ ${entry.item.firstLevel}` : KIND_LABEL.kanji
+  return entry.item.firstLevel ? tr('review.xuatHienTu', { kanji: KIND_LABEL.kanji, firstLevel: entry.item.firstLevel }) : KIND_LABEL.kanji
 }
 
 const SHORTCUTS = [
-  { keys: ['Space'], label: 'Lật thẻ' },
-  { keys: ['1'], label: 'Quên' },
-  { keys: ['2'], label: 'Khó' },
-  { keys: ['3'], label: 'Nhớ' },
-  { keys: ['4'], label: 'Dễ' },
+  { keys: ['Space'], get label() {
+    return tr('review.latThe')
+  } },
+  { keys: ['1'], get label() {
+    return tr('review.quen')
+  } },
+  { keys: ['2'], get label() {
+    return tr('review.kho')
+  } },
+  { keys: ['3'], get label() {
+    return tr('review.nho')
+  } },
+  { keys: ['4'], get label() {
+    return tr('review.de')
+  } },
 ]
 
 const NO_IDS: string[] = []
@@ -170,13 +197,10 @@ function Countdown({ due, onNow }: { due: number; onNow: () => void }) {
   return (
     <div className="flex flex-col items-center rounded-2xl border border-line bg-surface px-6 py-12 text-center" data-review-countdown>
       <GridCell className="size-24 text-ai">待</GridCell>
-      <h2 className="mt-5 text-xl font-semibold">
-        Thẻ tiếp theo sau <span className="tabular-nums">{clock(due - now)}</span>
+      <h2 className="mt-5 text-xl font-semibold">{tr('review.theTiepTheoSau')}<span className="tabular-nums">{clock(due - now)}</span>
       </h2>
-      <p className="mt-2 max-w-sm text-muted">Thẻ vừa học đang ở bước nhắc lại ngắn. Chờ một chút để nhớ chắc hơn, hoặc ôn luôn.</p>
-      <Button onClick={onNow} className="mt-6 min-h-11 rounded-lg bg-ai px-5 font-semibold text-on-ai hover:opacity-90">
-        Ôn luôn bây giờ
-      </Button>
+      <p className="mt-2 max-w-sm text-muted">{tr('review.theVuaHocDang')}</p>
+      <Button onClick={onNow} className="mt-6 min-h-11 rounded-lg bg-ai px-5 font-semibold text-on-ai hover:opacity-90">{tr('review.onLuonBayGio')}</Button>
     </div>
   )
 }
@@ -206,7 +230,7 @@ export function Review() {
   useEffect(() => {
     if (turn > 0 && queue) save({ done, lapses }, turn, turn + queue.length)
   }, [turn, done, lapses, queue, save])
-  const leaveGuard = useLeaveGuard(turn >= 3 && Boolean(queue?.length), { answered: turn, total: turn + (queue?.length ?? 0), unit: 'thẻ' })
+  const leaveGuard = useLeaveGuard(turn >= 3 && Boolean(queue?.length), { answered: turn, total: turn + (queue?.length ?? 0), unit: tr('review.the') })
 
   const id = queue?.[0]
   const entry = id ? lookup.entries.get(id) : undefined
@@ -256,11 +280,11 @@ export function Review() {
     const saved = memory.offer
     return (
       <div className={STUDY_PAGE}>
-        <PageHeader title="Ôn tập" />
+        <PageHeader title={tr('common.onTap')} />
         <ResumePrompt
           answered={saved.answered}
           total={saved.answered + queue.length}
-          unit="thẻ"
+          unit={tr('review.the')}
           onResume={() => {
             setDone(saved.state.done ?? 0)
             setLapses(saved.state.lapses ?? 0)
@@ -279,24 +303,22 @@ export function Review() {
     return (
       <div className="mx-auto max-w-[560px]">
         {done > 0 && !soon && <Celebration />}
-        <PageHeader title="Ôn tập" />
+        <PageHeader title={tr('common.onTap')} />
         {soon ? (
           <Countdown due={soon.due} onNow={() => setEarly(soon.id)} />
         ) : (
           <div className="flex flex-col items-center rounded-2xl border border-line bg-surface px-6 py-12 text-center" data-review-done>
             <GridCell className="size-24 text-matsu">済</GridCell>
             <h2 className="mt-5 text-xl font-semibold">
-              {done > 0 ? `Xong ${done} thẻ. Hết thẻ cần ôn.` : 'Chưa có thẻ nào đến hạn'}
+              {done > 0 ? tr('review.xongTheHetThe', { done }) : tr('review.chuaCoTheNao')}
             </h2>
             <p className="mt-2 max-w-sm text-muted">
               {upcoming
-                ? `Thẻ tiếp theo đến hạn lúc ${new Date(upcoming.due).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}.`
-                : 'Học từ mới bằng flashcard hoặc làm quiz để tạo lịch ôn.'}
-              {waiting > 0 && ` Còn ${waiting} thẻ chờ ngày mai do giới hạn mỗi ngày (đổi trong Cài đặt).`}
+                ? tr('review.theTiepTheoDen', { time: formatDateTime(upcoming.due, { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) })
+                : tr('review.hocTuMoiBang')}
+              {waiting > 0 && tr('review.conTheChoNgay', { waiting })}
             </p>
-            <ButtonLink to="/" className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-ai px-5 font-semibold text-on-ai">
-              Chọn bài học
-            </ButtonLink>
+            <ButtonLink to="/" className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-ai px-5 font-semibold text-on-ai">{tr('review.chonBaiHoc')}</ButtonLink>
           </div>
         )}
       </div>
@@ -305,11 +327,11 @@ export function Review() {
 
   const aside = (
     <SessionPanel
-      title="Phiên ôn tập"
+      title={tr('review.phienOnTap')}
       stats={[
-        { label: 'Còn lại', value: queue.length },
-        { label: 'Đã xong', value: done, tone: 'good' },
-        { label: 'Quên trong phiên', value: lapses, tone: 'bad' },
+        { label: tr('review.conLai'), value: queue.length },
+        { label: tr('review.daXong'), value: done, tone: 'good' },
+        { label: tr('review.quenTrongPhien'), value: lapses, tone: 'bad' },
       ]}
       shortcuts={SHORTCUTS}
     />
@@ -317,8 +339,8 @@ export function Review() {
 
   return (
     <div className={STUDY_PAGE}>
-      <PageHeader title="Ôn tập">
-        <span className="text-sm tabular-nums text-muted lg:hidden">Còn {queue.length} thẻ</span>
+      <PageHeader title={tr('common.onTap')}>
+        <span className="text-sm tabular-nums text-muted lg:hidden">{tr('review.conThe', { length: queue.length })}</span>
       </PageHeader>
 
       <StudyLayout aside={aside}>
@@ -340,9 +362,7 @@ export function Review() {
                   <Back entry={entry} />
                 </motion.div>
               ) : (
-                <motion.p key="hint" exit={{ opacity: 0 }} transition={{ duration: 0.1 }} className="text-center text-sm text-muted">
-                  Nhớ lại cách đọc và nghĩa rồi lật thẻ.
-                </motion.p>
+                <motion.p key="hint" exit={{ opacity: 0 }} transition={{ duration: 0.1 }} className="text-center text-sm text-muted">{tr('review.nhoLaiCachDoc')}</motion.p>
               )}
             </AnimatePresence>
           </motion.div>
@@ -373,9 +393,7 @@ export function Review() {
               autoFocus
               onClick={() => setShown(true)}
               className="min-h-14 w-full rounded-lg bg-ai font-semibold text-on-ai hover:opacity-90"
-            >
-              Lật thẻ
-            </Button>
+            >{tr('review.latThe')}</Button>
           )}
         </div>
       </StudyLayout>

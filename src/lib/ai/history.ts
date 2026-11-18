@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { readJSON, writeJSON } from '../storage'
 import { isChatMode, type ChatMode } from './prompts'
 import type { AiMessage } from './types'
+import { t as tr } from '../../i18n'
 
 /**
  * Lịch sử "Hỏi AI": tối đa 10 cuộc trò chuyện trong localStorage. Tạo cuộc thứ 11 thì xóa cuộc cũ nhất
@@ -85,7 +86,7 @@ export function sendWindow(messages: readonly StoredMessage[]): AiMessage[] {
 /** Tiêu đề tự động từ câu hỏi đầu tiên. */
 export const titleFrom = (text: string) => {
   const t = text.replace(/\s+/g, ' ').trim()
-  return t.length > 48 ? `${t.slice(0, 47)}…` : t || 'Cuộc trò chuyện mới'
+  return t.length > 48 ? `${t.slice(0, 47)}…` : t || tr('history.cuocTroChuyenMoi')
 }
 
 function sanitize(raw: unknown): Conversation[] {
@@ -97,7 +98,7 @@ function sanitize(raw: unknown): Conversation[] {
     if (typeof c.id !== 'string' || !Array.isArray(c.messages)) continue
     out.push({
       id: c.id,
-      title: typeof c.title === 'string' ? c.title : 'Cuộc trò chuyện',
+      title: typeof c.title === 'string' ? c.title : tr('history.cuocTroChuyen'),
       mode: isChatMode(c.mode) ? c.mode : 'lookup',
       pinned: Boolean(c.pinned),
       createdAt: Number(c.createdAt) || 0,

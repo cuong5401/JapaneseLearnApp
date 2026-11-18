@@ -3,6 +3,7 @@ import { LEVELS, type Level } from '../../types'
 import { readJSON, writeJSON } from '../storage'
 import { PROVIDERS } from './providers'
 import type { ProviderId } from './types'
+import type { ExplainLang } from './content/types'
 
 /**
  * Cài đặt AI. API key lưu RIÊNG ở `jla:ai-key:<provider>` trong localStorage của máy này:
@@ -14,6 +15,8 @@ export interface AiSettings {
   provider: ProviderId
   models: Record<'gemini' | 'claude', string>
   level: Level
+  /** Ngôn ngữ giải thích của AI (system prompt, câu hỏi soạn sẵn); mặc định tiếng Việt, không theo giao diện. */
+  explainLang: ExplainLang
 }
 
 export interface AiSettingsState extends AiSettings {
@@ -26,6 +29,7 @@ const DEFAULTS: AiSettings = {
   provider: 'gemini',
   models: { gemini: PROVIDERS[0].defaultModel, claude: PROVIDERS[1].defaultModel },
   level: 'N2',
+  explainLang: 'vi',
 }
 
 function sanitize(raw: unknown): AiSettings {
@@ -36,6 +40,7 @@ function sanitize(raw: unknown): AiSettings {
     provider,
     models: { gemini: str(r.models?.gemini, DEFAULTS.models.gemini), claude: str(r.models?.claude, DEFAULTS.models.claude) },
     level: LEVELS.includes(r.level as Level) ? (r.level as Level) : DEFAULTS.level,
+    explainLang: r.explainLang === 'ja' ? 'ja' : 'vi',
   }
 }
 
@@ -74,6 +79,7 @@ export const aiSettings = {
   setProvider: (provider: ProviderId) => save({ ...settings, provider }),
   setModel: (provider: 'gemini' | 'claude', model: string) => save({ ...settings, models: { ...settings.models, [provider]: model.trim() || DEFAULTS.models[provider] } }),
   setLevel: (level: Level) => save({ ...settings, level }),
+  setExplainLang: (explainLang: ExplainLang) => save({ ...settings, explainLang }),
   /** Model đang dùng của nhà cung cấp đang chọn. */
   model: () => (settings.provider === 'mock' ? 'mock' : settings.models[settings.provider]),
   /** Chỉ gọi ngay trước khi gửi yêu cầu; không lưu vào state React. */

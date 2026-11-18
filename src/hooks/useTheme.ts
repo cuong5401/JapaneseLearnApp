@@ -1,12 +1,19 @@
 import { useEffect, useSyncExternalStore } from 'react'
+import { t } from '../i18n'
 
 export type ThemeChoice = 'light' | 'dark' | 'system'
 const KEY = 'jla:theme'
 
 export const THEME_LABEL: Record<ThemeChoice, string> = {
-  system: 'Theo hệ thống',
-  light: 'Sáng',
-  dark: 'Tối',
+  get system() {
+    return t('useTheme.theoHeThong')
+  },
+  get light() {
+    return t('useTheme.sang')
+  },
+  get dark() {
+    return t('useTheme.toi')
+  },
 }
 
 function readChoice(): ThemeChoice {

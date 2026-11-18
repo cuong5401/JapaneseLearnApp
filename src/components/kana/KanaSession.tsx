@@ -31,6 +31,7 @@ import { Segmented } from '../Segmented'
 import { useDockQuiet } from '../../lib/ai/dock'
 import { useLeaveGuard, useStudySession } from '../../hooks/useStudySession'
 import { ResumePrompt } from '../study/ResumePrompt'
+import { t as tr } from '../../i18n'
 
 /* ───────────── Cài đặt (nhớ lựa chọn lần trước) ───────────── */
 
@@ -43,12 +44,36 @@ interface PracticeSettings {
 }
 
 const MODES: { value: PracticeMode; label: string; detail: string; sample: string }[] = [
-  { value: 'flashcard', label: 'Flashcard', detail: 'Lật thẻ, tự chấm Nhớ / Chưa nhớ', sample: 'か ↔ ka' },
-  { value: 'typing', label: 'Gõ romaji', detail: 'Nhìn chữ, gõ cách đọc', sample: 'か → ka' },
-  { value: 'choice', label: 'Trắc nghiệm', detail: 'Nhìn chữ, chọn cách đọc', sample: 'か → ka' },
-  { value: 'reverse', label: 'Ngược lại', detail: 'Nhìn romaji, chọn chữ', sample: 'ka → か' },
-  { value: 'listen', label: 'Nghe', detail: 'Nghe phát âm, chọn chữ', sample: '🔊 → か' },
-  { value: 'mixed', label: 'Trộn', detail: 'Mỗi câu một kiểu ngẫu nhiên', sample: '' },
+  { value: 'flashcard', get label() {
+    return tr('common.flashcard')
+  }, get detail() {
+    return tr('kanaSession.latTheTuCham')
+  }, sample: 'か ↔ ka' },
+  { value: 'typing', get label() {
+    return tr('kanaSession.goRomaji')
+  }, get detail() {
+    return tr('kanaSession.nhinChuGoCach')
+  }, sample: 'か → ka' },
+  { value: 'choice', get label() {
+    return tr('kanaSession.tracNghiem')
+  }, get detail() {
+    return tr('kanaSession.nhinChuChonCach')
+  }, sample: 'か → ka' },
+  { value: 'reverse', get label() {
+    return tr('kanaSession.nguocLai')
+  }, get detail() {
+    return tr('kanaSession.nhinRomajiChonChu')
+  }, sample: 'ka → か' },
+  { value: 'listen', get label() {
+    return tr('common.listen')
+  }, get detail() {
+    return tr('kanaSession.nghePhatAmChon')
+  }, sample: '🔊 → か' },
+  { value: 'mixed', get label() {
+    return tr('kanaSession.tron')
+  }, get detail() {
+    return tr('kanaSession.moiCauMotKieu')
+  }, sample: '' },
 ]
 
 const DEFAULT_SETTINGS: PracticeSettings = { mode: 'typing', count: 'each' }
@@ -105,15 +130,15 @@ function Setup({
     <div className="mx-auto max-w-[560px]">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        <CloseButton onClick={onExit} label="Về bảng chữ cái" />
+        <CloseButton onClick={onExit} label={tr('kanaSession.veBangChuCai')} />
       </div>
       <p lang="ja" className="line-clamp-2 font-jp text-lg tracking-wider text-muted">
         {chars.map((k) => k.kana).join(' ')}
       </p>
 
       <fieldset className="mt-6">
-        <legend className="mb-2 font-semibold">Kiểu câu hỏi</legend>
-        <div role="radiogroup" aria-label="Kiểu câu hỏi" className="grid gap-2 sm:grid-cols-2">
+        <legend className="mb-2 font-semibold">{tr('kanaSession.kieuCauHoi')}</legend>
+        <div role="radiogroup" aria-label={tr('kanaSession.kieuCauHoi')} className="grid gap-2 sm:grid-cols-2">
           {modes.map((m) => {
             const on = effectiveMode === m.value
             return (
@@ -141,25 +166,22 @@ function Setup({
           })}
         </div>
         {voice === false && (
-          <p className="mt-2 text-sm text-muted">
-            Không có kiểu Nghe: máy này chưa có giọng đọc tiếng Nhật (ja-JP). Cài thêm giọng tiếng Nhật trong cài đặt ngôn ngữ của hệ thống rồi mở lại
-            trang.
-          </p>
+          <p className="mt-2 text-sm text-muted">{tr('kanaSession.khongCoKieuNghe')}</p>
         )}
-        {voice === null && <p className="mt-2 text-sm text-muted">Đang kiểm tra giọng đọc tiếng Nhật…</p>}
+        {voice === null && <p className="mt-2 text-sm text-muted">{tr('kanaSession.dangKiemTraGiong')}</p>}
       </fieldset>
 
       {effectiveMode !== 'flashcard' && (
       <fieldset className="mt-6">
-        <legend className="mb-2 font-semibold">Số câu</legend>
+        <legend className="mb-2 font-semibold">{tr('kanaSession.soCau')}</legend>
         <Segmented<CountChoice>
-          label="Số câu"
+          label={tr('kanaSession.soCau')}
           value={count}
           onChange={setCount}
           options={[
-            { value: 'each', label: `Mỗi chữ 1 lần (${chars.length})` },
-            { value: 20, label: '20 câu' },
-            { value: 50, label: '50 câu' },
+            { value: 'each', label: tr('kanaSession.moiChu1Lan', { length: chars.length }) },
+            { value: 20, label: tr('kanaSession.20Cau') },
+            { value: 50, label: tr('kanaSession.50Cau') },
           ]}
         />
       </fieldset>
@@ -168,13 +190,11 @@ function Setup({
       <Button
         onClick={() => onStart({ mode: effectiveMode, count })}
         className="mt-8 min-h-14 w-full rounded-xl bg-ai text-lg font-semibold text-on-ai hover:opacity-90"
-      >
-        Bắt đầu
-      </Button>
+      >{tr('kanaSession.batDau')}</Button>
       <p className="mt-3 text-center text-sm text-muted">
         {effectiveMode === 'flashcard'
-          ? 'Mỗi chữ một thẻ: Space lật, ← Chưa nhớ, → Đã nhớ, Z hoàn tác.'
-          : 'Trả lời sai thì chữ đó được hỏi lại sau vài câu. Phiên kết thúc khi mọi chữ đều đúng.'}
+          ? tr('kanaSession.moiChuMotThe')
+          : tr('kanaSession.traLoiSaiThi')}
       </p>
     </div>
   )
@@ -185,10 +205,18 @@ function Setup({
 type Verdict = null | boolean
 
 const PROMPT: Record<QuestionMode, string> = {
-  typing: 'Gõ romaji của chữ này',
-  choice: 'Chữ này đọc là gì?',
-  reverse: 'Chọn chữ đúng',
-  listen: 'Nghe và chọn chữ đúng',
+  get typing() {
+    return tr('kanaSession.goRomajiCuaChu')
+  },
+  get choice() {
+    return tr('kanaSession.chuNayDocLa')
+  },
+  get reverse() {
+    return tr('kanaSession.chonChuDung')
+  },
+  get listen() {
+    return tr('kanaSession.ngheVaChonChu')
+  },
 }
 
 /** Giữ ô nhập trong vùng nhìn thấy khi bàn phím ảo bật lên (visualViewport co lại). */
@@ -296,7 +324,7 @@ function Question({
       <button
         type="button"
         onClick={() => speak(k.kana, 0.8)}
-        aria-label="Nghe lại"
+        aria-label={tr('kanaSession.ngheLai')}
         className={`grid aspect-square w-[clamp(8.5rem,38vw,11rem)] place-items-center rounded-full border-2 text-ai transition-colors hover:bg-ai-soft ${
           tone === 'default' ? 'border-cell-line bg-surface' : tone === 'correct' ? 'border-matsu bg-matsu-soft' : 'border-beni bg-beni-soft'
         }`}
@@ -323,7 +351,7 @@ function Question({
     <div className="flex flex-col items-center" inert={!present} aria-hidden={!present || undefined}>
       <p className="mb-4 text-sm text-muted">
         {PROMPT[mode]}
-        {mode === 'listen' && <span className="hidden lg:inline"> (phím R nghe lại)</span>}
+        {mode === 'listen' && <span className="hidden lg:inline">{tr('kanaSession.phimRNgheLai')}</span>}
       </p>
       <motion.div animate={feedback} transition={feedbackT} data-kana-question={present ? mode : undefined}>
         {prompt}
@@ -331,9 +359,7 @@ function Question({
 
       {mode === 'typing' ? (
         <form onSubmit={onSubmit} className="mt-6 w-full max-w-xs">
-          <label htmlFor="kana-answer" className="sr-only">
-            Gõ romaji
-          </label>
+          <label htmlFor="kana-answer" className="sr-only">{tr('kanaSession.goRomaji')}</label>
           <input
             id={present ? 'kana-answer' : undefined}
             ref={inputRef}
@@ -346,15 +372,13 @@ function Question({
             autoCorrect="off"
             spellCheck={false}
             enterKeyHint={answered ? 'next' : 'go'}
-            placeholder="Gõ romaji, ví dụ: ka"
+            placeholder={tr('kanaSession.goRomajiViDu')}
             className={`h-14 w-full rounded-xl border-2 bg-surface px-4 text-center text-xl tracking-wider outline-none placeholder:text-base placeholder:tracking-normal placeholder:text-muted/70 ${
               tone === 'correct' ? 'border-matsu' : tone === 'wrong' ? 'border-beni' : 'border-line focus:border-ai'
             }`}
           />
           {!answered && (
-            <Button type="submit" className="mt-3 min-h-12 w-full rounded-xl bg-ai font-semibold text-on-ai hover:opacity-90">
-              Kiểm tra
-            </Button>
+            <Button type="submit" className="mt-3 min-h-12 w-full rounded-xl bg-ai font-semibold text-on-ai hover:opacity-90">{tr('common.kiemTra')}</Button>
           )}
         </form>
       ) : (
@@ -430,23 +454,23 @@ function Result({
     <div className="mx-auto max-w-[560px]" data-kana-result>
       {perfect && <Celebration />}
       <section className="rounded-2xl border border-line bg-surface p-6 text-center">
-        <p className="text-sm font-medium text-muted">{perfect ? 'Hoàn hảo, đúng hết ngay lần đầu' : 'Hoàn thành phiên luyện'}</p>
+        <p className="text-sm font-medium text-muted">{perfect ? tr('kanaSession.hoanHaoDungHet') : tr('kanaSession.hoanThanhPhienLuyen')}</p>
         <p className="mt-2 text-5xl font-bold tabular-nums">
           <AnimatedNumber value={s.firstTry} />
           <span className="text-2xl font-semibold text-muted">/{s.planned}</span>
         </p>
-        <p className="mt-1 text-sm text-muted">câu đúng ngay lần đầu</p>
+        <p className="mt-1 text-sm text-muted">{tr('kanaSession.cauDungNgayLan')}</p>
         <dl className="mt-6 grid grid-cols-3 divide-x divide-line">
           <div>
-            <dt className="text-xs text-muted">Chính xác</dt>
+            <dt className="text-xs text-muted">{tr('common.chinhXac')}</dt>
             <dd className="text-xl font-bold tabular-nums">{accuracy}%</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted">Thời gian</dt>
+            <dt className="text-xs text-muted">{tr('kanaSession.thoiGian')}</dt>
             <dd className="text-xl font-bold tabular-nums">{formatTime(ms)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted">Chuỗi đúng dài nhất</dt>
+            <dt className="text-xs text-muted">{tr('kanaSession.chuoiDungDaiNhat')}</dt>
             <dd className="text-xl font-bold tabular-nums">{s.bestStreak}</dd>
           </div>
         </dl>
@@ -454,21 +478,21 @@ function Result({
 
       {wrong.length > 0 && (
         <section className="mt-6">
-          <h2 className="mb-2 font-semibold">Các chữ đã sai</h2>
+          <h2 className="mb-2 font-semibold">{tr('kanaSession.cacChuDaSai')}</h2>
           <ul className="grid grid-cols-[repeat(auto-fill,minmax(88px,1fr))] gap-2">
             {wrong.map(({ k, n }) => (
               <li key={k.id}>
                 <button
                   type="button"
                   onClick={() => speak(k.kana)}
-                  aria-label={`${k.kana}, ${k.romaji}, sai ${n} lần, nghe phát âm`}
+                  aria-label={tr('kanaSession.saiLanNghePhat', { kana: k.kana, romaji: k.romaji, n })}
                   className="flex w-full flex-col items-center gap-1 rounded-xl border border-line bg-surface p-2 hover:border-ai"
                 >
                   <GridCell tone="wrong" className="w-full max-w-16">
                     {k.kana}
                   </GridCell>
                   <span className="font-semibold">{k.romaji}</span>
-                  <span className="text-xs text-beni">sai {n} lần</span>
+                  <span className="text-xs text-beni">{tr('kanaSession.saiLan', { n })}</span>
                 </button>
               </li>
             ))}
@@ -478,21 +502,15 @@ function Result({
 
       <div className="mt-8 grid gap-2 sm:grid-cols-2">
         {onRetryWrong && (
-          <Button onClick={onRetryWrong} className="min-h-12 rounded-xl bg-ai px-5 font-semibold text-on-ai hover:opacity-90 sm:col-span-2">
-            Luyện lại các chữ sai ({wrong.length})
-          </Button>
+          <Button onClick={onRetryWrong} className="min-h-12 rounded-xl bg-ai px-5 font-semibold text-on-ai hover:opacity-90 sm:col-span-2">{tr('kanaSession.luyenLaiCacChu', { length: wrong.length })}</Button>
         )}
         <Button
           onClick={onRestart}
           className={`min-h-12 rounded-xl px-5 font-semibold ${
             onRetryWrong ? 'border-2 border-ai text-ai hover:bg-ai-soft' : 'bg-ai text-on-ai hover:opacity-90'
           }`}
-        >
-          Luyện lại phiên này
-        </Button>
-        <Button onClick={onExit} className="min-h-12 rounded-xl border border-line px-5 font-semibold hover:bg-sunken">
-          Về bảng chữ cái
-        </Button>
+        >{tr('kanaSession.luyenLaiPhienNay')}</Button>
+        <Button onClick={onExit} className="min-h-12 rounded-xl border border-line px-5 font-semibold hover:bg-sunken">{tr('kanaSession.veBangChuCai')}</Button>
       </div>
     </div>
   )
@@ -526,15 +544,15 @@ function KanaFlashcards({ chars, title, onExit }: { chars: KanaChar[]; title: st
     <div className={STUDY_PAGE} data-kana-flashcards>
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        <CloseButton onClick={onExit} label="Về bảng chữ cái" />
+        <CloseButton onClick={onExit} label={tr('kanaSession.veBangChuCai')} />
       </div>
       <FlashcardSession
           items={chars}
           faces={faces}
-          label={(k) => `chữ ${k.kana}`}
+          label={(k) => tr('kanaSession.chu', { kana: k.kana })}
           grader={kanaGrader}
           bookmark={false}
-          back={{ to: '/kana', label: 'Về bảng chữ cái' }}
+          back={{ to: '/kana', label: tr('kanaSession.veBangChuCai') }}
         />
     </div>
   )
@@ -652,7 +670,7 @@ function Runner({ run, initial, available, onSave, onRetryWrong, onRestart, onEx
   return (
     <div className="mx-auto max-w-[560px]">
       <div className="mb-6 flex items-center gap-3">
-        <CloseButton onClick={exit} label="Thoát phiên luyện" />
+        <CloseButton onClick={exit} label={tr('kanaSession.thoatPhienLuyen')} />
         <div className="relative h-2.5 flex-1 overflow-hidden rounded-full bg-sunken">
           <motion.div
             className="absolute inset-0 origin-left rounded-full bg-ai"
@@ -682,23 +700,19 @@ function Runner({ run, initial, available, onSave, onRetryWrong, onRestart, onEx
 
       <div aria-live="polite" className="mt-5 flex min-h-14 flex-col items-center gap-3">
         {verdict === true && (
-          <p className="font-semibold text-matsu">
-            Đúng: <span className="tracking-wide">{k.romaji}</span>
+          <p className="font-semibold text-matsu">{tr('kanaSession.dung')}<span className="tracking-wide">{k.romaji}</span>
           </p>
         )}
         {verdict === false && (
           <>
-            <p className="font-semibold text-beni">
-              Đáp án:{' '}
+            <p className="font-semibold text-beni">{tr('kanaSession.dapAn')}{' '}
               <span lang="ja" className="font-jp text-xl text-ink">
                 {k.kana}
               </span>{' '}
               = <span className="text-xl tracking-wide text-ink">{k.romaji}</span>
             </p>
-            <Button ref={nextRef} onClick={onNext} className="min-h-12 w-full max-w-xs rounded-xl bg-ai font-semibold text-on-ai hover:opacity-90">
-              Tiếp
-            </Button>
-            <p className="text-xs text-muted">Chữ này sẽ được hỏi lại sau vài câu. Bấm Enter để tiếp.</p>
+            <Button ref={nextRef} onClick={onNext} className="min-h-12 w-full max-w-xs rounded-xl bg-ai font-semibold text-on-ai hover:opacity-90">{tr('kanaSession.tiep')}</Button>
+            <p className="text-xs text-muted">{tr('kanaSession.chuNaySeDuoc')}</p>
           </>
         )}
       </div>

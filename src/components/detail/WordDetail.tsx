@@ -18,6 +18,7 @@ import { AskAiLink } from '../ai/AskAiLink'
 import { WordExamples } from './WordExamples'
 import { wordQuestion } from '../../lib/ai/questions'
 import { BookmarkButton } from '../notebook/BookmarkButton'
+import { t } from '../../i18n'
 
 type Push = (f: Frame) => void
 
@@ -73,7 +74,7 @@ export function KanjiBreakdown({ word, onPush }: { word: string; onPush: Push })
   if (!chars.length || (index.data && !found.length)) return null
   return (
     <section className="mt-6">
-      <h3 className="mb-3 font-semibold">Chữ Hán trong từ</h3>
+      <h3 className="mb-3 font-semibold">{t('wordDetail.chuHanTrongTu')}</h3>
       <ul className="flex flex-wrap gap-3">
         {/* Chưa tải chỉ mục: giữ đúng số ô (số chữ Hán trong từ) cùng kích thước ô thật. */}
         {!index.data && chars.map((c) => <li key={c}><Skeleton className="h-[7.75rem] w-24" /></li>)}
@@ -82,7 +83,7 @@ export function KanjiBreakdown({ word, onPush }: { word: string; onPush: Push })
             <button
               type="button"
               onClick={() => onPush({ t: 'k', ch: k.kanji })}
-              aria-label={`Chữ ${k.kanji}, ${k.hanViet}`}
+              aria-label={t('wordDetail.chu', { kanji: k.kanji, hanViet: k.hanViet })}
               className="flex w-24 flex-col items-center gap-1.5 rounded-xl border border-line bg-surface p-2.5 hover:border-ai"
             >
               <GridCell className="w-full">{k.kanji}</GridCell>
@@ -130,7 +131,7 @@ export function WordDetail({ item, onPush, inPanel = false }: { item: VocabItem;
           </span>
         </div>
         <p className="mt-5 text-2xl font-semibold">{item.meaning}</p>
-        {!item.reading && <p className="mt-1 text-sm text-muted">Từ này chưa có cách đọc trong dữ liệu; nút nghe đọc theo chữ viết.</p>}
+        {!item.reading && <p className="mt-1 text-sm text-muted">{t('wordDetail.tuNayChuaCo')}</p>}
         {/* Câu ví dụ thật (Tatoeba) hoặc AI tạo, dưới nghĩa của từ. */}
         <WordExamples key={item.id} item={item} />
         <div className="mt-5">
@@ -149,24 +150,22 @@ export function WordDetail({ item, onPush, inPanel = false }: { item: VocabItem;
             onClick={() => (card ? progress.forget(item.id) : progress.markLearned(item.id))}
             className={`min-h-11 rounded-lg px-5 font-semibold ${card ? 'border border-matsu bg-matsu-soft text-matsu' : 'bg-ai text-on-ai hover:opacity-90'}`}
           >
-            {card ? 'Đã học, bỏ đánh dấu' : 'Đánh dấu đã học'}
+            {card ? t('wordDetail.daHocBoDanh') : t('common.danhDauDaHoc')}
           </Button>
           {card && (
             <span className="text-sm text-muted">
-              {card.state === STATE.new ? 'Đang chờ ở trang Ôn tập' : card.due <= now ? 'Đến hạn ôn' : `Ôn lại sau ${formatDelay(card.due - now)}`}
+              {card.state === STATE.new ? t('wordDetail.dangChoOTrang') : card.due <= now ? t('wordDetail.denHanOn') : t('wordDetail.onLaiSau', { formatDelay: formatDelay(card.due - now) })}
             </span>
           )}
           <AskAiLink question={wordQuestion(item)} />
           {inPanel && (
-            <Link to={`/word/${item.id}`} className="ml-auto inline-flex min-h-11 items-center text-sm font-medium text-ai hover:underline">
-              Mở trang đầy đủ
-            </Link>
+            <Link to={`/word/${item.id}`} className="ml-auto inline-flex min-h-11 items-center text-sm font-medium text-ai hover:underline">{t('wordDetail.moTrangDayDu')}</Link>
           )}
         </div>
       </article>
 
-      {item.parent && <WordLinks ids={[item.parent]} title="Từ chính" onPush={onPush} />}
-      {item.related && item.related.length > 0 && <WordLinks ids={item.related} title="Từ liên quan" onPush={onPush} />}
+      {item.parent && <WordLinks ids={[item.parent]} title={t('wordDetail.tuChinh')} onPush={onPush} />}
+      {item.related && item.related.length > 0 && <WordLinks ids={item.related} title={t('wordDetail.tuLienQuan')} onPush={onPush} />}
       <KanjiBreakdown word={item.word} onPush={onPush} />
     </div>
   )

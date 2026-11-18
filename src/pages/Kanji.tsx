@@ -31,6 +31,7 @@ import { isSaved, useNotebooks } from '../lib/notebooks'
 import { normalizeVi } from '../lib/search'
 import { useLessonSize } from '../lib/settings'
 import type { KanjiEntry, RadicalItem } from '../types'
+import { t } from '../i18n'
 
 type Section = 'chars' | 'radicals'
 type Mode = 'list' | 'flashcards' | 'quiz'
@@ -38,9 +39,15 @@ type LevelFilter = KanjiLevelFilter
 const LEVEL_OPTIONS = KANJI_LEVEL_OPTIONS
 
 const MODES: { value: Mode; label: string }[] = [
-  { value: 'list', label: 'Danh sách' },
-  { value: 'flashcards', label: 'Flashcard' },
-  { value: 'quiz', label: 'Quiz' },
+  { value: 'list', get label() {
+    return t('common.danhSach')
+  } },
+  { value: 'flashcards', get label() {
+    return t('common.flashcard')
+  } },
+  { value: 'quiz', get label() {
+    return t('common.quiz')
+  } },
 ]
 
 /** Âm Hán Việt dài thì khít chữ lại để luôn nằm trên 1 dòng. */
@@ -78,7 +85,7 @@ function CharGrid({ chars, active, onPick }: { chars: KanjiEntry[]; active?: str
             <Button
               onClick={() => onPick(k)}
               whileHover={{ y: -3 }}
-              aria-label={`${k.kanji}, ${k.hanViet}${cards[k.id] ? ', đã học' : ''}`}
+              aria-label={`${k.kanji}, ${k.hanViet}${cards[k.id] ? t('kanji.daHoc') : ''}`}
               aria-pressed={on}
               data-kanji-cell={k.kanji}
               className={`@container relative flex w-full flex-col items-center gap-1.5 rounded-xl border p-2 transition-colors sm:p-2.5 ${
@@ -113,18 +120,16 @@ function RadicalCard({ r, onOpen }: { r: RadicalItem; onOpen: (r: RadicalItem) =
   const learned = Boolean(useCards()[r.id])
   return (
     <div className="relative flex items-center gap-3 rounded-xl border border-line bg-surface p-2.5 pr-11 transition-colors hover:border-ai" data-radical-card={r.no}>
-      <button type="button" onClick={() => onOpen(r)} aria-label={`Bộ ${r.radical}, ${r.name}`} className="absolute inset-0 rounded-xl" />
+      <button type="button" onClick={() => onOpen(r)} aria-label={t('kanji.bo4', { radical: r.radical, name: r.name })} className="absolute inset-0 rounded-xl" />
       <GridCell className="size-14">{r.radical}</GridCell>
       <span className="pointer-events-none min-w-0">
-        <span className="block text-xs tabular-nums text-muted">
-          Bộ {r.no} · {count} chữ
-        </span>
+        <span className="block text-xs tabular-nums text-muted">{t('kanji.boChu', { no: r.no, count })}</span>
         <span className="block truncate font-semibold capitalize">{r.name}</span>
         <span className="block text-sm leading-snug text-muted">{r.meaning}</span>
       </span>
       {learned && <span className="absolute right-2 bottom-2 size-2.5 rounded-full bg-matsu" aria-hidden />}
       <span className="absolute top-1 right-1">
-        <BookmarkButton itemRef={r.id} label={`bộ ${r.name}`} size="sm" />
+        <BookmarkButton itemRef={r.id} label={t('kanji.bo3', { name: r.name })} size="sm" />
       </span>
     </div>
   )
@@ -143,12 +148,16 @@ function RadicalList({ items, onOpen }: { items: RadicalItem[]; onOpen: (r: Radi
 }
 
 const RADICAL_QUIZ: ChoiceQuizConfig<RadicalItem> = {
-  title: 'Quiz bộ thủ',
-  prompt: () => 'Bộ này tên là gì?',
+  get title() {
+    return t('kanji.quizBoThu')
+  },
+  prompt: () => t('kanji.boNayTenLa'),
   question: (r) => <GridCell className="w-[clamp(7rem,40cqw,10rem)]">{r.radical}</GridCell>,
   answer: (r) => r.name,
   note: (r) => `(${r.meaning})`,
-  shortcut: 'Chọn tên bộ',
+  get shortcut() {
+    return t('kanji.chonTenBo')
+  },
 }
 
 function RadicalFlashcards({ items, back, next }: { items: RadicalItem[]; back: SessionLink; next?: SessionLink }) {
@@ -157,7 +166,7 @@ function RadicalFlashcards({ items, back, next }: { items: RadicalItem[]; back: 
   const faces = useMemo(() => radicalFaces(byChar), [byChar])
   if (index.status === 'error') return <LoadError error={index.error} onRetry={index.retry} />
   if (!index.data) return <PageSkeleton rows={4} />
-  return <FlashcardSession items={items} faces={faces} label={(r) => `bộ ${r.radical} ${r.name}`} back={back} next={next} />
+  return <FlashcardSession items={items} faces={faces} label={(r) => t('kanji.bo2', { radical: r.radical, name: r.name })} back={back} next={next} />
 }
 
 /* ───────────── Bài học (chữ Hán / bộ thủ) ───────────── */
@@ -182,15 +191,13 @@ function LessonHeader({
       <Link to={backHref} className="-ml-2 mb-1 inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-sm text-muted hover:text-ink">
         <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
           <path d="m15 18-6-6 6-6" />
-        </svg>
-        Các bài
-      </Link>
+        </svg>{t('kanji.cacBai')}</Link>
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
         <span className="text-sm text-muted">{subtitle}</span>
       </div>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <Segmented label="Chế độ học" value={mode} onChange={onMode} options={MODES} />
+        <Segmented label={t('common.cheDoHoc')} value={mode} onChange={onMode} options={MODES} />
         {writingHref && <WritingSheetLink to={writingHref} />}
       </div>
     </div>
@@ -203,7 +210,7 @@ function KanjiFlashcards({ chars, back, next }: { chars: KanjiEntry[]; back: Ses
   const faces = useMemo(() => kanjiFaces(words.entries), [words.entries])
   if (words.status === 'error') return <LoadError error={words.error} onRetry={words.retry} />
   if (words.status !== 'ready') return <PageSkeleton rows={4} />
-  return <FlashcardSession items={chars} faces={faces} label={(k) => `chữ ${k.kanji}`} back={back} next={next} />
+  return <FlashcardSession items={chars} faces={faces} label={(k) => t('kanji.chu', { kanji: k.kanji })} back={back} next={next} />
 }
 
 /** Panel desktop khi chưa chọn gì: giữ đúng chỗ 360px, không để cột trái giãn ra. */
@@ -211,7 +218,7 @@ function EmptyPanel({ section }: { section: Section }) {
   return (
     <div className="flex min-h-64 flex-col items-center justify-center gap-3 text-center text-muted" data-empty-panel>
       <GridCell className="size-20 opacity-40">{section === 'radicals' ? '部' : '字'}</GridCell>
-      <p>{section === 'radicals' ? 'Chọn một bộ để xem chi tiết' : 'Chọn một chữ để xem chi tiết'}</p>
+      <p>{section === 'radicals' ? t('kanji.chonMotBoDe') : t('kanji.chonMotChuDe')}</p>
     </div>
   )
 }
@@ -281,26 +288,26 @@ export function Kanji() {
       body = (
         <LessonGrid
           items={filtered}
-          unit="chữ"
-          title={`Chữ Hán ${levelLabel.toLowerCase()}`}
+          unit={t('common.chu')}
+          title={t('kanji.chuHan', { toLowerCase: levelLabel.toLowerCase() })}
           href={(i) => lessonHref(i)}
           preview={(l) => l.slice(0, 6).map((k) => k.kanji).join('')}
-          links={<span className="text-sm text-muted">"Từ N5" = chữ xuất hiện lần đầu trong từ vựng N5 của bạn, không phải cấp kanji JLPT.</span>}
+          links={<span className="text-sm text-muted">{t('kanji.tuN5ChuXuat')}</span>}
         />
       )
     } else {
       const chars = charLessons[lessonIndex]
-      if (!chars) body = <p className="text-muted">Không có bài này. <Link to={gridHref} className="font-medium text-ai">Về các bài</Link></p>
+      if (!chars) body = <p className="text-muted">{t('kanji.khongCoBaiNay')}<Link to={gridHref} className="font-medium text-ai">{t('kanji.veCacBai')}</Link></p>
       else {
-        const back: SessionLink = { to: gridHref, label: 'Về các bài' }
+        const back: SessionLink = { to: gridHref, label: t('kanji.veCacBai') }
         const next: SessionLink | undefined =
-          lessonIndex + 1 < charLessons.length ? { to: lessonHref(lessonIndex + 1, true), label: `Bài tiếp theo: Bài ${lessonIndex + 2}` } : undefined
+          lessonIndex + 1 < charLessons.length ? { to: lessonHref(lessonIndex + 1, true), label: t('common.baiTiepTheoBai', { v: lessonIndex + 2 }) } : undefined
         if (mode === 'list' && wide) defaultFrame = { t: 'k', ch: chars[0].kanji }
         body = (
           <>
             <LessonHeader
-              title={`Bài ${lessonIndex + 1}`}
-              subtitle={`Chữ Hán · ${levelLabel} · ${chars.length} chữ`}
+              title={t('common.bai', { v: lessonIndex + 1 })}
+              subtitle={t('kanji.chuHanChu', { levelLabel, length: chars.length })}
               backHref={gridHref}
               writingHref={`/writing?src=kanji&level=${level}&bai=${lessonIndex + 1}`}
               mode={mode}
@@ -334,24 +341,24 @@ export function Kanji() {
       body = (
         <>
           <label className="mb-4 block max-w-sm">
-            <span className="sr-only">Lọc bộ thủ</span>
+            <span className="sr-only">{t('kanji.locBoThu')}</span>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Tìm bộ theo tên, nghĩa hoặc số"
+              placeholder={t('kanji.timBoTheoTen')}
               className="h-11 w-full rounded-xl border-2 border-line bg-surface px-4 outline-none focus:border-ai"
             />
           </label>
           {matches ? (
             <>
-              <p className="mb-3 text-sm text-muted">{matches.length} bộ thủ khớp</p>
+              <p className="mb-3 text-sm text-muted">{t('kanji.boThuKhop', { length: matches.length })}</p>
               <RadicalList items={matches} onOpen={openRadical} />
             </>
           ) : (
             <LessonGrid
               items={radicals.data}
-              unit="bộ"
-              title="Bộ thủ"
+              unit={t('kanji.bo')}
+              title={t('common.boThu')}
               href={(i) => lessonHref(i)}
               preview={(l) => l.slice(0, 6).map((r) => r.radical).join('')}
             />
@@ -360,16 +367,16 @@ export function Kanji() {
       )
     } else {
       const items = radicalLessons[lessonIndex]
-      if (!items) body = <p className="text-muted">Không có bài này. <Link to={gridHref} className="font-medium text-ai">Về các bài</Link></p>
+      if (!items) body = <p className="text-muted">{t('kanji.khongCoBaiNay')}<Link to={gridHref} className="font-medium text-ai">{t('kanji.veCacBai')}</Link></p>
       else {
-        const back: SessionLink = { to: gridHref, label: 'Về các bài' }
+        const back: SessionLink = { to: gridHref, label: t('kanji.veCacBai') }
         const next: SessionLink | undefined =
-          lessonIndex + 1 < radicalLessons.length ? { to: lessonHref(lessonIndex + 1, true), label: `Bài tiếp theo: Bài ${lessonIndex + 2}` } : undefined
+          lessonIndex + 1 < radicalLessons.length ? { to: lessonHref(lessonIndex + 1, true), label: t('common.baiTiepTheoBai', { v: lessonIndex + 2 }) } : undefined
         body = (
           <>
             <LessonHeader
-              title={`Bài ${lessonIndex + 1}`}
-              subtitle={`Bộ thủ ${items[0].no}–${items[items.length - 1].no}`}
+              title={t('common.bai', { v: lessonIndex + 1 })}
+              subtitle={t('kanji.boThu', { no: items[0].no, no2: items[items.length - 1].no })}
               backHref={gridHref}
               mode={mode}
               onMode={(m) => setParam({ mode: m === 'list' ? null : m, xem: null })}
@@ -402,7 +409,7 @@ export function Kanji() {
 
   return (
     <div>
-      <PageHeader title="Chữ Hán" back={{ to: '/', label: 'Trang chủ' }}>
+      <PageHeader title={t('common.chuHan')} back={{ to: '/', label: t('common.trangChu') }}>
         <button
           type="button"
           onClick={() => searchUi.open({ draw: true })}
@@ -412,22 +419,20 @@ export function Kanji() {
           <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z" />
             <path d="m13.5 6.5 4 4" />
-          </svg>
-          Vẽ chữ
-        </button>
+          </svg>{t('kanji.veChu')}</button>
       </PageHeader>
       <div className="mb-5 flex flex-col gap-3">
         <Segmented
-          label="Mục chữ Hán"
+          label={t('kanji.mucChuHan')}
           value={section}
           onChange={(s) => setParams(s === 'radicals' ? { tab: 'radicals' } : level !== 'all' ? { level } : {}, { replace: true })}
           options={[
-            { value: 'chars', label: 'Chữ Hán' },
-            { value: 'radicals', label: 'Bộ thủ' },
+            { value: 'chars', label: t('common.chuHan') },
+            { value: 'radicals', label: t('common.boThu') },
           ]}
         />
         {section === 'chars' && lessonIndex === null && (
-          <Segmented size="sm" label="Lọc theo cấp xuất hiện" value={level} onChange={(l) => setParam({ level: l === 'all' ? null : l, bai: null })} options={levelOptions} />
+          <Segmented size="sm" label={t('kanji.locTheoCapXuat')} value={level} onChange={(l) => setParam({ level: l === 'all' ? null : l, bai: null })} options={levelOptions} />
         )}
       </div>
 
@@ -436,7 +441,7 @@ export function Kanji() {
         {showPanel && (
           <aside
             className="sticky top-10 max-h-[calc(100dvh-5rem)] w-[360px] min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain rounded-2xl border border-line bg-surface p-5 break-words [scrollbar-gutter:stable]"
-            aria-label="Chi tiết chữ Hán"
+            aria-label={t('kanji.chiTietChuHan')}
             data-detail-panel
           >
             {frames.length ? (
@@ -449,7 +454,7 @@ export function Kanji() {
       </div>
 
       {!showPanel && (
-        <BottomSheet open={stack.frames.length > 0} onClose={() => stack.close(true)} label="Chi tiết" tall>
+        <BottomSheet open={stack.frames.length > 0} onClose={() => stack.close(true)} label={t('kanji.chiTiet')} tall>
           <DetailStackView frames={stack.frames} onPush={stack.push} onBack={stack.back} />
         </BottomSheet>
       )}

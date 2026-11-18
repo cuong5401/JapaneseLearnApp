@@ -137,7 +137,9 @@
     @apply bg-paper text-ink font-sans antialiased;
     min-height: 100dvh;
   }
-  :lang(ja) {
+  /* Chữ Nhật có lang="ja" (dữ liệu, ví dụ). Không áp cho <html lang="ja"> (giao diện 日本語): giao diện vẫn dùng
+     --font-sans (Latin + Hán Việt bằng Be Vietnam Pro, chữ Nhật rơi xuống Noto Sans JP) để dữ liệu tiếng Việt không đổi font. */
+  [lang='ja']:not(html) {
     font-family: var(--font-jp);
   }
   :focus-visible {

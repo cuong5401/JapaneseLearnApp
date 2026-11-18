@@ -2,6 +2,7 @@ import { useRef, type PointerEvent } from 'react'
 import { isSaved, useNotebooks } from '../../lib/notebooks'
 import { quickSave } from '../../lib/quickSave'
 import { openSaveSheet } from '../../lib/saveSheet'
+import { t } from '../../i18n'
 
 const HOLD_MS = 500
 const MOVE_TOLERANCE = 8
@@ -18,7 +19,7 @@ export function BookmarkIcon({ filled, className = 'size-5' }: { filled: boolean
  * Nút đánh dấu: bấm mở sheet "Lưu vào sổ tay"; nhấn giữ (hoặc chuột phải) thì lưu nhanh.
  * Chặn sự kiện lan ra ngoài để không lật flashcard / không mở chi tiết của dòng chứa nó.
  */
-export function BookmarkButton({ itemRef, label = 'mục này', size = 'md', className = '' }: { itemRef: string; label?: string; size?: 'sm' | 'md'; className?: string }) {
+export function BookmarkButton({ itemRef, label = t('bookmarkButton.mucNay'), size = 'md', className = '' }: { itemRef: string; label?: string; size?: 'sm' | 'md'; className?: string }) {
   const state = useNotebooks()
   const saved = isSaved(state, itemRef)
   const hold = useRef<{ timer?: ReturnType<typeof setTimeout>; x: number; y: number; fired: boolean }>({ x: 0, y: 0, fired: false })
@@ -50,9 +51,9 @@ export function BookmarkButton({ itemRef, label = 'mục này', size = 'md', cla
     <button
       type="button"
       data-bookmark={itemRef}
-      aria-label={saved ? `Đã lưu ${label} vào sổ tay. Đổi sổ` : `Lưu ${label} vào sổ tay`}
+      aria-label={saved ? t('bookmarkButton.daLuuVaoSo', { label }) : t('bookmarkButton.luuVaoSoTay2', { label })}
       aria-pressed={saved}
-      title="Lưu vào sổ tay (nhấn giữ để lưu nhanh)"
+      title={t('bookmarkButton.luuVaoSoTay')}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={clear}

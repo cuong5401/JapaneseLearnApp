@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { AnimatedNumber } from './AnimatedNumber'
+import { t } from '../i18n'
 
 /** Khung trang học: rộng 560px, desktop thêm cột 280px nên tiêu đề và thẻ cùng thẳng hàng. */
 export const STUDY_PAGE = 'mx-auto w-full max-w-[560px] lg:max-w-[840px] xl:max-w-[880px]'
@@ -21,7 +22,7 @@ export function StudyLayout({ children, aside }: { children: ReactNode; aside: R
   return (
     <div className="lg:grid lg:grid-cols-[minmax(0,560px)_250px] lg:gap-8 xl:grid-cols-[minmax(0,560px)_280px] xl:gap-10">
       <div className="min-w-0">{children}</div>
-      <aside className="hidden lg:block" aria-label="Thông tin phiên học">
+      <aside className="hidden lg:block" aria-label={t('studyLayout.thongTinPhienHoc')}>
         <div className="sticky top-10">{aside}</div>
       </aside>
     </div>
@@ -38,7 +39,7 @@ export interface SessionStat {
 const TONE = { default: 'text-ink', good: 'text-matsu', bad: 'text-beni' }
 
 export function SessionPanel({
-  title = 'Phiên học',
+  title = t('studyLayout.phienHoc'),
   stats,
   shortcuts,
 }: {
@@ -63,7 +64,7 @@ export function SessionPanel({
         </dl>
       </section>
       <section className="rounded-2xl border border-line p-5">
-        <h2 className="text-sm font-semibold text-muted">Phím tắt</h2>
+        <h2 className="text-sm font-semibold text-muted">{t('studyLayout.phimTat')}</h2>
         <ul className="mt-3 space-y-2.5 text-sm">
           {shortcuts.map((s) => (
             <li key={s.label} className="flex items-center justify-between gap-3">

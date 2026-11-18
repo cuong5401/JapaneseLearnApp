@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Button } from './Pressable'
+import { t } from '../i18n'
 
 /** Khối xám nhấp nháy giữ chỗ trong lúc tải. */
 export function Skeleton({ className = '' }: { className?: string }) {
@@ -9,7 +10,7 @@ export function Skeleton({ className = '' }: { className?: string }) {
 /** Bộ khung trang chung: tiêu đề + lưới ô trống. */
 export function PageSkeleton({ rows = 6, grid = false, header = false }: { rows?: number; grid?: boolean; header?: boolean }) {
   return (
-    <div role="status" aria-live="polite" aria-label="Đang tải dữ liệu">
+    <div role="status" aria-busy="true" aria-live="polite" aria-label={t('loadState.dangTaiDuLieu2')}>
       {header && (
         <>
           <Skeleton className="h-4 w-28" />
@@ -21,7 +22,7 @@ export function PageSkeleton({ rows = 6, grid = false, header = false }: { rows?
           <Skeleton key={i} className={grid ? 'h-28' : 'h-16'} />
         ))}
       </div>
-      <span className="sr-only">Đang tải dữ liệu…</span>
+      <span className="sr-only">{t('loadState.dangTaiDuLieu')}</span>
     </div>
   )
 }
@@ -29,14 +30,10 @@ export function PageSkeleton({ rows = 6, grid = false, header = false }: { rows?
 export function LoadError({ error, onRetry }: { error?: string; onRetry: () => void }) {
   return (
     <div role="alert" className="rounded-2xl border border-beni bg-beni-soft p-5">
-      <h2 className="font-semibold text-beni">Không tải được dữ liệu</h2>
-      <p className="mt-1 text-sm">
-        Kiểm tra kết nối mạng rồi thử lại.
-        {error && <span className="mt-1 block break-words text-xs text-muted">{error}</span>}
+      <h2 className="font-semibold text-beni">{t('loadState.khongTaiDuocDu')}</h2>
+      <p className="mt-1 text-sm">{t('loadState.kiemTraKetNoi')}{error && <span className="mt-1 block break-words text-xs text-muted">{error}</span>}
       </p>
-      <Button onClick={onRetry} className="mt-4 min-h-11 rounded-lg bg-beni px-5 font-semibold text-on-ai">
-        Thử lại
-      </Button>
+      <Button onClick={onRetry} className="mt-4 min-h-11 rounded-lg bg-beni px-5 font-semibold text-on-ai">{t('common.thuLai')}</Button>
     </div>
   )
 }
@@ -62,7 +59,7 @@ export function Loaded<T>({
  */
 export function SkeletonRows({ count, rowClass = 'h-12', className = '' }: { count: number; rowClass?: string; className?: string }) {
   return (
-    <ul role="status" aria-label="Đang tải" className={`divide-y divide-line ${className}`}>
+    <ul role="status" aria-busy="true" aria-label={t('loadState.dangTai')} className={`divide-y divide-line ${className}`}>
       {Array.from({ length: count }, (_, i) => (
         <li key={i} className={`flex items-center ${rowClass}`}>
           <Skeleton className="h-5 w-full rounded-md" />
@@ -75,7 +72,7 @@ export function SkeletonRows({ count, rowClass = 'h-12', className = '' }: { cou
 /** Khung chi tiết đang tải (ô chữ lớn + vài dòng + nút): cùng dáng với KanjiDetail / WordDetail / RadicalDetail. */
 export function DetailSkeleton() {
   return (
-    <div role="status" aria-label="Đang tải chi tiết">
+    <div role="status" aria-busy="true" aria-label={t('loadState.dangTaiChiTiet')}>
       <div className="flex gap-5">
         <Skeleton className="size-28 shrink-0 sm:size-32" />
         <div className="min-w-0 flex-1 space-y-2 pt-1">

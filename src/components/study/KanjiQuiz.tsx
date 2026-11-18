@@ -1,15 +1,20 @@
 import { GridCell } from '../GridCell'
 import { ChoiceQuiz, type ChoiceQuizConfig } from './ChoiceQuiz'
 import type { KanjiEntry } from '../../types'
+import { t } from '../../i18n'
 
 const CONFIG: ChoiceQuizConfig<KanjiEntry> = {
-  title: 'Quiz chữ Hán',
-  prompt: () => 'Âm Hán Việt của chữ này là gì?',
+  get title() {
+    return t('kanjiQuiz.quizChuHan')
+  },
+  prompt: () => t('kanjiQuiz.amHanVietCua'),
   question: (k) => <GridCell className="w-[clamp(7rem,40cqw,10rem)]">{k.kanji}</GridCell>,
   answer: (k) => k.hanViet,
   alsoRight: (k) => k.hanVietAlt ?? [],
-  note: (k) => (k.hanVietAlt?.length ? `(âm khác: ${k.hanVietAlt.join(', ')})` : null),
-  shortcut: 'Chọn âm Hán Việt',
+  note: (k) => (k.hanVietAlt?.length ? t('kanjiQuiz.amKhac', { join: k.hanVietAlt.join(', ') }) : null),
+  get shortcut() {
+    return t('kanjiQuiz.chonAmHanViet')
+  },
 }
 
 /**

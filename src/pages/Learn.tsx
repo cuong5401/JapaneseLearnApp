@@ -9,6 +9,7 @@ import { useManifest } from '../hooks/useData'
 import { usePrefixStats, type DeckStats } from '../hooks/useProgress'
 import { useCounterSummary, useGrammarStats, useKanaSummary } from '../hooks/useStudyStats'
 import { TERM_CATEGORIES, type DataManifest, type TermCategory, type VocabDeckKey } from '../types'
+import { t } from '../i18n'
 
 /**
  * /learn: mọi thứ để học, theo nhóm có tiêu đề nhỏ. Thẻ cỡ vừa, mỗi thẻ có tiến độ.
@@ -66,7 +67,7 @@ function HubCard({
 const chip = 'inline-flex min-h-11 items-center rounded-lg border border-line px-3 text-sm font-medium hover:border-ai hover:text-ai'
 
 /** Một dòng bộ từ trong thẻ nhiều dòng (JLPT, Bộ từ khác, Thuật ngữ). */
-function DeckRow({ to, glyph, fit, name, sub, prefix, total, idPattern, unit = 'từ' }: { to: string; glyph: string; fit?: number; name: string; sub: string; prefix: string; total?: number; idPattern?: string; unit?: string }) {
+function DeckRow({ to, glyph, fit, name, sub, prefix, total, idPattern, unit = t('common.tu') }: { to: string; glyph: string; fit?: number; name: string; sub: string; prefix: string; total?: number; idPattern?: string; unit?: string }) {
   const s = usePrefixStats(prefix, total ?? 0, idPattern)
   return (
     <li>
@@ -79,7 +80,7 @@ function DeckRow({ to, glyph, fit, name, sub, prefix, total, idPattern, unit = '
           <span className="block truncate text-xs text-muted">{sub}</span>
         </span>
         <span className="min-w-0 flex-1">
-          <StatLine stats={s} total={total} unit={unit} label={`Tiến độ ${name}`} />
+          <StatLine stats={s} total={total} unit={unit} label={t('learn.tienDo', { name })} />
         </span>
       </Link>
     </li>
@@ -127,7 +128,7 @@ function DeckRows({ decks, m }: { decks: VocabDeckKey[]; m?: DataManifest }) {
             glyph={info.level ?? info.ja[0]}
             fit={info.level ? 0.36 : undefined}
             name={info.level ? `${info.level} ${info.name}` : info.name}
-            sub={total !== undefined && m ? `${total} từ, ${Math.ceil(total / m.pageSize)} bài` : (info.note ?? '')}
+            sub={total !== undefined && m ? t('learn.tuBai', { total, ceil: Math.ceil(total / m.pageSize) }) : (info.note ?? '')}
             prefix={DECK_ID_PREFIX[k]}
             total={total}
           />
@@ -160,57 +161,53 @@ export function Learn() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Học" />
+      <PageHeader title={t('common.hoc')} />
 
-      <Group id="g-vocab" title="Từ vựng" cols="lg:grid-cols-2">
+      <Group id="g-vocab" title={t('common.tuVung')} cols="lg:grid-cols-2">
         <StaggerItem as="li">
-          <ListCard glyph="語" title="Từ vựng JLPT" detail="N5 đến N1, chia bài, flashcard, quiz">
+          <ListCard glyph="語" title={t('learn.tuVungJlpt')} detail={t('learn.n5DenN1Chia')}>
             <DeckRows decks={LEVEL_DECKS} m={m} />
           </ListCard>
         </StaggerItem>
         <StaggerItem as="li">
-          <ListCard glyph="熟" title="Bộ từ khác" detail="Từ ghép, từ láy, phó từ">
+          <ListCard glyph="熟" title={t('learn.boTuKhac')} detail={t('learn.tuGhepTuLay')}>
             <DeckRows decks={EXTRA_DECKS} m={m} />
           </ListCard>
         </StaggerItem>
       </Group>
 
-      <Group id="g-chars" title="Chữ, ngữ pháp và cách đếm" cols="sm:grid-cols-2 xl:grid-cols-4">
+      <Group id="g-chars" title={t('learn.chuNguPhapVa')} cols="sm:grid-cols-2 xl:grid-cols-4">
         <StaggerItem as="li">
           <HubCard
             to="/kanji"
             glyph="漢"
-            title="Chữ Hán"
-            detail={kanjiTotal !== undefined ? `${kanjiTotal} chữ, ${radicalTotal} bộ thủ` : '…'}
+            title={t('common.chuHan')}
+            detail={kanjiTotal !== undefined ? t('learn.chuBoThu', { kanjiTotal, radicalTotal }) : '…'}
             extra={
-              <Link to="/kanji?tab=radicals" className={chip}>
-                Bộ thủ
-              </Link>
+              <Link to="/kanji?tab=radicals" className={chip}>{t('common.boThu')}</Link>
             }
           >
-            <StatLine stats={kanji} total={kanjiTotal} unit="chữ" label="Tiến độ chữ Hán" />
+            <StatLine stats={kanji} total={kanjiTotal} unit={t('common.chu')} label={t('learn.tienDoChuHan')} />
           </HubCard>
         </StaggerItem>
         <StaggerItem as="li">
-          <HubCard to="/grammar" glyph="文" title="Ngữ pháp" detail="N5 đến N1, lọc theo nhóm">
+          <HubCard to="/grammar" glyph="文" title={t('common.nguPhap2')} detail={t('learn.n5DenN1Loc')}>
             <span className="flex h-5 items-center gap-3">
-              <ProgressBar total={grammar.total} learned={grammar.learned} mastered={grammar.mastered} label="Tiến độ ngữ pháp" />
+              <ProgressBar total={grammar.total} learned={grammar.learned} mastered={grammar.mastered} label={t('learn.tienDoNguPhap')} />
               <span className="w-24 shrink-0 text-right text-xs text-muted tabular-nums">{grammar.line}</span>
             </span>
           </HubCard>
         </StaggerItem>
         <StaggerItem as="li">
-          <HubCard to="/kana" glyph="あ" title="Kana" detail="Hiragana, katakana, gõ romaji">
+          <HubCard to="/kana" glyph="あ" title={t('common.kana')} detail={t('learn.hiraganaKatakanaGoRomaji')}>
             <span className="flex h-5 items-center gap-3">
-              <ProgressBar total={kana.total} learned={kana.learned} mastered={kana.mastered} label="Tiến độ kana" />
-              <span className="w-24 shrink-0 text-right text-xs text-muted tabular-nums">
-                {kana.mastered}/{kana.total} thuộc
-              </span>
+              <ProgressBar total={kana.total} learned={kana.learned} mastered={kana.mastered} label={t('learn.tienDoKana')} />
+              <span className="w-24 shrink-0 text-right text-xs text-muted tabular-nums">{t('learn.thuoc', { mastered: kana.mastered, total: kana.total })}</span>
             </span>
           </HubCard>
         </StaggerItem>
         <StaggerItem as="li">
-          <HubCard to="/learn/counters" glyph="本" title="Cách đếm" badge="Mới" detail="助数詞: 本、枚、匹、人…">
+          <HubCard to="/learn/counters" glyph="本" title={t('common.cachDem')} badge={t('learn.moi')} detail="助数詞: 本、枚、匹、人…">
             <span className="flex h-5 items-center text-xs text-muted" data-counter-summary>
               {counters.line}
             </span>
@@ -218,9 +215,9 @@ export function Learn() {
         </StaggerItem>
       </Group>
 
-      <Group id="g-more" title="Chuyên ngành và luyện viết" cols="lg:grid-cols-2">
+      <Group id="g-more" title={t('learn.chuyenNganhVaLuyen')} cols="lg:grid-cols-2">
         <StaggerItem as="li">
-          <ListCard glyph="職" title="Thuật ngữ" detail="Từ vựng dùng hằng ngày ở công ty Nhật">
+          <ListCard glyph="職" title={t('learn.thuatNgu')} detail={t('learn.tuVungDungHang')}>
             <TermRows />
           </ListCard>
         </StaggerItem>
@@ -228,20 +225,18 @@ export function Learn() {
           <HubCard
             to="/writing"
             glyph="書"
-            title="Luyện viết"
-            detail="Phiếu tập viết PDF / Word"
+            title={t('learn.luyenViet')}
+            detail={t('learn.phieuTapVietPdf')}
             extra={
               <>
-                <Link to="/writing?src=kanji&level=N5&bai=1" className={chip}>
-                  Chữ Hán N5 bài 1
-                </Link>
+                <Link to="/writing?src=kanji&level=N5&bai=1" className={chip}>{t('learn.chuHanN5Bai')}</Link>
                 <Link to="/writing?src=kana&script=hiragana" className={chip}>
-                  Hiragana
+                  {t('common.hiragana')}
                 </Link>
               </>
             }
           >
-            <p className="text-sm text-muted">Chọn bài chữ Hán, sổ tay, hàng kana hoặc tự nhập chữ; có thứ tự nét, ô tô mờ, xem trước đúng bản in.</p>
+            <p className="text-sm text-muted">{t('learn.chonBaiChuHan')}</p>
           </HubCard>
         </StaggerItem>
       </Group>
